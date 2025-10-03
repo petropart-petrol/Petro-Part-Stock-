@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spare Parts Warehouse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* A slightly off-white background */
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="app" class="max-w-7xl mx-auto">
+        <header class="mb-8 flex items-center">
+            <img src="uploaded:1739538006184.jpg-0820b659-1ec3-4347-8186-f6f9c17b5227" alt="Company Logo" class="h-16 mr-4 object-contain">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">Spare Parts Warehouse</h1>
+                <p class="text-gray-500 mt-1">Manage your inventory with ease.</p>
+                <p id="lastUpdatedTimestamp" class="text-sm text-gray-400 mt-2"></p>
+            </div>
+        </header>
+
+        <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+            <div class="relative w-full md:w-2/5">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" id="searchInput" placeholder="Search by item name..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            </div>
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <button id="quickSellBtn" class="flex-grow md:flex-grow-0 bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition shadow-md">
+                    Sell
+                </button>
+                <button id="addSpareBtn" class="flex-grow md:flex-grow-0 bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition shadow-md">
+                    Add Spare
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 w-16">#</th>
+                            <th scope="col" class="px-6 py-3 w-20">Image</th>
+                            <th scope="col" class="px-6 py-3">Item</th>
+                            <th scope="col" class="px-6 py-3">Quantity</th>
+                            <th scope="col" class="px-6 py-3">Price (USD)</th>
+                            <th scope="col" class="px-6 py-3">Last Updated</th>
+                            <th scope="col" class="px-6 py-3">Remark</th>
+                            <th scope="col" class="px-6 py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="storageTableBody">
+                        </tbody>
+                </table>
+                <div id="noResults" class="text-center py-10 text-gray-500 hidden">
+                    <p class="font-semibold text-lg">No matching parts found.</p>
+                    <p>Try a different search term.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="spareModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6 modal transform scale-95 opacity-0">
+            <h2 id="modalTitle" class="text-2xl font-bold text-gray-800 mb-6">Add New Spare Part</h2>
+            <form id="spareForm">
+                <input type="hidden" id="editIndex">
+                <input type="hidden" id="existingImageUrl" name="existingImageUrl"> <div class="mb-4">
+                    <label for="item" class="block text-sm font-medium text-gray-700">Item Name</label>
+                    <input type="text" id="item" name="item" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="imageUpload" class="block text-sm font-medium text-gray-700">Part Image (Local Upload)</label>
+                    <input type="file" id="imageUpload" name="imageUpload" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <p class="text-xs text-gray-500 mt-1">Upload a new image. If editing, leave blank to keep the existing image.</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+                        <input type="number" id="quantity" name="quantity" min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="price" class="block text-sm font-medium text-gray-700">Price (USD)</label>
+                        <input type="number" id="price" name="price" min="0" step="0.01" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="remark" class="block text-sm font-medium text-gray-700">Remark</label>
+                    <textarea id="remark" name="remark" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="cancelBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Save Part</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="sellModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6 modal transform scale-95 opacity-0">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Sell Spare Part</h2>
+            <p class="mb-1">Item: <span id="sellItemName" class="font-semibold"></span></p>
+            <p class="mb-4">Current Quantity: <span id="sellCurrentQty" class="font-semibold"></span></p>
+            <form id="sellForm">
+                <input type="hidden" id="sellIndex">
+                <div>
+                    <label for="sellQuantity" class="block text-sm font-medium text-gray-700">Quantity to Sell</label>
+                    <input type="number" id="sellQuantity" name="sellQuantity" min="1" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" id="cancelSellBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition">Confirm Sale</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deductModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6 modal transform scale-95 opacity-0">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Deduct Spare Part</h2>
+            <p class="mb-1">Item: <span id="deductItemName" class="font-semibold"></span></p>
+            <p class="mb-4">Current Quantity: <span id="deductCurrentQty" class="font-semibold"></span></p>
+            <form id="deductForm">
+                <input type="hidden" id="deductIndex">
+                <div>
+                    <label for="deductQuantity" class="block text-sm font-medium text-gray-700">Quantity to Deduct</label>
+                    <input type="number" id="deductQuantity" name="deductQuantity" min="1" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" id="cancelDeductBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="bg-orange-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-orange-600 transition">Confirm Deduction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="quickSellModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6 modal transform scale-95 opacity-0">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Quick Sell</h2>
+            <p class="mb-4 text-gray-600">Select a part to sell from storage.</p>
+            <form id="quickSellForm">
+                <div class="mb-2">
+                    <label for="quickSellItemSelect" class="block text-sm font-medium text-gray-700">Select Item</label>
+                    <select id="quickSellItemSelect" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        </select>
+                </div>
+                <p class="mb-4 text-sm text-gray-500">Current Quantity: <span id="quickSellCurrentQty" class="font-semibold"></span></p>
+                <div>
+                    <label for="quickSellQuantity" class="block text-sm font-medium text-gray-700">Quantity to Sell</label>
+                    <input type="number" id="quickSellQuantity" name="quickSellQuantity" min="1" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" id="cancelQuickSellBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition">Confirm Sale</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Helper function to create a simple placeholder image data URL
+            const createPlaceholderImage = (text) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 50;
+                canvas.height = 50;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#e5e7eb'; // Gray background
+                ctx.fillRect(0, 0, 50, 50);
+                ctx.fillStyle = '#6b7280'; // Text color
+                ctx.font = '10px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 25, 25);
+                return canvas.toDataURL();
+            };
+
+            // State management
+            let inventory = JSON.parse(localStorage.getItem('sparePartsInventory')) || [
+                // Note: Placeholder images are now Base64 Data URLs for local persistence
+                { item: 'Engine Air Filter', quantity: 50, price: 25.99, remark: 'For sedans', lastUpdated: '2025-10-03T08:30:00.000Z', imageUrl: createPlaceholderImage('AF') },
+                { item: 'Brake Pads - Front', quantity: 30, price: 79.50, remark: 'Ceramic type', lastUpdated: '2025-10-02T11:20:00.000Z', imageUrl: createPlaceholderImage('BP') },
+                { item: 'Spark Plugs (Set of 4)', quantity: 100, price: 19.99, remark: 'Iridium', lastUpdated: '2025-10-03T09:00:00.000Z', imageUrl: createPlaceholderImage('SP') },
+                { item: 'Oil Filter', quantity: 75, price: 12.00, remark: 'Standard', lastUpdated: '2025-09-28T14:45:00.000Z', imageUrl: createPlaceholderImage('OF') },
+                { item: 'Headlight Bulb H11', quantity: 120, price: 9.75, remark: 'Halogen', lastUpdated: '2025-10-01T16:15:00.000Z', imageUrl: createPlaceholderImage('HB') },
+            ];
+            let lastInventoryUpdate = localStorage.getItem('lastInventoryUpdate') || new Date().toISOString();
+
+            // DOM Elements
+            const tableBody = document.getElementById('storageTableBody');
+            const searchInput = document.getElementById('searchInput');
+            const addSpareBtn = document.getElementById('addSpareBtn');
+            const spareModal = document.getElementById('spareModal');
+            const spareForm = document.getElementById('spareForm');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const modalTitle = document.getElementById('modalTitle');
+            const editIndexInput = document.getElementById('editIndex');
+            
+            // NEW Image Elements
+            const imageUploadInput = document.getElementById('imageUpload');
+            const existingImageUrlInput = document.getElementById('existingImageUrl');
+
+            const sellModal = document.getElementById('sellModal');
+            const sellForm = document.getElementById('sellForm');
+            const cancelSellBtn = document.getElementById('cancelSellBtn');
+
+            const deductModal = document.getElementById('deductModal');
+            const deductForm = document.getElementById('deductForm');
+            const cancelDeductBtn = document.getElementById('cancelDeductBtn');
+            
+            const quickSellBtn = document.getElementById('quickSellBtn');
+            const quickSellModal = document.getElementById('quickSellModal');
+            const quickSellForm = document.getElementById('quickSellForm');
+            const cancelQuickSellBtn = document.getElementById('cancelQuickSellBtn');
+            const quickSellItemSelect = document.getElementById('quickSellItemSelect');
+            const quickSellCurrentQty = document.getElementById('quickSellCurrentQty');
+            const quickSellQuantityInput = document.getElementById('quickSellQuantity');
+            const lastUpdatedTimestamp = document.getElementById('lastUpdatedTimestamp');
+
+            const noResultsDiv = document.getElementById('noResults');
+
+            // --- Modal Logic ---
+            const openModal = (modal) => {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.querySelector('.modal').classList.remove('scale-95', 'opacity-0'), 10);
+            };
+            
+            const closeModal = (modal) => {
+                modal.querySelector('.modal').classList.add('scale-95', 'opacity-0');
+                // IMPORTANT: Clear the file input when closing
+                if (modal.id === 'spareModal') {
+                    imageUploadInput.value = '';
+                    existingImageUrlInput.value = '';
+                }
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            // --- Data & Rendering ---
+            const saveInventory = () => {
+                const now = new Date().toISOString();
+                localStorage.setItem('sparePartsInventory', JSON.stringify(inventory));
+                localStorage.setItem('lastInventoryUpdate', now);
+                lastInventoryUpdate = now;
+                renderGlobalTimestamp();
+            };
+
+            const formatDate = (isoString) => {
+                if (!isoString) return '-';
+                const date = new Date(isoString);
+                return date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            };
+
+            const renderGlobalTimestamp = () => {
+                lastUpdatedTimestamp.textContent = `Inventory last updated: ${formatDate(lastInventoryUpdate)}`;
+            };
+
+            const renderTable = (items = inventory) => {
+                tableBody.innerHTML = '';
+                if (items.length === 0) {
+                    noResultsDiv.classList.remove('hidden');
+                } else {
+                    noResultsDiv.classList.add('hidden');
+                }
+
+                items.forEach((part, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-gray-900">${index + 1}</td>
+                        <td class="px-6 py-4">
+                            ${part.imageUrl ? `<img src="${part.imageUrl}" alt="${part.item}" class="w-12 h-12 object-cover rounded-md border border-gray-200">` : '<div class="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 text-xs">No Img</div>'}
+                        </td>
+                        <td class="px-6 py-4 font-semibold">${part.item}</td>
+                        <td class="px-6 py-4">${part.quantity}</td>
+                        <td class="px-6 py-4">$${part.price.toFixed(2)}</td>
+                        <td class="px-6 py-4 text-gray-600 whitespace-nowrap">${formatDate(part.lastUpdated)}</td>
+                        <td class="px-6 py-4">${part.remark || '-'}</td>
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            <button class="sell-btn font-medium text-green-600 hover:underline mr-3" data-index="${index}">Sell</button>
+                            <button class="deduct-btn font-medium text-orange-500 hover:underline mr-3" data-index="${index}">Deduct</button>
+                            <button class="edit-btn font-medium text-blue-600 hover:underline mr-3" data-index="${index}">Edit</button>
+                            <button class="delete-btn font-medium text-red-600 hover:underline" data-index="${index}">Delete</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            };
+
+            // --- Event Handlers ---
+            const handleSearch = () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const filteredInventory = inventory.filter(part => part.item.toLowerCase().includes(searchTerm));
+                renderTable(filteredInventory);
+            };
+
+            const handleAddClick = () => {
+                spareForm.reset();
+                editIndexInput.value = '';
+                existingImageUrlInput.value = '';
+                modalTitle.textContent = 'Add New Spare Part';
+                openModal(spareModal);
+            };
+
+            const handleEditClick = (index) => {
+                const part = inventory[index];
+                if (!part) return;
+                modalTitle.textContent = 'Edit Spare Part';
+                editIndexInput.value = index;
+                document.getElementById('item').value = part.item;
+                document.getElementById('quantity').value = part.quantity;
+                document.getElementById('price').value = part.price;
+                document.getElementById('remark').value = part.remark;
+                existingImageUrlInput.value = part.imageUrl || ''; // Store the existing Base64 string
+                imageUploadInput.value = ''; // Clear file input
+                openModal(spareModal);
+            };
+
+            const handleDeleteClick = (index) => {
+                if (confirm(`Are you sure you want to delete "${inventory[index].item}"? This action cannot be undone.`)) {
+                    inventory.splice(index, 1);
+                    saveInventory();
+                    renderTable();
+                }
+            };
+            
+            // ... (Sell, Deduct, QuickSell functions remain the same) ...
+
+            const handleFormSubmit = (event) => {
+                event.preventDefault();
+                
+                // Use FileReader to convert the file to a Base64 string (Data URL)
+                const file = imageUploadInput.files[0];
+                const index = editIndexInput.value;
+                const existingImageUrl = existingImageUrlInput.value;
+
+                const processPart = (newImageUrl) => {
+                    const formData = new FormData(spareForm);
+                    const part = {
+                        item: formData.get('item'),
+                        quantity: parseInt(formData.get('quantity')),
+                        price: parseFloat(formData.get('price')),
+                        remark: formData.get('remark'),
+                        imageUrl: newImageUrl || existingImageUrl, // Use new, or existing, or ''
+                        lastUpdated: new Date().toISOString()
+                    };
+
+                    if (index === '') {
+                        inventory.unshift(part); 
+                    } else {
+                        inventory[index] = part;
+                    }
+
+                    saveInventory();
+                    renderTable();
+                    closeModal(spareModal);
+                };
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        processPart(e.target.result); // Pass the Base64 string
+                    };
+                    reader.onerror = function() {
+                        alert('Error reading the image file.');
+                        processPart(existingImageUrl); // Fallback to existing if error
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    processPart(existingImageUrl); // Keep existing image or empty string
+                }
+            };
+            
+            // --- Sell, Deduct, QuickSell Handlers (Unchanged from previous version) ---
+            const handleSellClick = (index) => {
+                const part = inventory[index];
+                if (!part) return;
+                document.getElementById('sellItemName').textContent = part.item;
+                document.getElementById('sellCurrentQty').textContent = part.quantity;
+                document.getElementById('sellIndex').value = index;
+                document.getElementById('sellQuantity').max = part.quantity;
+                document.getElementById('sellQuantity').value = 1;
+                openModal(sellModal);
+            };
+
+            const handleDeductClick = (index) => {
+                const part = inventory[index];
+                if (!part) return;
+                document.getElementById('deductItemName').textContent = part.item;
+                document.getElementById('deductCurrentQty').textContent = part.quantity;
+                document.getElementById('deductIndex').value = index;
+                document.getElementById('deductQuantity').max = part.quantity;
+                document.getElementById('deductQuantity').value = 1;
+                openModal(deductModal);
+            };
+            
+            const populateQuickSellDropdown = () => {
+                quickSellItemSelect.innerHTML = '<option value="" disabled selected>Select an item</option>';
+                inventory.forEach((part, index) => {
+                    if (part.quantity > 0) {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = `${part.item} (${part.quantity} available)`;
+                        quickSellItemSelect.appendChild(option);
+                    }
+                });
+            };
+
+            const updateQuickSellDetails = () => {
+                const selectedIndex = quickSellItemSelect.value;
+                if (selectedIndex !== '') {
+                    const part = inventory[selectedIndex];
+                    quickSellCurrentQty.textContent = part.quantity;
+                    quickSellQuantityInput.max = part.quantity;
+                    quickSellQuantityInput.value = 1;
+                } else {
+                    quickSellCurrentQty.textContent = 'N/A';
+                    quickSellQuantityInput.max = 0;
+                    quickSellQuantityInput.value = '';
+                }
+            };
+
+            const handleQuickSellClick = () => {
+                populateQuickSellDropdown();
+                if (quickSellItemSelect.options.length > 1) {
+                    updateQuickSellDetails();
+                    openModal(quickSellModal);
+                } else {
+                    alert('There are no items in stock to sell.');
+                }
+            };
+
+            const handleSellFormSubmit = (event) => {
+                event.preventDefault();
+                const index = document.getElementById('sellIndex').value;
+                const sellQty = parseInt(document.getElementById('sellQuantity').value);
+                
+                if (index !== '' && inventory[index] && sellQty > 0 && inventory[index].quantity >= sellQty) {
+                    inventory[index].quantity -= sellQty;
+                    inventory[index].lastUpdated = new Date().toISOString();
+                    saveInventory();
+                    renderTable();
+                    closeModal(sellModal);
+                } else {
+                    alert('Invalid quantity to sell.');
+                }
+            };
+
+            const handleDeductFormSubmit = (event) => {
+                event.preventDefault();
+                const index = document.getElementById('deductIndex').value;
+                const deductQty = parseInt(document.getElementById('deductQuantity').value);
+                
+                if (index !== '' && inventory[index] && deductQty > 0 && inventory[index].quantity >= deductQty) {
+                    inventory[index].quantity -= deductQty;
+                    inventory[index].lastUpdated = new Date().toISOString();
+                    saveInventory();
+                    renderTable();
+                    closeModal(deductModal);
+                } else {
+                    alert('Invalid quantity to deduct.');
+                }
+            };
+
+            const handleQuickSellFormSubmit = (event) => {
+                event.preventDefault();
+                const index = quickSellItemSelect.value;
+                const sellQty = parseInt(quickSellQuantityInput.value);
+
+                if (index !== '' && inventory[index] && sellQty > 0 && inventory[index].quantity >= sellQty) {
+                    inventory[index].quantity -= sellQty;
+                    inventory[index].lastUpdated = new Date().toISOString();
+                    saveInventory();
+                    renderTable();
+                    closeModal(quickSellModal);
+                } else {
+                    alert('Invalid item or quantity to sell.');
+                }
+            };
+
+            // --- Event Listeners ---
+            searchInput.addEventListener('input', handleSearch);
+            addSpareBtn.addEventListener('click', handleAddClick);
+            cancelBtn.addEventListener('click', () => closeModal(spareModal));
+            spareForm.addEventListener('submit', handleFormSubmit);
+
+            cancelSellBtn.addEventListener('click', () => closeModal(sellModal));
+            sellForm.addEventListener('submit', handleSellFormSubmit);
+
+            cancelDeductBtn.addEventListener('click', () => closeModal(deductModal));
+            deductForm.addEventListener('submit', handleDeductFormSubmit);
+
+            quickSellBtn.addEventListener('click', handleQuickSellClick);
+            quickSellItemSelect.addEventListener('change', updateQuickSellDetails);
+            quickSellForm.addEventListener('submit', handleQuickSellFormSubmit);
+            cancelQuickSellBtn.addEventListener('click', () => closeModal(quickSellModal));
+            
+            tableBody.addEventListener('click', (event) => {
+                const target = event.target;
+                const index = target.dataset.index;
+                if (index === undefined) return;
+
+                if (target.classList.contains('edit-btn')) {
+                    handleEditClick(parseInt(index));
+                } else if (target.classList.contains('delete-btn')) {
+                    handleDeleteClick(parseInt(index));
+                } else if (target.classList.contains('sell-btn')) {
+                    handleSellClick(parseInt(index));
+                } else if (target.classList.contains('deduct-btn')) {
+                    handleDeductClick(parseInt(index));
+                }
+            });
+            
+            // Close modal on backdrop click
+            [spareModal, sellModal, deductModal, quickSellModal].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modal);
+                    }
+                });
+            });
+
+
+            // Initial Render
+            renderGlobalTimestamp();
+            renderTable();
+        });
+    </script>
+
+</body>
+</html>
