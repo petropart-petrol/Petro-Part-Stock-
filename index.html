@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مخزن بترو-بارت - إدارة المخزون (Google Sheets)</title>
+    <title>مخزن بترو-بارت - إدارة المخزون (Google Sheets) V3</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -83,6 +83,15 @@
             border-color: #e67e22;
             transform: translateY(-1px);
         }
+        .btn-info {
+            background-color: #3b82f6; /* Tailwind Blue-500 */
+            border-color: #3b82f6;
+            color: var(--white);
+        }
+        .btn-info:hover {
+            background-color: #2563eb; /* Tailwind Blue-600 */
+            border-color: #2563eb;
+        }
 
         .table-responsive {
             max-height: 600px;
@@ -95,19 +104,7 @@
             top: 0;
             z-index: 10;
         }
-        .part-image {
-            max-width: 60px;
-            max-height: 60px;
-            border-radius: 8px;
-            cursor: pointer;
-            object-fit: cover;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-        }
-        .part-image:hover {
-            transform: scale(1.05);
-        }
-
+        
         .input-group-text {
             background-color: var(--primary-blue);
             color: var(--white);
@@ -152,8 +149,8 @@
                 </div>
                 <div class="col-md-5 text-md-end">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">➕ إضافة قطعة غيار جديدة</button>
-                    <!-- خاصية السحب معطلة لأنها تحتاج لـ PUT Request وتحديد رقم السطر -->
-                    <button class="btn btn-warning" disabled title="خاصية السحب تحتاج إلى كود تعديل (PUT) أكثر تعقيداً في Sheets API">➖ سحب قطعة غيار (تحت الإنشاء)</button>
+                    <!-- تم تفعيل زر السحب لكنه يوجه لخاصية التعديل في الجدول -->
+                    <button class="btn btn-warning" onclick="alert('يرجى استخدام زر ✏️ تعديل / سحب في الجدول لتغيير الكمية.');">➖ سحب قطعة غيار</button>
                 </div>
             </div>
         </div>
@@ -168,12 +165,12 @@
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
-                                <th scope="col">الصورة</th>
                                 <th scope="col">اسم الإسبير</th>
                                 <th scope="col">العدد الموجود</th>
                                 <th scope="col">السعر بالدولار ($)</th>
                                 <th scope="col">السعر بالجنيه (SDG)</th>
-                                <th scope="col">تاريخ آخر سحب</th>
+                                <th scope="col">تاريخ آخر تحديث</th>
+                                <th scope="col">إجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody">
@@ -184,7 +181,7 @@
         </div>
         
         <div class="mt-4 mb-5 text-center">
-             <p class="text-muted">📊 تقارير السحب معطلة حاليًا، تتطلب إعداد جدول بيانات منفصل.</p>
+             <p class="text-muted">📊 خاصية التقارير معطلة حاليًا، يمكن عرض جميع السجلات مباشرة في Google Sheet.</p>
         </div>
     </div>
 
@@ -215,17 +212,54 @@
                             <input type="number" class="form-control" id="partPriceSDG" readonly>
                              <div class="form-text text-muted">يتم حسابه تلقائيًا بناءً على سعر الدولار في لوحة التحكم.</div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">رابط صورة قطعة الغيار (مباشر)</label>
-                            <input type="url" class="form-control" id="partImageURL" placeholder="أدخل رابط صورة مباشر (مثل Imgur)">
-                             <div class="form-text text-muted">لم يعد دعم رفع الملفات متاحًا، يرجى استخدام رابط صورة مباشر.</div>
-                        </div>
+                        
+                        <!-- تم حذف حقل الصورة -->
+
                         <button type="submit" id="addPartSubmitBtn" class="btn btn-primary w-100 mt-2">إضافة إلى المخزون</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal: Edit/Withdraw Part -->
+    <div class="modal fade" id="editPartModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                 <div class="modal-header" style="background-color: var(--secondary-orange);">
+                    <h5 class="modal-title text-white">✏️ تعديل كمية / سحب قطعة غيار</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPartForm">
+                        <input type="hidden" id="editPartId">
+                        <p class="mb-3">تعديل الكمية لـ: <strong id="editPartNameDisplay"></strong></p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">الكمية الحالية</label>
+                            <input type="number" class="form-control" id="editCurrentQuantity" readonly>
+                        </div>
+                        
+                         <div class="mb-4">
+                            <label class="form-label">كمية السحب أو الإضافة</label>
+                            <div class="input-group">
+                                <span class="input-group-text">الكمية</span>
+                                <input type="number" class="form-control" id="editChangeAmount" required min="-99999" placeholder="أدخل رقماً موجباً (لإضافة) أو سالباً (للسحب)">
+                            </div>
+                            <div class="form-text text-muted">مثال: أدخل **-5** لسحب 5 قطع، أو **5** لإضافة 5 قطع.</div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            الكمية الجديدة بعد التعديل: <strong id="editNewQuantityDisplay">0</strong>
+                        </div>
+
+                        <button type="submit" id="editPartSubmitBtn" class="btn btn-warning w-100 mt-2">تحديث الكمية</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -250,6 +284,13 @@
                 }
                 let data = await response.json();
                 
+                // التحقق من وجود حقل partName لتأكيد تطابق عناوين الأعمدة في Google Sheet
+                if (data.length > 0 && !data[0].hasOwnProperty('partName')) {
+                     alert("⚠️ فشل: يبدو أن اسم العمود 'partName' غير موجود أو غير صحيح. تأكد من أن عنوان العمود في جدول بيانات Google هو بالضبط 'partName' (حساس لحالة الأحرف).");
+                     document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل البيانات: تحقق من عناوين أعمدة Google Sheet.</td></tr>`;
+                     return;
+                }
+
                 // تحويل البيانات من نص إلى أرقام وضبط الـ ID (رقم السطر في Google Sheet)
                 data = data.map((item, index) => ({ 
                     // id هو رقم السطر في Google Sheet (SheetDB يبدأ بـ 2 لأن السطر 1 هو العناوين)
@@ -265,13 +306,10 @@
 
             } catch (error) {
                 console.error("Error fetching inventory: ", error);
-                document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل البيانات. تأكد من أن رابط API صحيح وأن جدولك متاح للجميع.</td></tr>`;
+                document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل البيانات. تأكد من أن رابط API صحيح وأن جدولك متاح للجميع. ${error.message}</td></tr>`;
             }
         };
 
-        const viewImage = (url) => {
-            window.open(url, '_blank');
-        };
 
         const renderTable = (parts) => {
             const tableBody = document.getElementById('inventoryTableBody');
@@ -281,22 +319,137 @@
             parts.sort((a, b) => (a.partName || '').localeCompare(b.partName || ''));
 
             parts.forEach((part, index) => {
-                const imageUrl = part.imageUrl && part.imageUrl.startsWith('http') ? `<img src="${part.imageUrl}" alt="${part.partName}" class="part-image" onclick="viewImage('${part.imageUrl}')">` : '<span class="text-muted" style="font-size: 0.8rem;">لا توجد صورة</span>';
                 rows += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td>${imageUrl}</td>
                         <td>${part.partName || 'غير محدد'}</td>
                         <td>${part.quantity}</td>
                         <td class="fw-bold" style="color: var(--secondary-orange);">$${part.priceUSD.toFixed(2)}</td>
                         <td class="fw-bold" style="color: var(--primary-blue);">${part.priceSDG.toFixed(2)} SDG</td>
-                        <td>${part.lastWithdrawalDate || 'لم يتم سحب'}</td>
+                        <td>${part.lastWithdrawalDate || 'لم يتم تحديثه'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="openEditModal(${part.id})">
+                                ✏️ تعديل / سحب
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
             tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center text-muted">لا توجد قطع غيار في المخزون.</td></tr>';
         };
 
+        // ===================================================================================
+        // لوجيك التعديل والسحب
+        // ===================================================================================
+
+        const editChangeAmountInput = document.getElementById('editChangeAmount');
+        const editCurrentQuantityInput = document.getElementById('editCurrentQuantity');
+        const editNewQuantityDisplay = document.getElementById('editNewQuantityDisplay');
+
+        // تحديث الكمية الجديدة في المودال عند تغيير قيمة السحب/الإضافة
+        const updateNewQuantityDisplay = () => {
+            const current = parseInt(editCurrentQuantityInput.value) || 0;
+            const change = parseInt(editChangeAmountInput.value) || 0;
+            const newQuantity = current + change;
+            
+            editNewQuantityDisplay.innerText = newQuantity;
+
+            // تنبيه بسيط إذا كانت الكمية سالبة
+            if (newQuantity < 0) {
+                 editNewQuantityDisplay.style.color = 'red';
+            } else {
+                 editNewQuantityDisplay.style.color = 'inherit';
+            }
+        };
+
+        editChangeAmountInput.addEventListener('input', updateNewQuantityDisplay);
+
+        const openEditModal = (partId) => {
+            // البحث عن القطعة باستخدام الـ id (رقم السطر في SheetDB)
+            const part = inventoryData.find(p => p.id === partId);
+            
+            if (!part) {
+                alert('خطأ: لم يتم العثور على قطعة الغيار للتعديل.');
+                return;
+            }
+
+            // تعبئة بيانات المودال
+            document.getElementById('editPartId').value = part.id;
+            document.getElementById('editPartNameDisplay').innerText = part.partName;
+            editCurrentQuantityInput.value = part.quantity;
+            editChangeAmountInput.value = ''; // تصفير قيمة التغيير
+            
+            updateNewQuantityDisplay(); // تحديث الكمية الجديدة (ستكون مساوية للكمية الحالية)
+
+            // عرض المودال
+            const editModal = new bootstrap.Modal(document.getElementById('editPartModal'));
+            editModal.show();
+        };
+
+        document.getElementById('editPartForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('editPartSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'جاري التحديث...';
+
+            const partId = document.getElementById('editPartId').value;
+            const currentQuantity = parseInt(editCurrentQuantityInput.value);
+            const changeAmount = parseInt(editChangeAmountInput.value);
+            const newQuantity = currentQuantity + changeAmount;
+            const today = new Date().toISOString().split('T')[0];
+            const partName = document.getElementById('editPartNameDisplay').innerText;
+            
+            if (isNaN(newQuantity) || newQuantity < 0) {
+                 alert('⚠️ الكمية الجديدة لا يمكن أن تكون قيمة سالبة. يرجى مراجعة كمية السحب/الإضافة.');
+                 submitBtn.disabled = false;
+                 submitBtn.innerText = 'تحديث الكمية';
+                 return;
+            }
+            
+            try {
+                // إرسال البيانات إلى SheetDB باستخدام PATCH لتعديل سجل موجود برقم السطر (id)
+                const updateUrl = `${SHEET_DB_API_URL}/id/${partId}`;
+                
+                const response = await fetch(updateUrl, {
+                    method: 'PATCH', // استخدام PATCH لتعديل حقول محددة فقط
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: {
+                            quantity: newQuantity,
+                            lastWithdrawalDate: today,
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    alert(`✅ تم تحديث كمية "${partName}" بنجاح. الكمية الجديدة: ${newQuantity}`);
+                    
+                    // إخفاء المودال وإعادة تحميل الجدول
+                    bootstrap.Modal.getInstance(document.getElementById('editPartModal')).hide();
+                    fetchInventory(); 
+                } else {
+                    let errorMsg = `فشل تحديث البيانات. تأكد من أن SheetDB API يسمح بالـ PATCH/PUT.`;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) {}
+                    throw new Error(errorMsg);
+                }
+            } catch (error) {
+                console.error("Error updating document: ", error);
+                alert(`❌ حدث خطأ أثناء التحديث: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'تحديث الكمية';
+            }
+        });
+
+        // ===================================================================================
+        // لوجيك الإضافة والبحث
+        // ===================================================================================
+        
         // دالة حساب سعر الجنيه (SDG)
         const calculateSDG = () => {
             const dollarRate = parseFloat(document.getElementById('dollarRateInput').value) || 0;
@@ -331,7 +484,6 @@
             const priceUSD = parseFloat(document.getElementById('partPriceUSD').value);
             const priceSDG = parseFloat(document.getElementById('partPriceSDG').value);
             const dollarRate = parseFloat(document.getElementById('dollarRateInput').value);
-            const imageUrl = document.getElementById('partImageURL').value.trim();
             const today = new Date().toISOString().split('T')[0];
             
             if (!partName || isNaN(quantity) || quantity < 0 || isNaN(priceUSD) || priceUSD < 0 || isNaN(dollarRate) || dollarRate <= 0) {
@@ -342,21 +494,20 @@
             }
 
             try {
-                // إرسال البيانات إلى SheetDB باستخدام POST
+                // إرسال البيانات إلى SheetDB باستخدام POST لإضافة سجل جديد
                 const response = await fetch(SHEET_DB_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        // يجب أن تتطابق هذه الأسماء مع عناوين الأعمدة في Google Sheet
                         data: { 
+                            // ملاحظة: تم حذف حقل الصورة (imageUrl) من بيانات الإرسال
                             partName: partName,
                             quantity: quantity,
                             priceUSD: priceUSD.toFixed(2),
                             priceSDG: priceSDG.toFixed(2),
-                            lastWithdrawalDate: 'Added: ' + today,
-                            imageUrl: imageUrl,
+                            lastWithdrawalDate: today, 
                         }
                     })
                 });
@@ -367,20 +518,16 @@
                     bootstrap.Modal.getInstance(document.getElementById('addPartModal')).hide();
                     fetchInventory(); // إعادة تحميل الجدول
                 } else {
-                    // محاولة قراءة رسالة الخطأ من الخادم
                     let errorMsg = 'فشل إرسال البيانات إلى SheetDB.';
                     try {
                         const errorData = await response.json();
                         errorMsg = errorData.message || errorMsg;
-                    } catch (e) {
-                         // إذا فشل قراءة JSON
-                         errorMsg = `HTTP Error ${response.status}. تأكد أن رابط SheetDB API يسمح بالـ POST.`;
-                    }
+                    } catch (e) {}
                     throw new Error(errorMsg);
                 }
             } catch (error) {
                 console.error("Error adding document: ", error);
-                alert(`❌ حدث خطأ أثناء الإضافة. تأكد من أن الرابط صحيح وأن SheetDB API يسمح بالكتابة: ${error.message}`);
+                alert(`❌ حدث خطأ أثناء الإضافة: ${error.message}`);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'إضافة إلى المخزون';
