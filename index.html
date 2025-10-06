@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مخزن بترو-بارت - إدارة المخزون والمبيعات (V5)</title>
+    <title>مخزن بترو-بارت - إدارة المخزون والمبيعات (V6)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -311,7 +311,7 @@
 
     <script>
         // ===================================================================================
-        // 🚀 روابط SheetDB API الخاصة بك (تم التحديث بناءً على طلبك)
+        // 🚀 روابط SheetDB API الخاصة بك 
         // ===================================================================================
         const STOCK_API_URL = "https://sheetdb.io/api/v1/wf5af4p93mza4"; // رابط ورقة المخزون
         const LOG_API_URL = "https://sheetdb.io/api/v1/pcpeovdobs6cw"; // رابط ورقة سجل المبيعات
@@ -326,6 +326,35 @@
         // تنسيق الرقم مع فاصلة عشرية
         const formatNumber = (num) => parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
+        
+        // ===================================================================================
+        // 🛠️ دالة مساعدة: Fetch آمنة مع إعادة محاولة (Exponential Backoff)
+        // هذا يزيد من مرونة التطبيق ضد أخطاء الشبكة المؤقتة 
+        // ===================================================================================
+        const safeFetch = async (url, options, retries = 3) => {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    // إذا كان الاستجابة ليست OK، حاول قراءة النص للحصول على تفاصيل الخطأ
+                    const errorText = await response.text();
+                    throw new Error(`HTTP Error ${response.status}: ${errorText}`);
+                } catch (error) {
+                    console.error(`🚨 محاولة اتصال رقم ${i + 1} فشلت لـ ${options.method || 'GET'} ${url}: ${error.message}`);
+                    if (i === retries - 1) {
+                        // إذا كانت المحاولة الأخيرة، أطلق الخطأ النهائي
+                        throw new Error(`فشل إكمال الطلب بعد ${retries} محاولات. تفاصيل الخطأ الأخير: ${error.message}`);
+                    }
+                    // تأخير تصاعدي (1s, 2s, 4s)
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        };
+
+
         // ===================================================================================
         // 1. Fetch & Render Inventory (المخزون الرئيسي)
         // ===================================================================================
@@ -335,8 +364,8 @@
             
             document.getElementById('inventoryTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">جاري تحميل المخزون...</td></tr>';
             try {
-                const response = await fetch(STOCK_API_URL);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // نستخدم safeFetch هنا أيضًا لزيادة موثوقية جلب البيانات
+                const response = await safeFetch(STOCK_API_URL);
                 let data = await response.json();
                 
                 // تحويل البيانات وضبط الـ ID (رقم السطر في Google Sheet)
@@ -345,7 +374,7 @@
                     // إعادة حساب سعر SDG بناءً على سعر الصرف الحالي في التطبيق
                     const priceSDG = priceUSD * currentDollarRate; 
                     return { 
-                        id: index + 2, 
+                        id: index + 2, // ID هو رقم السطر الفعلي في Google Sheets (بدءًا من الصف 2 للبيانات)
                         ...item,
                         quantity: parseInt(item.quantity) || 0,
                         priceUSD: priceUSD,
@@ -415,7 +444,7 @@
             const priceSDG = parseFloat(document.getElementById('partPriceSDG').value);
             
             try {
-                const response = await fetch(STOCK_API_URL, {
+                const response = await safeFetch(STOCK_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -434,9 +463,7 @@
                     document.getElementById('addPartForm').reset();
                     bootstrap.Modal.getInstance(document.getElementById('addPartModal')).hide();
                     fetchInventory();
-                } else {
-                    throw new Error('فشل إرسال البيانات إلى SheetDB (المخزون).');
-                }
+                } 
             } catch (error) {
                 console.error("Error adding document: ", error);
                 alert(`❌ حدث خطأ أثناء الإضافة: ${error.message}`);
@@ -484,7 +511,7 @@
             try {
                 const updateUrl = `${STOCK_API_URL}/id/${partId}`;
                 
-                const response = await fetch(updateUrl, {
+                const response = await safeFetch(updateUrl, {
                     method: 'PATCH', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -501,8 +528,6 @@
                     alert(`✅ تم تحديث تفاصيل "${newPartName}" بنجاح.`);
                     bootstrap.Modal.getInstance(document.getElementById('editPartModal')).hide();
                     fetchInventory(); 
-                } else {
-                    throw new Error('فشل تحديث التفاصيل في المخزون.');
                 }
             } catch (error) {
                 console.error("Error updating details: ", error);
@@ -514,7 +539,7 @@
         });
         
         // ===================================================================================
-        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log)
+        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log) - تم تطبيق SafeFetch هنا
         // ===================================================================================
         
         const populateWithdrawalDropdown = (parts) => {
@@ -569,7 +594,9 @@
             try {
                 // --- 1. تحديث المخزون الرئيسي (Stock) ---
                 const stockUpdateUrl = `${STOCK_API_URL}/id/${partId}`;
-                const stockResponse = await fetch(stockUpdateUrl, {
+                
+                // استخدام safeFetch مع إعادة المحاولة لعملية تحديث المخزون
+                await safeFetch(stockUpdateUrl, {
                     method: 'PATCH', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -580,10 +607,10 @@
                     })
                 });
                 
-                if (!stockResponse.ok) throw new Error('فشل تحديث كمية المخزون.');
-
                 // --- 2. تسجيل العملية في سجل المبيعات (Log) ---
-                const logResponse = await fetch(LOG_API_URL, {
+                
+                // استخدام safeFetch مع إعادة المحاولة لعملية تسجيل المبيعات
+                await safeFetch(LOG_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -598,8 +625,6 @@
                     })
                 });
 
-                if (!logResponse.ok) throw new Error('فشل تسجيل العملية في سجل المبيعات.');
-
                 alert(`✅ تم سحب ${quantityWithdrawn} قطعة من "${part.partName}" وتسجيلها كـ بيع.`);
                 
                 bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
@@ -608,7 +633,7 @@
                 
             } catch (error) {
                 console.error("Error during sale transaction: ", error);
-                alert(`❌ حدث خطأ أثناء التسجيل: ${error.message}. قد تحتاج إلى إعادة ضبط الكمية يدوياً في ورقة المخزون.`);
+                alert(`❌ حدث خطأ أثناء التسجيل: ${error.message}. يرجى التحقق من وحدة التحكم (Console) لمزيد من التفاصيل.`);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'سحب وتسجيل البيع';
@@ -630,8 +655,7 @@
 
 
             try {
-                const response = await fetch(LOG_API_URL);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const response = await safeFetch(LOG_API_URL);
                 let data = await response.json();
                 
                 if (!Array.isArray(data)) { data = []; }
