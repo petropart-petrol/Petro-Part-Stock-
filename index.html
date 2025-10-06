@@ -490,6 +490,7 @@
                     const priceSDG = priceUSD * currentDollarRate; 
                     return { 
                         // ID هو رقم السطر الفعلي في Google Sheets (بدءًا من الصف 2 للبيانات)
+                        // هذا الرقم يُستخدم مع /rows/ في SheetDB لتحديث البيانات 
                         id: index + 2, 
                         ...item,
                         quantity: parseInt(item.quantity) || 0,
@@ -618,7 +619,8 @@
             const newPriceSDG = (newPriceUSD * currentDollarRate).toFixed(2); 
             
             try {
-                const updateUrl = `${STOCK_API_URL}/id/${partId}`;
+                // 🔴 التحديث الهام: استخدام /rows/ لتجنب خطأ "Undefined column: id"
+                const updateUrl = `${STOCK_API_URL}/rows/${partId}`; 
                 
                 await safeFetch(updateUrl, {
                     method: 'PATCH', 
@@ -703,7 +705,8 @@
             
             try {
                 // --- 1. تحديث المخزون الرئيسي (Stock) ---
-                const stockUpdateUrl = `${STOCK_API_URL}/id/${partId}`;
+                // 🔴 التحديث الهام: استخدام /rows/ لتجنب خطأ "Undefined column: id"
+                const stockUpdateUrl = `${STOCK_API_URL}/rows/${partId}`;
                 await safeFetch(stockUpdateUrl, {
                     method: 'PATCH', 
                     headers: { 'Content-Type': 'application/json' },
