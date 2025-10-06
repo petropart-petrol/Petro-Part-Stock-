@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مخزن بترو-بارت - إدارة المخزون (Google Sheets) V4</title>
+    <title>مخزن بترو-بارت - إدارة المخزون والمبيعات (V5)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-blue: #0A66C2; 
             --secondary-orange: #F78C2F;
+            --success-green: #10B981;
             --light-grey: #f0f2f5;
-            --medium-grey: #6c757d;
             --dark-grey: #343a40;
             --white: #ffffff;
         }
@@ -22,89 +22,61 @@
             color: var(--dark-grey);
         }
 
-        .navbar-brand img {
-            max-height: 55px;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-            margin-inline-end: 15px; 
-        }
-        .header-title {
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: var(--primary-blue);
-            line-height: 1.3;
-        }
-        .header-title span {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--medium-grey);
-            display: block;
-        }
         .navbar {
             border-bottom: 3px solid var(--primary-blue);
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .header-title {
+            font-weight: 700;
+            color: var(--primary-blue);
         }
         
         .card {
             border: none;
             border-radius: 12px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-2px);
         }
         .card-header {
             background-color: var(--primary-blue);
             color: var(--white);
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
             font-weight: 700;
-            padding: 1rem;
         }
 
         .btn-primary {
             background-color: var(--primary-blue);
             border-color: var(--primary-blue);
-            transition: background-color 0.3s, transform 0.1s;
         }
         .btn-primary:hover {
             background-color: #085aab;
             border-color: #085aab;
-            transform: translateY(-1px);
         }
         .btn-warning {
             background-color: var(--secondary-orange);
             border-color: var(--secondary-orange);
             color: var(--white);
-            transition: background-color 0.3s, transform 0.1s;
         }
         .btn-warning:hover {
             background-color: #e67e22;
             border-color: #e67e22;
-            transform: translateY(-1px);
         }
         .btn-info {
-            background-color: #3b82f6; /* Tailwind Blue-500 */
+            background-color: #3b82f6; 
             border-color: #3b82f6;
             color: var(--white);
         }
         .btn-info:hover {
-            background-color: #2563eb; /* Tailwind Blue-600 */
+            background-color: #2563eb; 
             border-color: #2563eb;
         }
         .btn-success {
-            background-color: #10b981; /* Tailwind Emerald-500 */
-            border-color: #10b981;
+            background-color: var(--success-green);
+            border-color: var(--success-green);
         }
-        .btn-success:hover {
-            background-color: #059669; /* Tailwind Emerald-600 */
-            border-color: #059669;
+         .btn-success:hover {
+            background-color: #047857;
+            border-color: #047857;
         }
 
-        .table-responsive {
-            max-height: 600px;
-            overflow-y: auto;
-        }
         .table thead th {
             background-color: var(--primary-blue);
             color: var(--white);
@@ -112,15 +84,14 @@
             top: 0;
             z-index: 10;
         }
-        
-        .input-group-text {
+        .modal-header {
             background-color: var(--primary-blue);
-            color: var(--white);
-            border-color: var(--primary-blue);
+            color: white;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
         }
-        .form-control:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 0.25rem rgba(10, 102, 194, 0.25);
+        .modal-header .btn-close {
+            filter: invert(1);
         }
     </style>
 </head>
@@ -129,12 +100,11 @@
     <nav class="navbar navbar-light bg-white shadow-sm">
         <div class="container-fluid container">
             <a class="navbar-brand d-flex align-items-center" href="#">
-                <!-- الشعار -->
-                <img src="https://i.imgur.com/gK2iK2D.png" alt="شعار بترو-بارت" class="ms-3">
-                <!-- اسم الشركة -->
+                <!-- شعار افتراضي -->
+                <img src="https://placehold.co/60x55/0A66C2/ffffff?text=PP" alt="شعار بترو-بارت" class="ms-3" style="max-height: 55px; border-radius: 8px;">
                 <div class="header-title">
                     شركة بترو-بارت لمعدات البترول المحدودة <br>
-                    <span>PETRO-PART PETROLEUM EQUIPMENT LTD</span>
+                    <span style="font-size: 0.85rem; font-weight: 500; color: #6c757d;">إدارة المخزون والمبيعات</span>
                 </div>
             </a>
         </div>
@@ -142,42 +112,41 @@
 
     <div class="container mt-4">
         <div class="card p-4 mb-4">
-            <h5 class="card-title text-center" style="color: var(--primary-blue); margin-bottom: 1.5rem;">🛠️ لوحة التحكم الرئيسية 🛠️</h5>
+            <h5 class="card-title text-center" style="color: var(--primary-blue); margin-bottom: 1.5rem;">🛠️ لوحة التحكم 🛠️</h5>
             <div class="row g-3 align-items-center">
                 <div class="col-md-4">
-                    <label for="searchInput" class="form-label visually-hidden">ابحث</label>
                     <input type="text" id="searchInput" class="form-control" placeholder="🔍 ابحث عن قطعة غيار بالاسم...">
                 </div>
                 <div class="col-md-3">
-                    <label for="dollarRateInput" class="form-label visually-hidden">سعر الدولار</label>
                      <div class="input-group">
                         <span class="input-group-text">$</span>
                         <input type="number" id="dollarRateInput" class="form-control" placeholder="سعر الدولار اليوم" min="0" value="3400">
                     </div>
                 </div>
                 <div class="col-md-5 text-md-end d-flex justify-content-end gap-2">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">➕ إضافة قطعة غيار جديدة</button>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reportModal" id="generateReportBtn">📈 إنشاء تقرير</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">➕ إضافة إسبير</button>
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#withdrawModal" id="openWithdrawModalBtn">➖ سحب (بيع)</button>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#salesReportModal">📊 تقرير المبيعات</button>
                 </div>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h5>قائمة المخزون الحالي</h5>
+                <h5>جرد المخزون الحالي</h5>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                     <table class="table table-striped table-hover align-middle">
                         <thead>
                             <tr>
-                                <th scope="col"># (رقم السطر)</th>
+                                <th scope="col">رقم السطر (ID)</th>
                                 <th scope="col">اسم الإسبير</th>
                                 <th scope="col">العدد الموجود</th>
                                 <th scope="col">السعر بالدولار ($)</th>
                                 <th scope="col">السعر بالجنيه (SDG)</th>
                                 <th scope="col">تاريخ آخر تحديث</th>
-                                <th scope="col">إجراءات</th>
+                                <th scope="col">إجراء</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody">
@@ -186,10 +155,6 @@
                 </div>
             </div>
         </div>
-        
-        <div class="mt-4 mb-5 text-center">
-             <p class="text-muted">📊 خاصية التقارير التفصيلية للسحب تتطلب قاعدة بيانات منفصلة لحفظ سجلات العمليات.</p>
-        </div>
     </div>
 
     <!-- Modal: Add Part -->
@@ -197,8 +162,8 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">➕ إضافة قطعة غيار جديدة</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-white">➕ إضافة قطعة غيار جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addPartForm">
@@ -207,7 +172,7 @@
                             <input type="text" class="form-control" id="partName" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">الكمية</label>
+                            <label class="form-label">الكمية الأولية</label>
                             <input type="number" class="form-control" id="partQuantity" required min="0">
                         </div>
                         <div class="mb-3">
@@ -217,7 +182,7 @@
                         <div class="mb-3">
                             <label class="form-label">السعر بالجنيه (SDG)</label>
                             <input type="text" class="form-control" id="partPriceSDG" readonly>
-                             <div class="form-text text-muted">يتم حسابه تلقائيًا بناءً على سعر الدولار في لوحة التحكم.</div>
+                             <div class="form-text text-muted">يتم حسابه تلقائيًا بناءً على سعر الدولار الحالي.</div>
                         </div>
                         <button type="submit" id="addPartSubmitBtn" class="btn btn-primary w-100 mt-2">إضافة إلى المخزون</button>
                     </form>
@@ -225,113 +190,116 @@
             </div>
         </div>
     </div>
-    
-    <!-- Modal: Edit Details -->
-    <div class="modal fade" id="editDetailsModal" tabindex="-1">
+
+    <!-- Modal: Edit Part Details -->
+    <div class="modal fade" id="editPartModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                  <div class="modal-header" style="background-color: #3b82f6;">
                     <h5 class="modal-title text-white">✏️ تعديل تفاصيل الإسبير (الاسم والسعر)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editDetailsForm">
-                        <input type="hidden" id="editDetailsPartId">
+                    <form id="editPartForm">
+                        <input type="hidden" id="editPartId">
                         
                         <div class="mb-3">
                             <label class="form-label">اسم الإسبير</label>
-                            <input type="text" class="form-control" id="editDetailsPartName" required>
+                            <input type="text" class="form-control" id="editPartName" required>
                         </div>
 
                          <div class="mb-3">
                             <label class="form-label">السعر بالدولار ($)</label>
-                            <input type="number" class="form-control" id="editDetailsPartPriceUSD" required min="0" step="0.01">
+                            <input type="number" class="form-control" id="editPartPriceUSD" required min="0" step="0.01">
                         </div>
                         
-                        <div class="alert alert-warning">
-                            الكمية الحالية: <strong id="editDetailsCurrentQuantityDisplay">0</strong>.
-                            ملاحظة: لتعديل الكمية بشكل مباشر (سحب/إضافة)، استخدم زر "➖ سحب / إضافة" في الجدول.
+                        <div class="alert alert-info">
+                            الكمية الحالية: <strong id="editPartCurrentQuantityDisplay">0</strong>. لا يمكن تعديل الكمية من هنا.
                         </div>
                         
-                        <button type="submit" id="editDetailsSubmitBtn" class="btn btn-info w-100 mt-2">حفظ التعديلات</button>
+                        <button type="submit" id="editPartSubmitBtn" class="btn btn-info w-100 mt-2">حفظ التعديلات</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- Modal: Withdraw/Add Part -->
-    <div class="modal fade" id="withdrawAddModal" tabindex="-1">
+    <!-- Modal: Withdraw/Sale -->
+    <div class="modal fade" id="withdrawModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                  <div class="modal-header" style="background-color: var(--secondary-orange);">
-                    <h5 class="modal-title text-white">➖ سحب / إضافة كمية من المخزون</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-white">➖ سحب و تسجيل عملية بيع</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="withdrawAddForm">
-                        <input type="hidden" id="withdrawAddPartId">
-                        <p class="mb-3">تعديل الكمية لـ: <strong id="withdrawAddPartNameDisplay"></strong></p>
-                        
+                    <form id="withdrawForm">
                         <div class="mb-3">
-                            <label class="form-label">الكمية الحالية</label>
-                            <input type="number" class="form-control" id="withdrawAddCurrentQuantity" readonly>
-                        </div>
-                        
-                         <div class="mb-4">
-                            <label class="form-label">كمية السحب أو الإضافة</label>
-                            <div class="input-group">
-                                <span class="input-group-text">الكمية</span>
-                                <input type="number" class="form-control" id="withdrawAddChangeAmount" required placeholder="أدخل رقماً موجباً (لإضافة) أو سالباً (للسحب)">
-                            </div>
-                            <div class="form-text text-muted">مثال: أدخل **-5** لسحب 5 قطع، أو **5** لإضافة 5 قطع.</div>
-                        </div>
-                        
-                        <div class="alert alert-info">
-                            الكمية الجديدة بعد التعديل: <strong id="withdrawAddNewQuantityDisplay">0</strong>
+                            <label class="form-label">اختر قطعة الغيار</label>
+                            <select class="form-select" id="withdrawPartSelect" required>
+                                <option value="" disabled selected>اختر الإسبير...</option>
+                            </select>
                         </div>
 
-                        <button type="submit" id="withdrawAddSubmitBtn" class="btn btn-warning w-100 mt-2">تحديث الكمية</button>
+                        <div class="mb-3">
+                            <label class="form-label">الكمية المسحوبة (المبيعة)</label>
+                            <input type="number" class="form-control" id="withdrawQuantity" required min="1" placeholder="أدخل الكمية المسحوبة">
+                        </div>
+                        
+                        <div class="alert alert-warning" id="withdrawStockInfo">
+                            الكمية المتوفرة: <strong id="currentStockDisplay">0</strong>
+                        </div>
+
+                        <button type="submit" id="withdrawSubmitBtn" class="btn btn-warning w-100 mt-2">سحب وتسجيل البيع</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
     
-     <!-- Modal: Report -->
-    <div class="modal fade" id="reportModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+     <!-- Modal: Sales Report -->
+    <div class="modal fade" id="salesReportModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                 <div class="modal-header" style="background-color: var(--primary-blue);">
-                    <h5 class="modal-title text-white">📈 تقرير تقييم المخزون الحالي</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                 <div class="modal-header" style="background-color: var(--success-green);">
+                    <h5 class="modal-title text-white">📊 تقرير المبيعات (سجلات السحب)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="lead text-center fw-bold text-success">ملخص قيمة المخزون الكلي (المبيعات المحتملة)</p>
-                    <div class="row text-center my-4">
-                         <div class="col-md-6 mb-3">
-                             <div class="p-3 bg-light rounded shadow-sm border-start border-4 border-primary">
-                                 <h6 class="text-muted">إجمالي القيمة بالدولار</h6>
-                                 <h3 class="text-primary fw-bold">$<span id="totalUSDValue">0.00</span></h3>
-                             </div>
-                         </div>
-                         <div class="col-md-6 mb-3">
-                             <div class="p-3 bg-light rounded shadow-sm border-start border-4 border-warning">
-                                 <h6 class="text-muted">إجمالي القيمة بالجنيه السوداني</h6>
-                                 <h3 class="text-warning fw-bold"><span id="totalSDGValue">0.00</span> SDG</h3>
-                             </div>
-                         </div>
+                    <div class="row mb-4 text-center">
+                        <div class="col-md-6 mb-2">
+                            <div class="p-3 border rounded shadow-sm">
+                                <h6>إجمالي المبيعات بالدولار</h6>
+                                <h4 class="text-primary fw-bold">$<span id="totalSalesUSD">0.00</span></h4>
+                            </div>
+                        </div>
+                         <div class="col-md-6 mb-2">
+                            <div class="p-3 border rounded shadow-sm">
+                                <h6>إجمالي المبيعات بالجنيه السوداني</h6>
+                                <h4 class="text-warning fw-bold"><span id="totalSalesSDG">0.00</span> SDG</h4>
+                            </div>
+                        </div>
                     </div>
                     
-                    <hr>
-                    <p class="text-muted small">
-                        * ملاحظة حول تقرير السحب والمبيعات: بما أن هذا النظام يعمل على تحديث السطر مباشرة في Google Sheet، فإنه **لا يحتفظ بسجل تاريخي (Transaction Log)** لعمليات السحب/الإضافة التي تعتبر مبيعات. لإنشاء تقارير مبيعات (رقم الإسبير، الكميات المسحوبة، مجموع مبلغ المبيعات)، يجب تخصيص ورقة عمل ثانية لتسجيل كل عملية سحب.
-                    </p>
-                    
-                    <p class="text-center mt-3">
-                        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
-                    </p>
+                    <p class="lead text-center fw-bold text-success">تفاصيل جميع المسحوبات/المبيعات</p>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr class="table-success">
+                                    <th>#</th>
+                                    <th>رقم الإسبير (ID)</th>
+                                    <th>اسم الإسبير</th>
+                                    <th>الكمية المسحوبة</th>
+                                    <th>قيمة البيع ($)</th>
+                                    <th>قيمة البيع (SDG)</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesReportTableBody">
+                                <tr><td colspan="7" class="text-center text-muted">جاري تحميل سجل المبيعات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -343,121 +311,96 @@
 
     <script>
         // ===================================================================================
-        // 🚀 رابط SheetDB API الخاص بك
+        // 🚀 روابط SheetDB API الخاصة بك (تم التحديث بناءً على طلبك)
         // ===================================================================================
-        const SHEET_DB_API_URL = "https://sheetdb.io/api/v1/bvwoan24qp8un"; 
+        const STOCK_API_URL = "https://sheetdb.io/api/v1/wf5af4p93mza4"; // رابط ورقة المخزون
+        const LOG_API_URL = "https://sheetdb.io/api/v1/pcpeovdobs6cw"; // رابط ورقة سجل المبيعات
         // ===================================================================================
 
-        // Global state to hold inventory data
+        // Global state
         let inventoryData = [];
-        let currentDollarRate = 3400; // القيمة الافتراضية
+        let currentDollarRate = 3400; 
 
-        // Helper function to get today's date in YYYY-MM-DD format
+        // Helper function
         const getTodayDate = () => new Date().toISOString().split('T')[0];
+        // تنسيق الرقم مع فاصلة عشرية
+        const formatNumber = (num) => parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        // ===================================================================================
+        // 1. Fetch & Render Inventory (المخزون الرئيسي)
+        // ===================================================================================
 
-        // Fetch and display inventory (GET Request)
         const fetchInventory = async () => {
-            // تحديث سعر الدولار الحالي
             currentDollarRate = parseFloat(document.getElementById('dollarRateInput').value) || 0;
             
-            document.getElementById('inventoryTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">جاري تحميل البيانات من Google Sheet...</td></tr>';
+            document.getElementById('inventoryTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">جاري تحميل المخزون...</td></tr>';
             try {
-                const response = await fetch(SHEET_DB_API_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const response = await fetch(STOCK_API_URL);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 let data = await response.json();
                 
-                if (data.length > 0 && !data[0].hasOwnProperty('partName')) {
-                     alert("⚠️ فشل: يبدو أن اسم العمود 'partName' غير موجود أو غير صحيح. تأكد من أن عنوان العمود في جدول بيانات Google هو بالضبط 'partName'.");
-                     document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل البيانات: تحقق من عناوين أعمدة Google Sheet.</td></tr>`;
-                     return;
-                }
-
-                // تحويل البيانات من نص إلى أرقام وضبط الـ ID (رقم السطر في Google Sheet)
-                data = data.map((item, index) => {
+                // تحويل البيانات وضبط الـ ID (رقم السطر في Google Sheet)
+                inventoryData = data.map((item, index) => {
                     const priceUSD = parseFloat(item.priceUSD) || 0;
                     // إعادة حساب سعر SDG بناءً على سعر الصرف الحالي في التطبيق
                     const priceSDG = priceUSD * currentDollarRate; 
                     return { 
-                        // id هو رقم السطر في Google Sheet (SheetDB يبدأ بـ 2 لأن السطر 1 هو العناوين)
                         id: index + 2, 
                         ...item,
                         quantity: parseInt(item.quantity) || 0,
                         priceUSD: priceUSD,
                         priceSDG: priceSDG,
                     };
-                });
+                }).filter(item => item.partName && item.partName.trim() !== ''); // فلترة الصفوف الفارغة
                 
-                inventoryData = data;
                 renderTable(inventoryData);
 
             } catch (error) {
                 console.error("Error fetching inventory: ", error);
-                document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل البيانات. تأكد من أن رابط API صحيح وأن جدولك متاح للجميع. ${error.message}</td></tr>`;
+                document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل المخزون. تأكد من رابط SheetDB و عناوين الأعمدة. ${error.message}</td></tr>`;
             }
         };
-
 
         const renderTable = (parts) => {
             const tableBody = document.getElementById('inventoryTableBody');
             let rows = '';
             
-            // فرز البيانات أبجدياً حسب اسم الإسبير
             parts.sort((a, b) => (a.partName || '').localeCompare(b.partName || ''));
 
-            parts.forEach((part, index) => {
+            parts.forEach((part) => {
                 rows += `
                     <tr>
                         <td>${part.id}</td>
                         <td>${part.partName || 'غير محدد'}</td>
                         <td>${part.quantity}</td>
-                        <td class="fw-bold" style="color: var(--secondary-orange);">$${part.priceUSD.toFixed(2)}</td>
-                        <td class="fw-bold" style="color: var(--primary-blue);">${part.priceSDG.toFixed(2)} SDG</td>
-                        <td>${part.lastWithdrawalDate || 'لم يتم تحديثه'}</td>
-                        <td class="d-flex gap-2">
-                            <button class="btn btn-sm btn-info" onclick="openEditDetailsModal(${part.id})">
-                                ✏️ تعديل التفاصيل
-                            </button>
-                             <button class="btn btn-sm btn-warning" onclick="openWithdrawAddModal(${part.id})">
-                                ➖ سحب / إضافة
+                        <td class="fw-bold" style="color: var(--secondary-orange);">$${formatNumber(part.priceUSD)}</td>
+                        <td class="fw-bold" style="color: var(--primary-blue);">${formatNumber(part.priceSDG)} SDG</td>
+                        <td>${part.lastUpdateDate || 'لم يتم تحديثه'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="openEditPartModal(${part.id})">
+                                ✏️ تعديل
                             </button>
                         </td>
                     </tr>
                 `;
             });
             tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center text-muted">لا توجد قطع غيار في المخزون.</td></tr>';
+            populateWithdrawalDropdown(parts);
         };
 
         // ===================================================================================
-        // 1. لوجيك الإضافة (POST)
+        // 2. Add Part Logic (POST to Stock)
         // ===================================================================================
         
-        // دالة حساب سعر الجنيه (SDG)
         const calculateSDG = (usdInputId, sdgOutputId) => {
             currentDollarRate = parseFloat(document.getElementById('dollarRateInput').value) || 0;
             const priceUSD = parseFloat(document.getElementById(usdInputId).value) || 0;
-            const priceSDGField = document.getElementById(sdgOutputId);
-
-            if (currentDollarRate > 0) {
-                priceSDGField.value = (currentDollarRate * priceUSD).toFixed(2);
-            } else {
-                priceSDGField.value = (0).toFixed(2);
-            }
+            document.getElementById(sdgOutputId).value = (currentDollarRate * priceUSD).toFixed(2);
         };
 
-        // ربط الأحداث بالحساب التلقائي لنموذج الإضافة
-        document.getElementById('dollarRateInput').addEventListener('input', () => {
-             calculateSDG('partPriceUSD', 'partPriceSDG');
-             // إعادة تحميل الجدول لتحديث قيم SDG المحسوبة للكل
-             fetchInventory(); 
-        });
-        document.getElementById('partPriceUSD').addEventListener('input', () => {
-             calculateSDG('partPriceUSD', 'partPriceSDG');
-        });
-
-
-        // دالة إضافة قطعة غيار جديدة (POST Request)
+        document.getElementById('dollarRateInput').addEventListener('input', fetchInventory); // تحديث الجدول والسعر بالجنيه للجميع
+        document.getElementById('partPriceUSD').addEventListener('input', () => calculateSDG('partPriceUSD', 'partPriceSDG'));
+        
         document.getElementById('addPartForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('addPartSubmitBtn');
@@ -471,15 +414,8 @@
             const priceUSD = parseFloat(document.getElementById('partPriceUSD').value);
             const priceSDG = parseFloat(document.getElementById('partPriceSDG').value);
             
-            if (!partName || isNaN(quantity) || quantity < 0 || isNaN(priceUSD) || priceUSD < 0) {
-                 alert('⚠️ يرجى التأكد من ملء جميع الحقول المطلوبة بالقيم الصحيحة.');
-                 submitBtn.disabled = false;
-                 submitBtn.innerText = 'إضافة إلى المخزون';
-                 return;
-            }
-
             try {
-                const response = await fetch(SHEET_DB_API_URL, {
+                const response = await fetch(STOCK_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -487,9 +423,8 @@
                             partName: partName,
                             quantity: quantity,
                             priceUSD: priceUSD.toFixed(2),
-                            // SheetDB يحتاج حقل priceSDG لتخزينه، حتى لو كان محسوبًا هنا
                             priceSDG: priceSDG.toFixed(2),
-                            lastWithdrawalDate: getTodayDate(), 
+                            lastUpdateDate: getTodayDate(), 
                         }
                     })
                 });
@@ -498,14 +433,9 @@
                     alert(`✅ تمت إضافة "${partName}" إلى المخزون بنجاح.`);
                     document.getElementById('addPartForm').reset();
                     bootstrap.Modal.getInstance(document.getElementById('addPartModal')).hide();
-                    fetchInventory(); 
+                    fetchInventory();
                 } else {
-                    let errorMsg = 'فشل إرسال البيانات إلى SheetDB.';
-                    try {
-                        const errorData = await response.json();
-                        errorMsg = errorData.message || errorMsg;
-                    } catch (e) {}
-                    throw new Error(errorMsg);
+                    throw new Error('فشل إرسال البيانات إلى SheetDB (المخزون).');
                 }
             } catch (error) {
                 console.error("Error adding document: ", error);
@@ -515,48 +445,44 @@
                 submitBtn.innerText = 'إضافة إلى المخزون';
             }
         });
-
+        
         // ===================================================================================
-        // 2. لوجيك تعديل التفاصيل (PATCH)
+        // 3. Edit Details Logic (PATCH to Stock)
         // ===================================================================================
         
-        const openEditDetailsModal = (partId) => {
+        const openEditPartModal = (partId) => {
             const part = inventoryData.find(p => p.id === partId);
-            if (!part) {
-                alert('خطأ: لم يتم العثور على قطعة الغيار للتعديل.');
-                return;
-            }
+            if (!part) return alert('خطأ: لم يتم العثور على قطعة الغيار.');
 
-            document.getElementById('editDetailsPartId').value = part.id;
-            document.getElementById('editDetailsPartName').value = part.partName;
-            document.getElementById('editDetailsPartPriceUSD').value = part.priceUSD.toFixed(2);
-            document.getElementById('editDetailsCurrentQuantityDisplay').innerText = part.quantity;
+            document.getElementById('editPartId').value = part.id;
+            document.getElementById('editPartName').value = part.partName;
+            document.getElementById('editPartPriceUSD').value = part.priceUSD.toFixed(2);
+            document.getElementById('editPartCurrentQuantityDisplay').innerText = part.quantity;
 
-            // عرض المودال
-            const editModal = new bootstrap.Modal(document.getElementById('editDetailsModal'));
+            // تحديث حقل SDG في نموذج الإضافة ليعكس السعر الجديد
+            document.getElementById('editPartPriceUSD').addEventListener('input', () => {
+                const newPriceUSD = parseFloat(document.getElementById('editPartPriceUSD').value) || 0;
+                // لا يوجد حقل عرض SDG في هذا المودال، فقط نعتمد على القيمة في الحفظ
+            });
+
+
+            const editModal = new bootstrap.Modal(document.getElementById('editPartModal'));
             editModal.show();
         };
 
-        document.getElementById('editDetailsForm').addEventListener('submit', async (e) => {
+        document.getElementById('editPartForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitBtn = document.getElementById('editDetailsSubmitBtn');
+            const submitBtn = document.getElementById('editPartSubmitBtn');
             submitBtn.disabled = true;
             submitBtn.innerText = 'جاري حفظ التعديلات...';
 
-            const partId = document.getElementById('editDetailsPartId').value;
-            const newPartName = document.getElementById('editDetailsPartName').value.trim();
-            const newPriceUSD = parseFloat(document.getElementById('editDetailsPartPriceUSD').value);
-            const newPriceSDG = (newPriceUSD * currentDollarRate).toFixed(2); // يتم إعادة حسابها هنا
-
-            if (!newPartName || isNaN(newPriceUSD) || newPriceUSD < 0) {
-                 alert('⚠️ يرجى التأكد من أن جميع الحقول صحيحة.');
-                 submitBtn.disabled = false;
-                 submitBtn.innerText = 'حفظ التعديلات';
-                 return;
-            }
+            const partId = document.getElementById('editPartId').value;
+            const newPartName = document.getElementById('editPartName').value.trim();
+            const newPriceUSD = parseFloat(document.getElementById('editPartPriceUSD').value);
+            const newPriceSDG = (newPriceUSD * currentDollarRate).toFixed(2); // إعادة الحساب بناءً على سعر الدولار الحالي
             
             try {
-                const updateUrl = `${SHEET_DB_API_URL}/id/${partId}`;
+                const updateUrl = `${STOCK_API_URL}/id/${partId}`;
                 
                 const response = await fetch(updateUrl, {
                     method: 'PATCH', 
@@ -565,18 +491,18 @@
                         data: {
                             partName: newPartName,
                             priceUSD: newPriceUSD.toFixed(2),
-                            priceSDG: newPriceSDG, // تحديث القيمة المحسوبة
-                            lastWithdrawalDate: getTodayDate(), // تحديث تاريخ آخر تعديل
+                            priceSDG: newPriceSDG, 
+                            lastUpdateDate: getTodayDate(), 
                         }
                     })
                 });
 
                 if (response.ok) {
                     alert(`✅ تم تحديث تفاصيل "${newPartName}" بنجاح.`);
-                    bootstrap.Modal.getInstance(document.getElementById('editDetailsModal')).hide();
+                    bootstrap.Modal.getInstance(document.getElementById('editPartModal')).hide();
                     fetchInventory(); 
                 } else {
-                    throw new Error('فشل تحديث التفاصيل.');
+                    throw new Error('فشل تحديث التفاصيل في المخزون.');
                 }
             } catch (error) {
                 console.error("Error updating details: ", error);
@@ -586,131 +512,171 @@
                 submitBtn.innerText = 'حفظ التعديلات';
             }
         });
-
+        
         // ===================================================================================
-        // 3. لوجيك السحب والإضافة (PATCH)
+        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log)
         // ===================================================================================
-
-        const withdrawAddChangeAmountInput = document.getElementById('withdrawAddChangeAmount');
-        const withdrawAddCurrentQuantityInput = document.getElementById('withdrawAddCurrentQuantity');
-        const withdrawAddNewQuantityDisplay = document.getElementById('withdrawAddNewQuantityDisplay');
-
-        // تحديث الكمية الجديدة في المودال عند تغيير قيمة السحب/الإضافة
-        const updateNewQuantityDisplay = () => {
-            const current = parseInt(withdrawAddCurrentQuantityInput.value) || 0;
-            const change = parseInt(withdrawAddChangeAmountInput.value) || 0;
-            const newQuantity = current + change;
-            
-            withdrawAddNewQuantityDisplay.innerText = newQuantity;
-
-            // تنبيه بسيط إذا كانت الكمية سالبة
-            if (newQuantity < 0) {
-                 withdrawAddNewQuantityDisplay.style.color = 'red';
-            } else {
-                 withdrawAddNewQuantityDisplay.style.color = 'inherit';
-            }
+        
+        const populateWithdrawalDropdown = (parts) => {
+            const select = document.getElementById('withdrawPartSelect');
+            select.innerHTML = '<option value="" disabled selected>اختر الإسبير...</option>';
+            parts.forEach(part => {
+                const option = document.createElement('option');
+                option.value = part.id;
+                option.innerText = `${part.partName} (متوفر: ${part.quantity})`;
+                option.setAttribute('data-quantity', part.quantity); // حفظ الكمية في الداتا
+                option.setAttribute('data-price-usd', part.priceUSD); // حفظ السعر في الداتا
+                option.setAttribute('data-price-sdg', part.priceSDG); // حفظ السعر في الداتا
+                select.appendChild(option);
+            });
         };
+        
+        document.getElementById('withdrawPartSelect').addEventListener('change', (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            const stockDisplay = document.getElementById('currentStockDisplay');
+            stockDisplay.innerText = selectedOption.getAttribute('data-quantity') || '0';
+        });
+        
+        document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('withdrawSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'جاري تسجيل البيع...';
 
-        withdrawAddChangeAmountInput.addEventListener('input', updateNewQuantityDisplay);
-
-        const openWithdrawAddModal = (partId) => {
-            const part = inventoryData.find(p => p.id === partId);
+            const partId = parseInt(document.getElementById('withdrawPartSelect').value);
+            const quantityWithdrawn = parseInt(document.getElementById('withdrawQuantity').value);
             
-            if (!part) {
-                alert('خطأ: لم يتم العثور على قطعة الغيار للعملية.');
+            const part = inventoryData.find(p => p.id === partId);
+
+            if (!part || quantityWithdrawn <= 0 || isNaN(quantityWithdrawn)) {
+                alert('⚠️ يرجى اختيار إسبير وإدخال كمية صحيحة.');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'سحب وتسجيل البيع';
                 return;
             }
 
-            document.getElementById('withdrawAddPartId').value = part.id;
-            document.getElementById('withdrawAddPartNameDisplay').innerText = part.partName;
-            withdrawAddCurrentQuantityInput.value = part.quantity;
-            withdrawAddChangeAmountInput.value = ''; // تصفير قيمة التغيير
-            
-            updateNewQuantityDisplay(); 
-
-            // عرض المودال
-            const editModal = new bootstrap.Modal(document.getElementById('withdrawAddModal'));
-            editModal.show();
-        };
-
-        document.getElementById('withdrawAddForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('withdrawAddSubmitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'جاري التحديث...';
-
-            const partId = document.getElementById('withdrawAddPartId').value;
-            const currentQuantity = parseInt(withdrawAddCurrentQuantityInput.value);
-            const changeAmount = parseInt(withdrawAddChangeAmountInput.value);
-            const newQuantity = currentQuantity + changeAmount;
-            const partName = document.getElementById('withdrawAddPartNameDisplay').innerText;
-            
-            if (isNaN(newQuantity) || newQuantity < 0) {
-                 alert('⚠️ الكمية الجديدة لا يمكن أن تكون قيمة سالبة. يرجى مراجعة كمية السحب/الإضافة.');
-                 submitBtn.disabled = false;
-                 submitBtn.innerText = 'تحديث الكمية';
-                 return;
+            if (part.quantity < quantityWithdrawn) {
+                alert(`⚠️ الكمية المسحوبة (${quantityWithdrawn}) أكبر من المتوفر (${part.quantity}).`);
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'سحب وتسجيل البيع';
+                return;
             }
+
+            const newQuantity = part.quantity - quantityWithdrawn;
+            const totalSaleUSD = quantityWithdrawn * part.priceUSD;
+            const totalSaleSDG = quantityWithdrawn * part.priceSDG;
             
             try {
-                const updateUrl = `${SHEET_DB_API_URL}/id/${partId}`;
-                
-                const response = await fetch(updateUrl, {
+                // --- 1. تحديث المخزون الرئيسي (Stock) ---
+                const stockUpdateUrl = `${STOCK_API_URL}/id/${partId}`;
+                const stockResponse = await fetch(stockUpdateUrl, {
                     method: 'PATCH', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         data: {
                             quantity: newQuantity,
-                            lastWithdrawalDate: getTodayDate(), // تحديث تاريخ العملية
+                            lastUpdateDate: getTodayDate(), 
+                        }
+                    })
+                });
+                
+                if (!stockResponse.ok) throw new Error('فشل تحديث كمية المخزون.');
+
+                // --- 2. تسجيل العملية في سجل المبيعات (Log) ---
+                const logResponse = await fetch(LOG_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: { 
+                            partId: part.id,
+                            partName: part.partName,
+                            quantitySold: quantityWithdrawn,
+                            totalUSD: totalSaleUSD.toFixed(2),
+                            totalSDG: totalSaleSDG.toFixed(2),
+                            date: getTodayDate(), 
                         }
                     })
                 });
 
-                if (response.ok) {
-                    const action = changeAmount > 0 ? "إضافة" : "سحب";
-                    alert(`✅ تم ${action} ${Math.abs(changeAmount)} قطعة من "${partName}" بنجاح. الكمية الجديدة: ${newQuantity}`);
-                    
-                    bootstrap.Modal.getInstance(document.getElementById('withdrawAddModal')).hide();
-                    fetchInventory(); 
-                } else {
-                    throw new Error('فشل تحديث البيانات.');
-                }
+                if (!logResponse.ok) throw new Error('فشل تسجيل العملية في سجل المبيعات.');
+
+                alert(`✅ تم سحب ${quantityWithdrawn} قطعة من "${part.partName}" وتسجيلها كـ بيع.`);
+                
+                bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
+                document.getElementById('withdrawForm').reset();
+                fetchInventory(); // تحديث الجدول
+                
             } catch (error) {
-                console.error("Error updating document: ", error);
-                alert(`❌ حدث خطأ أثناء التحديث: ${error.message}`);
+                console.error("Error during sale transaction: ", error);
+                alert(`❌ حدث خطأ أثناء التسجيل: ${error.message}. قد تحتاج إلى إعادة ضبط الكمية يدوياً في ورقة المخزون.`);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'تحديث الكمية';
+                submitBtn.innerText = 'سحب وتسجيل البيع';
             }
         });
 
         // ===================================================================================
-        // 4. لوجيك التقرير
+        // 5. Sales Report Logic (GET from Log)
         // ===================================================================================
+        
+        document.getElementById('salesReportModal').addEventListener('shown.bs.modal', fetchSalesReport);
 
-        document.getElementById('generateReportBtn').addEventListener('click', () => {
-            let totalUSD = 0;
-            let totalSDG = 0;
-
-            // حساب إجمالي قيمة المخزون الحالي
-            inventoryData.forEach(part => {
-                totalUSD += part.quantity * part.priceUSD;
-                totalSDG += part.quantity * part.priceSDG;
-            });
+        async function fetchSalesReport() {
+            const tableBody = document.getElementById('salesReportTableBody');
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">جاري تحميل تقرير المبيعات...</td></tr>';
             
-            // عرض النتائج في المودال
-            document.getElementById('totalUSDValue').innerText = totalUSD.toFixed(2);
-            document.getElementById('totalSDGValue').innerText = totalSDG.toFixed(2);
+            document.getElementById('totalSalesUSD').innerText = '0.00';
+            document.getElementById('totalSalesSDG').innerText = '0.00';
 
-            // عرض المودال
-            const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
-            reportModal.show();
-        });
 
+            try {
+                const response = await fetch(LOG_API_URL);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                let data = await response.json();
+                
+                if (!Array.isArray(data)) { data = []; }
+
+                let rows = '';
+                let totalUSD = 0;
+                let totalSDG = 0;
+                
+                // التأكد من فرز البيانات بالتاريخ (الأحدث أولاً)
+                data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                data.forEach((sale, index) => {
+                    const usd = parseFloat(sale.totalUSD) || 0;
+                    const sdg = parseFloat(sale.totalSDG) || 0;
+
+                    totalUSD += usd;
+                    totalSDG += sdg;
+
+                    rows += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${sale.partId || '-'}</td>
+                            <td>${sale.partName || 'غير معروف'}</td>
+                            <td>${sale.quantitySold || 0}</td>
+                            <td class="fw-bold text-primary">$${formatNumber(usd)}</td>
+                            <td class="fw-bold text-warning">${formatNumber(sdg)} SDG</td>
+                            <td>${sale.date || '-'}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center text-info">لا توجد سجلات مبيعات حتى الآن.</td></tr>';
+                document.getElementById('totalSalesUSD').innerText = formatNumber(totalUSD);
+                document.getElementById('totalSalesSDG').innerText = formatNumber(totalSDG);
+
+            } catch (error) {
+                console.error("Error fetching sales report: ", error);
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل التقرير. تأكد من رابط LOG_API_URL وعناوين الأعمدة في ورقة السجل. ${error.message}</td></tr>`;
+            }
+        }
 
         // ===================================================================================
-        // التهيئة والبحث
+        // 6. Initialization and Search
         // ===================================================================================
+
         document.getElementById('searchInput').addEventListener('keyup', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const filteredData = inventoryData.filter(part => part.partName && part.partName.toLowerCase().includes(searchTerm));
@@ -718,8 +684,9 @@
         });
         
         document.addEventListener('DOMContentLoaded', () => {
-            // يتم استدعاء calculateSDG مرة واحدة في البداية لتهيئة حقل SDG في نموذج الإضافة
+            // تهيئة حقل السعر بالجنيه في نموذج الإضافة
             calculateSDG('partPriceUSD', 'partPriceSDG'); 
+            // جلب المخزون وبدء التشغيل
             fetchInventory();
         });
     </script>
