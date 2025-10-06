@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مخزن بترو-بارت - إدارة المخزون</title>
+    <title>مخزن بترو-بارت - إدارة المخزون (Google Sheets)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #0A66C2; /* Deep Blue */
-            --secondary-orange: #F78C2F; /* Vibrant Orange */
-            --light-grey: #f0f2f5;    /* Light background grey */
-            --medium-grey: #6c757d;   /* Text and borders grey */
-            --dark-grey: #343a40;     /* Darker text grey */
+            --primary-blue: #0A66C2; 
+            --secondary-orange: #F78C2F;
+            --light-grey: #f0f2f5;
+            --medium-grey: #6c757d;
+            --dark-grey: #343a40;
             --white: #ffffff;
         }
 
@@ -22,7 +22,6 @@
             color: var(--dark-grey);
         }
 
-        /* Navbar & Header */
         .navbar-brand img {
             max-height: 55px;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
@@ -44,8 +43,7 @@
             border-bottom: 3px solid var(--primary-blue);
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
-
-        /* Cards & Containers */
+        
         .card {
             border: none;
             border-radius: 12px;
@@ -64,7 +62,6 @@
             padding: 1rem;
         }
 
-        /* Buttons */
         .btn-primary {
             background-color: var(--primary-blue);
             border-color: var(--primary-blue);
@@ -86,17 +83,7 @@
             border-color: #e67e22;
             transform: translateY(-1px);
         }
-        .btn-info { /* Used for report button */
-            background-color: var(--medium-grey);
-            border-color: var(--medium-grey);
-            color: var(--white);
-        }
-        .btn-info:hover {
-            background-color: #5a6268;
-            border-color: #5a6268;
-        }
 
-        /* Tables */
         .table-responsive {
             max-height: 600px;
             overflow-y: auto;
@@ -107,12 +94,6 @@
             position: sticky;
             top: 0;
             z-index: 10;
-        }
-        .table-striped>tbody>tr:nth-of-type(odd)>* {
-            background-color: #f8f9fa; 
-        }
-        .table-striped>tbody>tr:nth-of-type(even)>* {
-            background-color: var(--white);
         }
         .part-image {
             max-width: 60px;
@@ -127,35 +108,6 @@
             transform: scale(1.05);
         }
 
-        /* Modals */
-        .modal-header {
-            background-color: var(--primary-blue);
-            color: var(--white);
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-        }
-        .modal-content {
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-        .modal-header .btn-close-white {
-            filter: invert(1) grayscale(100%) brightness(200%);
-        }
-
-        /* Report Section */
-        #reportSection {
-            border: 1px solid #ced4da;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 12px;
-            background-color: var(--white);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        .report-table tfoot {
-            font-weight: bold;
-            background-color: var(--light-grey);
-            color: var(--dark-grey);
-        }
         .input-group-text {
             background-color: var(--primary-blue);
             color: var(--white);
@@ -165,9 +117,6 @@
             border-color: var(--primary-blue);
             box-shadow: 0 0 0 0.25rem rgba(10, 102, 194, 0.25);
         }
-        .text-success { color: var(--secondary-orange) !important; }
-        .text-primary { color: var(--primary-blue) !important; }
-        .text-secondary { color: var(--medium-grey) !important; }
     </style>
 </head>
 <body>
@@ -175,7 +124,9 @@
     <nav class="navbar navbar-light bg-white shadow-sm">
         <div class="container-fluid container">
             <a class="navbar-brand d-flex align-items-center" href="#">
+                <!-- الشعار -->
                 <img src="https://i.imgur.com/gK2iK2D.png" alt="شعار بترو-بارت" class="ms-3">
+                <!-- اسم الشركة -->
                 <div class="header-title">
                     شركة بترو-بارت لمعدات البترول المحدودة <br>
                     <span>PETRO-PART PETROLEUM EQUIPMENT LTD</span>
@@ -201,7 +152,8 @@
                 </div>
                 <div class="col-md-5 text-md-end">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">➕ إضافة قطعة غيار جديدة</button>
-                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#withdrawPartModal">➖ سحب قطعة غيار</button>
+                    <!-- خاصية السحب معطلة لأنها تحتاج لـ PUT Request وتحديد رقم السطر -->
+                    <button class="btn btn-warning" disabled title="خاصية السحب تحتاج إلى كود تعديل (PUT) أكثر تعقيداً في Sheets API">➖ سحب قطعة غيار (تحت الإنشاء)</button>
                 </div>
             </div>
         </div>
@@ -230,16 +182,13 @@
                 </div>
             </div>
         </div>
-
-        <div class="mt-4 mb-5">
-            <button class="btn btn-info text-white shadow-sm" onclick="generateReport()">📊 عرض تقرير السحب (المبيعات)</button>
-            <div id="reportSection" class="d-none mt-3">
-                <h4 id="reportTitle" style="color: var(--primary-blue);"></h4>
-                <div id="reportContent"></div>
-            </div>
+        
+        <div class="mt-4 mb-5 text-center">
+             <p class="text-muted">📊 تقارير السحب معطلة حاليًا، تتطلب إعداد جدول بيانات منفصل.</p>
         </div>
     </div>
 
+    <!-- Modal: Add Part -->
     <div class="modal fade" id="addPartModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -267,8 +216,9 @@
                              <div class="form-text text-muted">يتم حسابه تلقائيًا بناءً على سعر الدولار في لوحة التحكم.</div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">صورة قطعة الغيار (اختياري)</label>
-                            <input type="file" class="form-control" id="partImage" accept="image/*">
+                            <label class="form-label">رابط صورة قطعة الغيار (مباشر)</label>
+                            <input type="url" class="form-control" id="partImageURL" placeholder="أدخل رابط صورة مباشر (مثل Imgur)">
+                             <div class="form-text text-muted">لم يعد دعم رفع الملفات متاحًا، يرجى استخدام رابط صورة مباشر.</div>
                         </div>
                         <button type="submit" id="addPartSubmitBtn" class="btn btn-primary w-100 mt-2">إضافة إلى المخزون</button>
                     </form>
@@ -277,81 +227,46 @@
         </div>
     </div>
 
-    <div class="modal fade" id="withdrawPartModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header" style="background-color: var(--secondary-orange);">
-                    <h5 class="modal-title text-white">سحب قطعة غيار</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="withdrawPartForm">
-                        <div class="mb-3">
-                            <label class="form-label">اختر قطعة الغيار</label>
-                            <select class="form-select" id="partToWithdraw" required></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">الكمية المسحوبة</label>
-                            <input type="number" class="form-control" id="withdrawQuantity" required min="1">
-                        </div>
-                        <button type="submit" class="btn btn-warning w-100 mt-2">تأكيد السحب من المخزون</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
     <script>
         // ===================================================================================
-        // 🚀 إعدادات Firebase الخاصة بمشروع petro-part-stock
+        // 🚀 رابط SheetDB API الخاص بك
         // ===================================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyANaSigbRBO9l1vCvFyiszhrq82i1L19rY",
-            authDomain: "petro-part-stock.firebaseapp.com",
-            projectId: "petro-part-stock",
-            storageBucket: "petro-part-stock.firebasestorage.app", 
-            messagingSenderId: "281549198433",
-            appId: "1:281549198433:web:a5ab63704c2e05ead20620",
-            measurementId: "G-G9BFFYDDCE"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage(); 
-        const inventoryCollection = db.collection("inventory");
-        const withdrawalsCollection = db.collection("withdrawals");
+        const SHEET_DB_API_URL = "https://sheetdb.io/api/v1/bvwoan24qp8un"; 
         // ===================================================================================
-
 
         // Global state to hold inventory data
         let inventoryData = [];
 
-        // Fetch and display inventory
+        // Fetch and display inventory (GET Request)
         const fetchInventory = async () => {
-            // استخدام onSnapshot للحصول على تحديثات فورية
-            inventoryCollection.orderBy("name").onSnapshot(snapshot => {
-                const parts = [];
-                const selectOptions = ['<option value="" selected disabled>اختر قطعة...</option>'];
-                snapshot.forEach(doc => {
-                    const part = { id: doc.id, ...doc.data() };
-                    parts.push(part);
-                    selectOptions.push(`<option value="${part.id}" data-quantity="${part.quantity}" data-price-usd="${part.priceUSD}" data-price-sdg="${part.priceSDG}">${part.name} (المتوفر: ${part.quantity})</option>`);
-                });
-                inventoryData = parts;
+            document.getElementById('inventoryTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">جاري تحميل البيانات من Google Sheet...</td></tr>';
+            try {
+                const response = await fetch(SHEET_DB_API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                let data = await response.json();
+                
+                // تحويل البيانات من نص إلى أرقام وضبط الـ ID (رقم السطر في Google Sheet)
+                data = data.map((item, index) => ({ 
+                    // id هو رقم السطر في Google Sheet (SheetDB يبدأ بـ 2 لأن السطر 1 هو العناوين)
+                    id: index + 2, 
+                    ...item,
+                    quantity: parseInt(item.quantity) || 0,
+                    priceUSD: parseFloat(item.priceUSD) || 0,
+                    priceSDG: parseFloat(item.priceSDG) || 0
+                }));
+                
+                inventoryData = data;
                 renderTable(inventoryData);
-                document.getElementById('partToWithdraw').innerHTML = selectOptions.join('');
-            }, error => {
+
+            } catch (error) {
                 console.error("Error fetching inventory: ", error);
-                alert("❌ فشل تحميل المخزون. تحقق من إعدادات وقواعد بيانات Firebase.");
-            });
+                document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل البيانات. تأكد من أن رابط API صحيح وأن جدولك متاح للجميع.</td></tr>`;
+            }
         };
 
         const viewImage = (url) => {
@@ -361,13 +276,17 @@
         const renderTable = (parts) => {
             const tableBody = document.getElementById('inventoryTableBody');
             let rows = '';
+            
+            // فرز البيانات أبجدياً حسب اسم الإسبير
+            parts.sort((a, b) => (a.partName || '').localeCompare(b.partName || ''));
+
             parts.forEach((part, index) => {
-                const imageUrl = part.imageUrl ? `<img src="${part.imageUrl}" alt="${part.name}" class="part-image" onclick="viewImage('${part.imageUrl}')">` : '<span class="text-muted" style="font-size: 0.8rem;">لا توجد صورة</span>';
+                const imageUrl = part.imageUrl && part.imageUrl.startsWith('http') ? `<img src="${part.imageUrl}" alt="${part.partName}" class="part-image" onclick="viewImage('${part.imageUrl}')">` : '<span class="text-muted" style="font-size: 0.8rem;">لا توجد صورة</span>';
                 rows += `
                     <tr>
                         <td>${index + 1}</td>
                         <td>${imageUrl}</td>
-                        <td>${part.name}</td>
+                        <td>${part.partName || 'غير محدد'}</td>
                         <td>${part.quantity}</td>
                         <td class="fw-bold" style="color: var(--secondary-orange);">$${part.priceUSD.toFixed(2)}</td>
                         <td class="fw-bold" style="color: var(--primary-blue);">${part.priceSDG.toFixed(2)} SDG</td>
@@ -375,7 +294,7 @@
                     </tr>
                 `;
             });
-            tableBody.innerHTML = rows;
+            tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center text-muted">لا توجد قطع غيار في المخزون.</td></tr>';
         };
 
         // دالة حساب سعر الجنيه (SDG)
@@ -385,7 +304,6 @@
             const priceSDGField = document.getElementById('partPriceSDG');
 
             if (dollarRate > 0) {
-                // التأكد من أن القيمة المعروضة هي قيمة سعر الجنيه المحسوبة
                 priceSDGField.value = (dollarRate * priceUSD).toFixed(2);
             } else {
                 priceSDGField.value = (0).toFixed(2);
@@ -399,193 +317,82 @@
         const addPartModalElement = document.getElementById('addPartModal');
         addPartModalElement.addEventListener('shown.bs.modal', calculateSDG);
         
-        // إصلاح دالة إضافة قطعة غيار جديدة
+        // دالة إضافة قطعة غيار جديدة (POST Request)
         document.getElementById('addPartForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('addPartSubmitBtn');
             submitBtn.disabled = true;
             submitBtn.innerText = 'جاري الإضافة...';
 
-            // إعادة حساب السعر بالجنيه مرة أخرى لضمان الدقة قبل الإرسال
             calculateSDG(); 
 
-            const name = document.getElementById('partName').value.trim();
+            const partName = document.getElementById('partName').value.trim();
             const quantity = parseInt(document.getElementById('partQuantity').value);
             const priceUSD = parseFloat(document.getElementById('partPriceUSD').value);
             const priceSDG = parseFloat(document.getElementById('partPriceSDG').value);
             const dollarRate = parseFloat(document.getElementById('dollarRateInput').value);
-            const imageFile = document.getElementById('partImage').files[0];
-            let imageUrl = null;
-
-            // التحقق الأساسي من صحة البيانات
-            if (!name || isNaN(quantity) || quantity < 0 || isNaN(priceUSD) || priceUSD < 0) {
-                alert('⚠️ يرجى التأكد من ملء جميع الحقول المطلوبة بالقيم الصحيحة (الاسم، الكمية، السعر بالدولار).');
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'إضافة إلى المخزون';
-                return;
-            }
-
-            // التحقق من سعر الدولار
-            if (isNaN(dollarRate) || dollarRate <= 0 || priceSDG <= 0) {
-                alert('⚠️ يرجى إدخال سعر دولار صحيح وموجب في لوحة التحكم لحساب السعر بالجنيه.');
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'إضافة إلى المخزون';
-                return;
+            const imageUrl = document.getElementById('partImageURL').value.trim();
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (!partName || isNaN(quantity) || quantity < 0 || isNaN(priceUSD) || priceUSD < 0 || isNaN(dollarRate) || dollarRate <= 0) {
+                 alert('⚠️ يرجى التأكد من ملء جميع الحقول المطلوبة بالقيم الصحيحة.');
+                 submitBtn.disabled = false;
+                 submitBtn.innerText = 'إضافة إلى المخزون';
+                 return;
             }
 
             try {
-                // 1. Upload image if it exists
-                if (imageFile) {
-                    const storageRef = storage.ref();
-                    const fileRef = storageRef.child(`parts/${Date.now()}_${imageFile.name}`);
-                    const snapshot = await fileRef.put(imageFile);
-                    imageUrl = await snapshot.ref.getDownloadURL();
-                }
-
-                // 2. Add part data (with image URL) to Firestore
-                await inventoryCollection.add({ 
-                    name, 
-                    quantity, 
-                    priceUSD: priceUSD, 
-                    priceSDG: priceSDG, 
-                    lastWithdrawalDate: null,
-                    imageUrl 
+                // إرسال البيانات إلى SheetDB باستخدام POST
+                const response = await fetch(SHEET_DB_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        // يجب أن تتطابق هذه الأسماء مع عناوين الأعمدة في Google Sheet
+                        data: { 
+                            partName: partName,
+                            quantity: quantity,
+                            priceUSD: priceUSD.toFixed(2),
+                            priceSDG: priceSDG.toFixed(2),
+                            lastWithdrawalDate: 'Added: ' + today,
+                            imageUrl: imageUrl,
+                        }
+                    })
                 });
 
-                alert(`✅ تمت إضافة "${name}" إلى المخزون بنجاح.`);
-                document.getElementById('addPartForm').reset();
-                // إخفاء الـ modal بعد الإرسال
-                bootstrap.Modal.getInstance(document.getElementById('addPartModal')).hide();
-
+                if (response.ok) {
+                    alert(`✅ تمت إضافة "${partName}" إلى المخزون بنجاح.`);
+                    document.getElementById('addPartForm').reset();
+                    bootstrap.Modal.getInstance(document.getElementById('addPartModal')).hide();
+                    fetchInventory(); // إعادة تحميل الجدول
+                } else {
+                    // محاولة قراءة رسالة الخطأ من الخادم
+                    let errorMsg = 'فشل إرسال البيانات إلى SheetDB.';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) {
+                         // إذا فشل قراءة JSON
+                         errorMsg = `HTTP Error ${response.status}. تأكد أن رابط SheetDB API يسمح بالـ POST.`;
+                    }
+                    throw new Error(errorMsg);
+                }
             } catch (error) {
                 console.error("Error adding document: ", error);
-                // رسالة خطأ أكثر تحديداً
-                alert(`❌ حدث خطأ أثناء الإضافة. تأكد من أن قواعد أمان Firebase (Firestore و Storage) تسمح بالكتابة. الخطأ: ${error.message}`);
+                alert(`❌ حدث خطأ أثناء الإضافة. تأكد من أن الرابط صحيح وأن SheetDB API يسمح بالكتابة: ${error.message}`);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'إضافة إلى المخزون';
             }
         });
 
-        document.getElementById('withdrawPartForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const partId = document.getElementById('partToWithdraw').value;
-            const quantityToWithdraw = parseInt(document.getElementById('withdrawQuantity').value);
-            if (!partId) { alert('الرجاء اختيار قطعة غيار.'); return; }
-
-            const selectedOption = document.querySelector(`#partToWithdraw option[value='${partId}']`);
-            const currentQuantity = parseInt(selectedOption.dataset.quantity);
-            const partName = selectedOption.textContent.split(' (')[0];
-
-            if (quantityToWithdraw > currentQuantity) {
-                alert(`🛑 خطأ: الكمية المطلوبة (${quantityToWithdraw}) أكبر من المتوفر في المخزن (${currentQuantity}).`);
-                return;
-            }
-
-            const newQuantity = currentQuantity - quantityToWithdraw;
-            const today = new Date().toISOString().split('T')[0];
-
-            const priceUSD = parseFloat(selectedOption.dataset.priceUsd);
-            const priceSDG = parseFloat(selectedOption.dataset.priceSdg);
-
-            try {
-                await inventoryCollection.doc(partId).update({ quantity: newQuantity, lastWithdrawalDate: today });
-                
-                await withdrawalsCollection.add({
-                    partId, partName, priceUSD, priceSDG,
-                    quantity: quantityToWithdraw,
-                    date: firebase.firestore.Timestamp.now()
-                });
-
-                alert(`✅ تم سحب ${quantityToWithdraw} قطعة من "${partName}" بنجاح.`);
-                document.getElementById('withdrawPartForm').reset();
-                bootstrap.Modal.getInstance(document.getElementById('withdrawPartModal')).hide();
-            } catch (error) {
-                 console.error("Error updating document: ", error);
-                 alert('❌ حدث خطأ أثناء عملية السحب. تحقق من اتصالك وقواعد Firebase.');
-            }
-        });
-
         document.getElementById('searchInput').addEventListener('keyup', (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredData = inventoryData.filter(part => part.name.toLowerCase().includes(searchTerm));
+            const filteredData = inventoryData.filter(part => part.partName && part.partName.toLowerCase().includes(searchTerm));
             renderTable(filteredData);
         });
-
-        window.generateReport = async () => {
-            const reportSection = document.getElementById('reportSection');
-            const reportContent = document.getElementById('reportContent');
-            const reportTitle = document.getElementById('reportTitle');
-
-            reportTitle.innerText = '📊 تقرير عمليات السحب (المبيعات)';
-            reportContent.innerHTML = '<p class="text-center text-muted">جاري إنشاء التقرير... ⏳</p>';
-            reportSection.classList.remove('d-none');
-
-            const snapshot = await withdrawalsCollection.orderBy("date", "desc").get();
-            const withdrawals = [];
-            snapshot.forEach(doc => withdrawals.push(doc.data()));
-
-            if (withdrawals.length === 0) {
-                 reportContent.innerHTML = '<p class="text-center text-muted">لا توجد عمليات سحب لإنشاء تقرير.</p>';
-                 return;
-            }
-
-            const monthlyReport = {};
-            withdrawals.forEach(w => {
-                const date = w.date.toDate();
-                const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                if (!monthlyReport[monthYear]) monthlyReport[monthYear] = [];
-                monthlyReport[monthYear].push(w);
-            });
-
-            let html = '';
-            const sortedMonths = Object.keys(monthlyReport).sort().reverse(); 
-
-            sortedMonths.forEach(month => {
-                html += `<h5 class="mt-4" style="color: var(--primary-blue);">شهر: ${month}</h5>`;
-                html += `<div class="table-responsive"><table class="table table-bordered report-table">
-                             <thead>
-                                 <tr>
-                                     <th>اسم الإسبير</th>
-                                     <th>الكمية المسحوبة</th>
-                                     <th>تاريخ السحب</th>
-                                     <th>قيمة السحب ($)</th>
-                                     <th>قيمة السحب (SDG)</th>
-                                 </tr>
-                             </thead>
-                             <tbody>`;
-
-                let totalSalesUSD = 0;
-                let totalSalesSDG = 0;
-
-                monthlyReport[month].forEach(w => {
-                    const saleValueUSD = w.quantity * w.priceUSD;
-                    const saleValueSDG = w.quantity * w.priceSDG;
-                    totalSalesUSD += saleValueUSD;
-                    totalSalesSDG += saleValueSDG;
-
-                    html += `<tr>
-                                 <td>${w.partName}</td>
-                                 <td>${w.quantity}</td>
-                                 <td>${w.date.toDate().toLocaleDateString('ar-EG')}</td>
-                                 <td style="color: var(--secondary-orange);">$${saleValueUSD.toFixed(2)}</td>
-                                 <td style="color: var(--primary-blue);">${saleValueSDG.toFixed(2)} SDG</td>
-                               </tr>`;
-                });
-
-                html += `    </tbody>
-                             <tfoot>
-                                 <tr>
-                                     <td colspan="3" class="text-end">الإجمالي الشهري</td>
-                                     <td style="color: var(--secondary-orange);">$${totalSalesUSD.toFixed(2)}</td>
-                                     <td style="color: var(--primary-blue);">${totalSalesSDG.toFixed(2)} SDG</td>
-                                 </tr>
-                             </tfoot>
-                           </table></div>`;
-            });
-            reportContent.innerHTML = html;
-        };
-
+        
         document.addEventListener('DOMContentLoaded', () => {
             fetchInventory();
             calculateSDG(); 
