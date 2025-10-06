@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مخزن بترو-بارت - إدارة المخزون والمبيعات (V6)</title>
+    <title>مخزن بترو-بارت - إدارة المخزون والمبيعات (V7)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -328,27 +328,52 @@
         
         
         // ===================================================================================
-        // 🛠️ دالة مساعدة: Fetch آمنة مع إعادة محاولة (Exponential Backoff)
-        // هذا يزيد من مرونة التطبيق ضد أخطاء الشبكة المؤقتة 
+        // 🛠️ دالة مساعدة: Fetch آمنة مع إعادة محاولة (Exponential Backoff) وتحسين التشخيص
         // ===================================================================================
         const safeFetch = async (url, options, retries = 3) => {
+            // 💡 التشخيص: طباعة تفاصيل الطلب قبل الإرسال
+            console.log("--- 📡 بدء محاولة اتصال ---");
+            console.log(`📡 الطلب: ${options.method || 'GET'} URL: ${url}`);
+            if (options.body) {
+                try {
+                    console.log("   Payload (JSON): ", JSON.parse(options.body));
+                } catch {
+                    console.log("   Payload (Raw): ", options.body);
+                }
+            }
+
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, options);
+                    
                     if (response.ok) {
+                        console.log(`✅ نجحت المحاولة رقم ${i + 1} لـ ${options.method || 'GET'}`);
+                        console.log("--- ✅ انتهاء محاولة اتصال ناجحة ---");
                         return response;
                     }
-                    // إذا كان الاستجابة ليست OK، حاول قراءة النص للحصول على تفاصيل الخطأ
+                    
+                    // إذا لم تكن الاستجابة OK، حاول قراءة النص للحصول على تفاصيل الخطأ من SheetDB
                     const errorText = await response.text();
-                    throw new Error(`HTTP Error ${response.status}: ${errorText}`);
-                } catch (error) {
-                    console.error(`🚨 محاولة اتصال رقم ${i + 1} فشلت لـ ${options.method || 'GET'} ${url}: ${error.message}`);
+                    console.error(`🚨 المحاولة رقم ${i + 1} فشلت (HTTP ${response.status}). استجابة الخادم:`, errorText);
+                    
                     if (i === retries - 1) {
-                        // إذا كانت المحاولة الأخيرة، أطلق الخطأ النهائي
-                        throw new Error(`فشل إكمال الطلب بعد ${retries} محاولات. تفاصيل الخطأ الأخير: ${error.message}`);
+                        // إطلاق الخطأ النهائي مع تفاصيل التشخيص
+                        throw new Error(`فشل إكمال الطلب (HTTP ${response.status}). تفاصيل الخادم: ${errorText}. تأكد من (1) صلاحية الرابط، (2) وجود عمود ID في ورقة المخزون.`);
                     }
+                    
                     // تأخير تصاعدي (1s, 2s, 4s)
                     const delay = Math.pow(2, i) * 1000;
+                    console.log(`   إعادة المحاولة بعد ${delay / 1000} ثوانٍ...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    
+                } catch (error) {
+                    // فشل الاتصال (مثل مشكلة شبكة)
+                    console.error(`🚨 فشل الاتصال في المحاولة رقم ${i + 1}: ${error.message}`);
+                    if (i === retries - 1) {
+                        throw new Error(`فشل إكمال الطلب بعد ${retries} محاولات. تفاصيل الخطأ الأخير: ${error.message}`);
+                    }
+                    const delay = Math.pow(2, i) * 1000;
+                    console.log(`   إعادة المحاولة بعد ${delay / 1000} ثوانٍ...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
@@ -509,6 +534,8 @@
             const newPriceSDG = (newPriceUSD * currentDollarRate).toFixed(2); // إعادة الحساب بناءً على سعر الدولار الحالي
             
             try {
+                // ملاحظة: SheetDB يتطلب مسار API مثل: /COLUMN_NAME/VALUE
+                // هنا نستخدم 'id' كاسم للعمود الذي يحمل رقم السطر (ID)
                 const updateUrl = `${STOCK_API_URL}/id/${partId}`;
                 
                 const response = await safeFetch(updateUrl, {
@@ -539,7 +566,7 @@
         });
         
         // ===================================================================================
-        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log) - تم تطبيق SafeFetch هنا
+        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log) 
         // ===================================================================================
         
         const populateWithdrawalDropdown = (parts) => {
@@ -593,9 +620,10 @@
             
             try {
                 // --- 1. تحديث المخزون الرئيسي (Stock) ---
+                // نستخدم 'id' كمعرف، وهو يمثل رقم السطر الفعلي في Google Sheet
                 const stockUpdateUrl = `${STOCK_API_URL}/id/${partId}`;
                 
-                // استخدام safeFetch مع إعادة المحاولة لعملية تحديث المخزون
+                // استخدام safeFetch مع التشخيص لعملية تحديث المخزون
                 await safeFetch(stockUpdateUrl, {
                     method: 'PATCH', 
                     headers: { 'Content-Type': 'application/json' },
@@ -609,7 +637,7 @@
                 
                 // --- 2. تسجيل العملية في سجل المبيعات (Log) ---
                 
-                // استخدام safeFetch مع إعادة المحاولة لعملية تسجيل المبيعات
+                // استخدام safeFetch مع التشخيص لعملية تسجيل المبيعات
                 await safeFetch(LOG_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -632,6 +660,7 @@
                 fetchInventory(); // تحديث الجدول
                 
             } catch (error) {
+                // رسالة الخطأ الآن تحتوي على تفاصيل الخادم بفضل safeFetch المحدث
                 console.error("Error during sale transaction: ", error);
                 alert(`❌ حدث خطأ أثناء التسجيل: ${error.message}. يرجى التحقق من وحدة التحكم (Console) لمزيد من التفاصيل.`);
             } finally {
