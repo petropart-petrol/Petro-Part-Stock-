@@ -451,7 +451,7 @@
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>سحب من المخزون</h3>
+                <h3>سحب من المخزون (بيع)</h3>
                 <button onclick="closeModal('withdrawModal')" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">×</button>
             </div>
             <div class="modal-body">
@@ -562,10 +562,19 @@
             try {
                 const response = await fetch(SHEETDB_INVENTORY_URL);
                 if (!response.ok) throw new Error('فشل في جلب بيانات المخزون');
-                inventoryData = await response.json();
+                const data = await response.json();
+                inventoryData = Array.isArray(data) ? data : [];
                 renderInventoryTable();
             } catch (error) {
+                console.error('Error:', error);
                 showToast('حدث خطأ في تحميل المخزون: ' + error.message, 'error');
+                // بيانات تجريبية للاختبار
+                inventoryData = [
+                    {id: '1', name: 'فلتر زيت', quantity: '50', price: '25.50', lastupdatedate: '2023-10-01'},
+                    {id: '2', name: 'شمعة احتراق', quantity: '100', price: '8.75', lastupdatedate: '2023-10-01'},
+                    {id: '3', name: 'حساس ضغط', quantity: '30', price: '42.00', lastupdatedate: '2023-10-01'}
+                ];
+                renderInventoryTable();
             } finally {
                 showLoading('inventoryLoading', false);
             }
@@ -576,10 +585,18 @@
             try {
                 const response = await fetch(SHEETDB_SALES_URL);
                 if (!response.ok) throw new Error('فشل في جلب بيانات المبيعات');
-                salesData = await response.json();
+                const data = await response.json();
+                salesData = Array.isArray(data) ? data : [];
                 renderSalesReport();
             } catch (error) {
+                console.error('Error:', error);
                 showToast('حدث خطأ في تحميل المبيعات: ' + error.message, 'error');
+                // بيانات تجريبية للاختبار
+                salesData = [
+                    {id: '1', name: 'فلتر زيت', quantity: '5', price: '25.50', lastupdatedate: '2023-10-01'},
+                    {id: '2', name: 'شمعة احتراق', quantity: '10', price: '8.75', lastupdatedate: '2023-10-01'}
+                ];
+                renderSalesReport();
             } finally {
                 showLoading('salesLoading', false);
             }
@@ -593,7 +610,7 @@
                 html = '<tr><td colspan="7" class="text-center">لا توجد بيانات في المخزون</td></tr>';
             } else {
                 inventoryData.forEach((item, index) => {
-                    const priceSDG = (item.price * currentExchangeRate).toFixed(2);
+                    const priceSDG = (parseFloat(item.price) * currentExchangeRate).toFixed(2);
                     const quantity = parseInt(item.quantity);
                     const badgeClass = quantity < 10 ? 'badge-danger' : 'badge-success';
                     
@@ -604,7 +621,7 @@
                             <td><span class="badge ${badgeClass}">${quantity}</span></td>
                             <td>$${parseFloat(item.price).toFixed(2)}</td>
                             <td>${priceSDG} ج.س</td>
-                            <td>${item.lastupdatedate || item.date}</td>
+                            <td>${item.lastupdatedate || 'غير محدد'}</td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn btn-sm btn-success" onclick="openWithdrawModal('${item.id}')">
@@ -630,8 +647,8 @@
                 html = '<tr><td colspan="7" class="text-center">لا توجد مبيعات مسجلة</td></tr>';
             } else {
                 salesData.forEach((sale, index) => {
-                    const totalUSD = (sale.quantity * sale.price).toFixed(2);
-                    const totalSDG = (sale.quantity * sale.price * currentExchangeRate).toFixed(2);
+                    const totalUSD = (parseFloat(sale.quantity) * parseFloat(sale.price)).toFixed(2);
+                    const totalSDG = (parseFloat(sale.quantity) * parseFloat(sale.price) * currentExchangeRate).toFixed(2);
                     
                     html += `
                         <tr>
@@ -641,7 +658,7 @@
                             <td>$${parseFloat(sale.price).toFixed(2)}</td>
                             <td>$${totalUSD}</td>
                             <td>${totalSDG} ج.س</td>
-                            <td>${sale.lastupdatedate || sale.date}</td>
+                            <td>${sale.lastupdatedate || 'غير محدد'}</td>
                         </tr>
                     `;
                 });
@@ -677,6 +694,7 @@
                 document.getElementById('availableQuantity').value = item.quantity;
                 document.getElementById('withdrawPrice').value = item.price;
                 document.getElementById('withdrawQuantity').value = '';
+                document.getElementById('withdrawQuantity').max = item.quantity;
                 currentWithdrawItemId = itemId;
                 openModal('withdrawModal');
             }
@@ -701,13 +719,26 @@
                     lastupdatedate: new Date().toISOString().split('T')[0]
                 };
                 
+                console.log('إرسال البيانات:', newItem);
+                
                 const response = await fetch(SHEETDB_INVENTORY_URL, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ data: newItem })
                 });
                 
-                if (!response.ok) throw new Error('فشل في إضافة العنصر');
+                console.log('استجابة السيرفر:', response);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`فشل في الإضافة: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('نتيجة الإضافة:', result);
                 
                 closeModal('addItemModal');
                 document.getElementById('itemName').value = '';
@@ -717,6 +748,7 @@
                 await loadInventoryData();
                 showToast('تمت إضافة قطعة الغيار بنجاح', 'success');
             } catch (error) {
+                console.error('Error details:', error);
                 showToast('حدث خطأ في الإضافة: ' + error.message, 'error');
             }
         }
@@ -740,7 +772,7 @@
                 
                 // تحديث المخزون
                 const newQuantity = parseInt(item.quantity) - quantity;
-                await fetch(`${SHEETDB_INVENTORY_URL}/id/${currentWithdrawItemId}`, {
+                const updateResponse = await fetch(`${SHEETDB_INVENTORY_URL}/id/${currentWithdrawItemId}`, {
                     method: 'PATCH',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ data: { 
@@ -748,6 +780,10 @@
                         lastupdatedate: new Date().toISOString().split('T')[0]
                     } })
                 });
+                
+                if (!updateResponse.ok) {
+                    throw new Error('فشل في تحديث المخزون');
+                }
                 
                 // إضافة عملية بيع
                 const sale = {
@@ -759,16 +795,21 @@
                     lastupdatedate: new Date().toISOString().split('T')[0]
                 };
                 
-                await fetch(SHEETDB_SALES_URL, {
+                const saleResponse = await fetch(SHEETDB_SALES_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ data: sale })
                 });
                 
+                if (!saleResponse.ok) {
+                    throw new Error('فشل في تسجيل عملية البيع');
+                }
+                
                 closeModal('withdrawModal');
                 await loadInventoryData();
                 showToast('تم سحب الكمية بنجاح', 'success');
             } catch (error) {
+                console.error('Error:', error);
                 showToast('حدث خطأ في السحب: ' + error.message, 'error');
             }
         }
@@ -797,8 +838,17 @@
         function showToast(message, type) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
+            const icon = toast.querySelector('i');
             
-            toast.className = `toast ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            // تغيير الأيقونة حسب نوع الرسالة
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle';
+                toast.className = 'toast toast-success';
+            } else {
+                icon.className = 'fas fa-exclamation-circle';
+                toast.className = 'toast toast-error';
+            }
+            
             toastMessage.textContent = message;
             toast.classList.add('show');
             
