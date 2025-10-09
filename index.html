@@ -3,85 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة مخزن قطع غيار - بتروبارت</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>نظام إدارة المخزون - بتروبارت</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #0dcaf0;
+            --primary: #2c5aa0;
+            --secondary: #1e3a8a;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --sidebar: #1e293b;
+            --header: #374151;
+        }
+        
+        * {
+            font-family: 'Tajawal', sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
         }
         
-        .header {
-            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        .app-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px auto;
+            max-width: 1400px;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 1.5rem 0;
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px 30px;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .app-logo i {
+            font-size: 2.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+        }
+        
+        .exchange-rate-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            border: none;
+            height: 100%;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stats-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stats-card .label {
+            color: #64748b;
+            font-size: 0.9rem;
         }
         
         .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
             border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
         }
         
         .card-header {
-            background-color: white;
-            border-bottom: 1px solid #eaeaea;
-            font-weight: 600;
-            padding: 15px 20px;
-            border-radius: 10px 10px 0 0 !important;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 25px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
         }
         
         .table th {
-            background-color: #f8f9fa;
+            background: #f1f5f9;
+            color: var(--primary);
             font-weight: 600;
+            border-top: none;
+            padding: 15px;
+        }
+        
+        .table td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        
+        .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
         .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
         }
         
         .btn-success {
-            background-color: var(--success-color);
-            border-color: var(--success-color);
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            border: none;
         }
         
         .btn-warning {
-            background-color: var(--warning-color);
-            border-color: var(--warning-color);
-            color: #000;
+            background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+            border: none;
+            color: white;
         }
         
         .btn-danger {
-            background-color: var(--danger-color);
-            border-color: var(--danger-color);
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            border: none;
         }
         
-        .exchange-rate-box {
-            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .btn-info {
+            background: linear-gradient(135deg, var(--info) 0%, #2563eb 100%);
+            border: none;
         }
         
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.85rem;
         }
         
         .search-box {
@@ -90,86 +177,245 @@
         
         .search-box i {
             position: absolute;
-            left: 15px;
+            right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #6c757d;
+            color: #94a3b8;
         }
         
         .search-box input {
-            padding-right: 15px;
-            padding-left: 40px;
-        }
-        
-        .modal-header {
-            background-color: var(--primary-color);
-            color: white;
+            padding-right: 45px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
         }
         
         .action-buttons {
             display: flex;
-            gap: 5px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
-        .action-buttons button {
-            padding: 5px 10px;
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-bottom: none;
+            border-radius: 15px 15px 0 0;
         }
         
-        .stats-card {
-            text-align: center;
-            padding: 15px;
+        .modal-content {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
         }
         
-        .stats-card i {
-            font-size: 2rem;
-            margin-bottom: 10px;
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
         }
         
-        .stats-card .number {
-            font-size: 1.8rem;
-            font-weight: bold;
-        }
-        
-        .stats-card .label {
-            font-size: 0.9rem;
-            color: #6c757d;
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(44, 90, 160, 0.25);
         }
         
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 40px;
         }
         
         .spinner-border {
             width: 3rem;
             height: 3rem;
+            color: var(--primary);
+        }
+        
+        .badge {
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 500;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
         }
         
         @media (max-width: 768px) {
             .action-buttons {
                 flex-direction: column;
             }
+            
+            .app-header {
+                padding: 20px 15px;
+            }
+            
+            .stats-card {
+                margin-bottom: 15px;
+            }
+        }
+        
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 <body>
-    <!-- رأس الصفحة -->
-    <div class="header mb-4">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h1 class="h3 mb-0">
-                        <i class="fas fa-oil-can me-2"></i>
-                        إدارة مخزن قطع غيار - بتروبارت
-                    </h1>
-                    <p class="mb-0">Petro-Part Petroleum Equipment LTD</p>
+    <div class="container-fluid py-4">
+        <div class="app-container">
+            <!-- رأس التطبيق -->
+            <div class="app-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="app-logo">
+                            <i class="fas fa-oil-can"></i>
+                            <div>
+                                <h1 class="h3 mb-1">نظام إدارة المخزون</h1>
+                                <p class="mb-0 opacity-75">شركة بتروبارت لمعدات البترول المحدودة</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <div class="exchange-rate-card d-inline-block">
+                            <div class="d-flex align-items-center justify-content-end">
+                                <span class="me-2">سعر الدولار:</span>
+                                <input type="number" id="exchangeRate" class="form-control form-control-sm d-inline-block text-center" style="width: 120px;" value="3400">
+                                <span class="ms-2">جنيه سوداني</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                    <div class="exchange-rate-box d-inline-block">
-                        <div class="d-flex align-items-center">
-                            <span class="me-2">سعر الدولار:</span>
-                            <input type="number" id="exchangeRate" class="form-control form-control-sm d-inline-block" style="width: 100px;" value="3400">
-                            <span class="ms-2">جنيه سوداني</span>
+            </div>
+
+            <!-- المحتوى الرئيسي -->
+            <div class="container-fluid p-4">
+                <!-- إحصائيات سريعة -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stats-card">
+                            <i class="fas fa-boxes"></i>
+                            <div class="number text-primary" id="totalItems">0</div>
+                            <div class="label">إجمالي قطع الغيار</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stats-card">
+                            <i class="fas fa-shopping-cart"></i>
+                            <div class="number text-success" id="totalSales">0</div>
+                            <div class="label">إجمالي المبيعات</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stats-card">
+                            <i class="fas fa-dollar-sign"></i>
+                            <div class="number text-warning" id="totalValue">0</div>
+                            <div class="label">القيمة الإجمالية (دولار)</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stats-card">
+                            <i class="fas fa-exchange-alt"></i>
+                            <div class="number text-info" id="totalTransactions">0</div>
+                            <div class="label">إجمالي العمليات</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- البحث والإجراءات -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" class="form-control" placeholder="ابحث عن قطع الغيار...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                            <i class="fas fa-plus me-2"></i>إضافة قطعة غيار
+                        </button>
+                    </div>
+                </div>
+
+                <!-- جدول المخزون -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-table me-2"></i>سجل المخزون</span>
+                        <button class="btn btn-sm btn-outline-primary" id="refreshBtn">
+                            <i class="fas fa-sync-alt me-1"></i>تحديث البيانات
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="inventoryLoading" class="loading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">جاري التحميل...</span>
+                            </div>
+                            <p class="mt-3">جاري تحميل بيانات المخزون...</p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="50">#</th>
+                                        <th>اسم قطعة الغيار</th>
+                                        <th width="120">الكمية</th>
+                                        <th width="150">السعر (دولار)</th>
+                                        <th width="150">السعر (جنيه)</th>
+                                        <th width="140">تاريخ العملية</th>
+                                        <th width="220">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTable">
+                                    <!-- سيتم ملء الجدول ديناميكياً -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تقرير المبيعات -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar me-2"></i>تقرير المبيعات
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="salesLoading" class="loading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">جاري التحميل...</span>
+                            </div>
+                            <p class="mt-3">جاري تحميل تقرير المبيعات...</p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="50">#</th>
+                                        <th>اسم قطعة الغيار</th>
+                                        <th width="120">الكمية المباعة</th>
+                                        <th width="150">السعر (دولار)</th>
+                                        <th width="150">القيمة الإجمالية (دولار)</th>
+                                        <th width="150">القيمة الإجمالية (جنيه)</th>
+                                        <th width="140">تاريخ البيع</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesReportTable">
+                                    <!-- سيتم ملء الجدول ديناميكياً -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -177,130 +423,17 @@
         </div>
     </div>
 
-    <div class="container">
-        <!-- إحصائيات سريعة -->
-        <div class="row mb-4">
-            <div class="col-md-3 col-sm-6 mb-3">
-                <div class="card stats-card">
-                    <i class="fas fa-boxes text-primary"></i>
-                    <div class="number" id="totalItems">0</div>
-                    <div class="label">إجمالي قطع الغيار</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-3">
-                <div class="card stats-card">
-                    <i class="fas fa-shopping-cart text-success"></i>
-                    <div class="number" id="totalSales">0</div>
-                    <div class="label">إجمالي المبيعات</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-3">
-                <div class="card stats-card">
-                    <i class="fas fa-dollar-sign text-warning"></i>
-                    <div class="number" id="totalValue">0</div>
-                    <div class="label">القيمة الإجمالية (دولار)</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-3">
-                <div class="card stats-card">
-                    <i class="fas fa-exchange-alt text-info"></i>
-                    <div class="number" id="totalTransactions">0</div>
-                    <div class="label">إجمالي العمليات</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- مربع البحث وإضافة قطع الغيار -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="ابحث عن قطع الغيار...">
-                </div>
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                    <i class="fas fa-plus me-2"></i>إضافة قطعة غيار
-                </button>
-            </div>
-        </div>
-
-        <!-- جدول المخزون -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>سجل المخزون</span>
-                <button class="btn btn-sm btn-outline-primary" id="refreshBtn">
-                    <i class="fas fa-sync-alt me-1"></i>تحديث البيانات
-                </button>
-            </div>
-            <div class="card-body">
-                <div id="inventoryLoading" class="loading">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">جاري التحميل...</span>
-                    </div>
-                    <p>جاري تحميل بيانات المخزون...</p>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>اسم قطعة الغيار</th>
-                                <th>الكمية</th>
-                                <th>السعر (دولار)</th>
-                                <th>السعر (جنيه)</th>
-                                <th>تاريخ العملية</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTable">
-                            <!-- سيتم ملء الجدول ديناميكياً -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- تقرير المبيعات -->
-        <div class="card">
-            <div class="card-header">
-                تقرير المبيعات
-            </div>
-            <div class="card-body">
-                <div id="salesLoading" class="loading">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">جاري التحميل...</span>
-                    </div>
-                    <p>جاري تحميل تقرير المبيعات...</p>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>اسم قطعة الغيار</th>
-                                <th>الكمية المباعة</th>
-                                <th>السعر (دولار)</th>
-                                <th>القيمة الإجمالية (دولار)</th>
-                                <th>القيمة الإجمالية (جنيه)</th>
-                                <th>تاريخ البيع</th>
-                            </tr>
-                        </thead>
-                        <tbody id="salesReportTable">
-                            <!-- سيتم ملء الجدول ديناميكياً -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- زر الإضافة العائم -->
+    <button class="floating-btn btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+        <i class="fas fa-plus"></i>
+    </button>
 
     <!-- نموذج إضافة قطعة غيار -->
     <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">إضافة قطعة غيار جديدة</h5>
+                    <h5 class="modal-title" id="addItemModalLabel"><i class="fas fa-plus me-2"></i>إضافة قطعة غيار جديدة</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -321,7 +454,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-primary" id="saveItemBtn">حفظ</button>
+                    <button type="button" class="btn btn-primary" id="saveItemBtn">حفظ القطعة</button>
                 </div>
             </div>
         </div>
@@ -332,7 +465,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="withdrawModalLabel">سحب من المخزون (بيع)</h5>
+                    <h5 class="modal-title" id="withdrawModalLabel"><i class="fas fa-minus me-2"></i>سحب من المخزون (بيع)</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -353,6 +486,10 @@
                             <label for="withdrawPrice" class="form-label">السعر (دولار)</label>
                             <input type="number" step="0.01" class="form-control" id="withdrawPrice" readonly>
                         </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            سيتم خصم الكمية المسحوبة من المخزون وتسجيلها كعملية بيع.
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -368,7 +505,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editItemModalLabel">تعديل بيانات قطعة الغيار</h5>
+                    <h5 class="modal-title" id="editItemModalLabel"><i class="fas fa-edit me-2"></i>تعديل بيانات قطعة الغيار</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -390,13 +527,13 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-primary" id="updateItemBtn">تحديث</button>
+                    <button type="button" class="btn btn-primary" id="updateItemBtn">تحديث البيانات</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // إعدادات API
         const SHEETDB_API_BASE = 'https://sheetdb.io/api/v1/0guo3ig4l25ow';
@@ -439,6 +576,10 @@
             saveItemBtn.addEventListener('click', addNewItem);
             confirmWithdrawBtn.addEventListener('click', withdrawItem);
             updateItemBtn.addEventListener('click', updateItem);
+            
+            // إخفاء مؤشرات التحميل في البداية
+            inventoryLoading.style.display = 'none';
+            salesLoading.style.display = 'none';
         });
         
         // تحديث سعر الصرف
@@ -471,7 +612,7 @@
                 updateStats();
             } catch (error) {
                 console.error('Error loading inventory:', error);
-                alert('حدث خطأ في تحميل بيانات المخزون: ' + error.message);
+                showAlert('حدث خطأ في تحميل بيانات المخزون: ' + error.message, 'danger');
             } finally {
                 inventoryLoading.style.display = 'none';
             }
@@ -493,7 +634,7 @@
                 updateStats();
             } catch (error) {
                 console.error('Error loading sales:', error);
-                alert('حدث خطأ في تحميل بيانات المبيعات: ' + error.message);
+                showAlert('حدث خطأ في تحميل بيانات المبيعات: ' + error.message, 'danger');
             } finally {
                 salesLoading.style.display = 'none';
             }
@@ -506,12 +647,12 @@
             const price = parseFloat(document.getElementById('itemPrice').value);
             
             if (!name || isNaN(quantity) || isNaN(price)) {
-                alert('يرجى ملء جميع الحقول بشكل صحيح!');
+                showAlert('يرجى ملء جميع الحقول بشكل صحيح!', 'warning');
                 return;
             }
             
             if (quantity <= 0 || price < 0) {
-                alert('يرجى إدخال قيم صحيحة للكمية والسعر!');
+                showAlert('يرجى إدخال قيم صحيحة للكمية والسعر!', 'warning');
                 return;
             }
             
@@ -536,8 +677,6 @@
                     throw new Error('فشل في إضافة العنصر');
                 }
                 
-                const result = await response.json();
-                
                 // إغلاق النموذج
                 const addModal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
                 addModal.hide();
@@ -548,10 +687,10 @@
                 // تحديث البيانات
                 await loadInventoryData();
                 
-                alert('تمت إضافة قطعة الغيار بنجاح!');
+                showAlert('تمت إضافة قطعة الغيار بنجاح!', 'success');
             } catch (error) {
                 console.error('Error adding item:', error);
-                alert('حدث خطأ في إضافة العنصر: ' + error.message);
+                showAlert('حدث خطأ في إضافة العنصر: ' + error.message, 'danger');
             }
         }
         
@@ -561,7 +700,7 @@
             const quantity = parseInt(document.getElementById('withdrawQuantity').value);
             
             if (isNaN(quantity) || quantity <= 0) {
-                alert('يرجى إدخال كمية صحيحة!');
+                showAlert('يرجى إدخال كمية صحيحة!', 'warning');
                 return;
             }
             
@@ -569,12 +708,12 @@
                 const item = inventoryData.find(i => i.id === itemId);
                 
                 if (!item) {
-                    alert('لم يتم العثور على العنصر!');
+                    showAlert('لم يتم العثور على العنصر!', 'danger');
                     return;
                 }
                 
                 if (parseInt(item.quantity) < quantity) {
-                    alert('الكمية المطلوبة غير متاحة في المخزون!');
+                    showAlert('الكمية المطلوبة غير متاحة في المخزون!', 'warning');
                     return;
                 }
                 
@@ -624,10 +763,10 @@
                 await loadInventoryData();
                 await loadSalesData();
                 
-                alert('تم سحب الكمية بنجاح!');
+                showAlert('تم سحب الكمية بنجاح!', 'success');
             } catch (error) {
                 console.error('Error withdrawing item:', error);
-                alert('حدث خطأ في عملية السحب: ' + error.message);
+                showAlert('حدث خطأ في عملية السحب: ' + error.message, 'danger');
             }
         }
         
@@ -639,12 +778,12 @@
             const price = parseFloat(document.getElementById('editItemPrice').value);
             
             if (!name || isNaN(quantity) || isNaN(price)) {
-                alert('يرجى ملء جميع الحقول بشكل صحيح!');
+                showAlert('يرجى ملء جميع الحقول بشكل صحيح!', 'warning');
                 return;
             }
             
             if (quantity < 0 || price < 0) {
-                alert('يرجى إدخال قيم صحيحة للكمية والسعر!');
+                showAlert('يرجى إدخال قيم صحيحة للكمية والسعر!', 'warning');
                 return;
             }
             
@@ -674,10 +813,10 @@
                 // تحديث البيانات
                 await loadInventoryData();
                 
-                alert('تم تحديث البيانات بنجاح!');
+                showAlert('تم تحديث البيانات بنجاح!', 'success');
             } catch (error) {
                 console.error('Error updating item:', error);
-                alert('حدث خطأ في تحديث العنصر: ' + error.message);
+                showAlert('حدث خطأ في تحديث العنصر: ' + error.message, 'danger');
             }
         }
         
@@ -699,10 +838,10 @@
                 // تحديث البيانات
                 await loadInventoryData();
                 
-                alert('تم حذف القطعة بنجاح!');
+                showAlert('تم حذف القطعة بنجاح!', 'success');
             } catch (error) {
                 console.error('Error deleting item:', error);
-                alert('حدث خطأ في حذف العنصر: ' + error.message);
+                showAlert('حدث خطأ في حذف العنصر: ' + error.message, 'danger');
             }
         }
         
@@ -711,28 +850,33 @@
             let tableHTML = '';
             
             if (inventoryData.length === 0) {
-                tableHTML = `<tr><td colspan="7" class="text-center">لا توجد بيانات</td></tr>`;
+                tableHTML = `<tr><td colspan="7" class="text-center py-4">لا توجد بيانات في المخزون</td></tr>`;
             } else {
                 inventoryData.forEach((item, index) => {
                     const priceInSDG = (parseFloat(item.price) * currentExchangeRate).toFixed(2);
+                    const quantity = parseInt(item.quantity);
+                    const quantityBadge = quantity < 10 ? 
+                        `<span class="badge bg-danger">${quantity}</span>` : 
+                        `<span class="badge bg-success">${quantity}</span>`;
+                    
                     tableHTML += `
                         <tr>
                             <td>${index + 1}</td>
                             <td>${item.name}</td>
-                            <td>${item.quantity}</td>
+                            <td>${quantityBadge}</td>
                             <td>$${parseFloat(item.price).toFixed(2)}</td>
                             <td>${priceInSDG} ج.س</td>
                             <td>${item.date}</td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn btn-sm btn-success" onclick="openWithdrawModal('${item.id}')">
-                                        <i class="fas fa-minus"></i> سحب
+                                        <i class="fas fa-minus me-1"></i>سحب
                                     </button>
                                     <button class="btn btn-sm btn-warning" onclick="openEditModal('${item.id}')">
-                                        <i class="fas fa-edit"></i> تعديل
+                                        <i class="fas fa-edit me-1"></i>تعديل
                                     </button>
                                     <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}')">
-                                        <i class="fas fa-trash"></i> حذف
+                                        <i class="fas fa-trash me-1"></i>حذف
                                     </button>
                                 </div>
                             </td>
@@ -749,7 +893,7 @@
             let tableHTML = '';
             
             if (salesData.length === 0) {
-                tableHTML = `<tr><td colspan="7" class="text-center">لا توجد بيانات مبيعات</td></tr>`;
+                tableHTML = `<tr><td colspan="7" class="text-center py-4">لا توجد بيانات مبيعات</td></tr>`;
             } else {
                 salesData.forEach((sale, index) => {
                     const totalPriceUSD = (parseInt(sale.quantity) * parseFloat(sale.price)).toFixed(2);
@@ -783,94 +927,4 @@
             
             // القيمة الإجمالية للمخزون بالدولار
             const totalValue = inventoryData.reduce((sum, item) => sum + (parseInt(item.quantity) * parseFloat(item.price)), 0);
-            totalValueElement.textContent = `$${totalValue.toFixed(2)}`;
-            
-            // إجمالي العمليات
-            totalTransactionsElement.textContent = inventoryData.length + salesData.length;
-        }
-        
-        // فتح نموذج السحب
-        function openWithdrawModal(itemId) {
-            const item = inventoryData.find(i => i.id === itemId);
-            if (item) {
-                document.getElementById('withdrawItemName').value = item.name;
-                document.getElementById('availableQuantity').value = item.quantity;
-                document.getElementById('withdrawPrice').value = item.price;
-                document.getElementById('withdrawQuantity').value = '';
-                document.getElementById('withdrawQuantity').max = item.quantity;
-                
-                // تخزين معرف العنصر في الزر
-                confirmWithdrawBtn.setAttribute('data-item-id', itemId);
-                
-                // فتح النموذج
-                const withdrawModal = new bootstrap.Modal(document.getElementById('withdrawModal'));
-                withdrawModal.show();
-            }
-        }
-        
-        // فتح نموذج التعديل
-        function openEditModal(itemId) {
-            const item = inventoryData.find(i => i.id === itemId);
-            if (item) {
-                document.getElementById('editItemId').value = item.id;
-                document.getElementById('editItemName').value = item.name;
-                document.getElementById('editItemQuantity').value = item.quantity;
-                document.getElementById('editItemPrice').value = item.price;
-                
-                // فتح النموذج
-                const editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
-                editModal.show();
-            }
-        }
-        
-        // تصفية المخزون حسب البحث
-        function filterInventory() {
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            if (searchTerm === '') {
-                renderInventoryTable();
-                return;
-            }
-            
-            const filteredData = inventoryData.filter(item => 
-                item.name.toLowerCase().includes(searchTerm)
-            );
-            
-            let tableHTML = '';
-            
-            if (filteredData.length === 0) {
-                tableHTML = `<tr><td colspan="7" class="text-center">لا توجد نتائج مطابقة</td></tr>`;
-            } else {
-                filteredData.forEach((item, index) => {
-                    const priceInSDG = (parseFloat(item.price) * currentExchangeRate).toFixed(2);
-                    tableHTML += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${item.name}</td>
-                            <td>${item.quantity}</td>
-                            <td>$${parseFloat(item.price).toFixed(2)}</td>
-                            <td>${priceInSDG} ج.س</td>
-                            <td>${item.date}</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-success" onclick="openWithdrawModal('${item.id}')">
-                                        <i class="fas fa-minus"></i> سحب
-                                    </button>
-                                    <button class="btn btn-sm btn-warning" onclick="openEditModal('${item.id}')">
-                                        <i class="fas fa-edit"></i> تعديل
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}')">
-                                        <i class="fas fa-trash"></i> حذف
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-            
-            inventoryTable.innerHTML = tableHTML;
-        }
-    </script>
-</body>
-</html>
+            totalValueElement.textContent = `$${totalValue.toFixed(
