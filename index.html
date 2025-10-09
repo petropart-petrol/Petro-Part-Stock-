@@ -1,767 +1,782 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مخزن بترو-بارت - إدارة المخزون والمبيعات</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-blue: #0A3C59; /* Deep Petrol Blue */
-            --secondary-gold: #F78C2F; /* Warm Gold/Orange Accent */
-            --success-green: #10B981;
-            --light-grey: #f8f9fa;
-            --dark-grey: #212529;
-            --white: #ffffff;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مخزن بترو-بارت - إدارة المخزون والمبيعات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0A3C59; /* Deep Petrol Blue */
+            --secondary-gold: #F78C2F; /* Warm Gold/Orange Accent */
+            --success-green: #10B981;
+            --light-grey: #f8f9fa;
+            --dark-grey: #212529;
+            --white: #ffffff;
+        }
 
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: var(--light-grey);
-            color: var(--dark-grey);
-        }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--light-grey);
+            color: var(--dark-grey);
+        }
 
-        .navbar {
-            border-bottom: 5px solid var(--secondary-gold);
-            background: var(--primary-blue) !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .header-title {
-            font-weight: 800;
-            color: var(--white);
-            line-height: 1.2;
-        }
-        .header-subtitle {
-            font-weight: 500; 
-            color: #ced4da; 
-            font-size: 0.85rem;
-        }
-        
-        .card {
-            border: 1px solid rgba(10, 60, 89, 0.1);
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-        .card-header {
-            background: linear-gradient(135deg, var(--primary-blue), #005073);
-            color: var(--white);
-            font-weight: 700;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-        }
+        .navbar {
+            border-bottom: 5px solid var(--secondary-gold);
+            background: var(--primary-blue) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header-title {
+            font-weight: 800;
+            color: var(--white);
+            line-height: 1.2;
+        }
+        .header-subtitle {
+            font-weight: 500; 
+            color: #ced4da; 
+            font-size: 0.85rem;
+        }
+        
+        .card {
+            border: 1px solid rgba(10, 60, 89, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-blue), #005073);
+            color: var(--white);
+            font-weight: 700;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
 
-        /* Custom Button Styling */
-        .btn-primary {
-            background-color: var(--primary-blue);
-            border-color: var(--primary-blue);
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #005073;
-            border-color: #005073;
-            transform: translateY(-1px);
-        }
-        .btn-warning {
-            background-color: var(--secondary-gold);
-            border-color: var(--secondary-gold);
-            color: var(--dark-grey);
-            font-weight: 700;
-        }
-        .btn-warning:hover {
-            background-color: #e67e22;
-            border-color: #e67e22;
-        }
-        .btn-info {
-            background-color: #3b82f6; 
-            border-color: #3b82f6;
-        }
+        /* Custom Button Styling */
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #005073;
+            border-color: #005073;
+            transform: translateY(-1px);
+        }
+        .btn-warning {
+            background-color: var(--secondary-gold);
+            border-color: var(--secondary-gold);
+            color: var(--dark-grey);
+            font-weight: 700;
+        }
+        .btn-warning:hover {
+            background-color: #e67e22;
+            border-color: #e67e22;
+        }
+        .btn-info {
+            background-color: #3b82f6; 
+            border-color: #3b82f6;
+        }
 
-        /* Table Styling */
-        .table thead th {
-            background-color: var(--primary-blue);
-            color: var(--white);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        /* Modal Styling */
-        .modal-header {
-            background-color: var(--primary-blue);
-            color: white;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            border-bottom: 3px solid var(--secondary-gold);
-        }
-        .modal-header .btn-close {
-            filter: invert(1);
-        }
+        /* Table Styling */
+        .table thead th {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        /* Modal Styling */
+        .modal-header {
+            background-color: var(--primary-blue);
+            color: white;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            border-bottom: 3px solid var(--secondary-gold);
+        }
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
 
-        /* Toast Styling (Custom) */
-        .toast-container {
-            z-index: 1080; /* Higher than modals */
-        }
-        .custom-toast {
-            min-width: 250px;
-            font-weight: 500;
-            border-radius: 8px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            color: white;
-        }
-        .toast-success { background-color: var(--success-green); }
-        .toast-error { background-color: #dc3545; }
-        .toast-info { background-color: var(--primary-blue); }
+        /* Toast Styling (Custom) */
+        .toast-container {
+            z-index: 1080; /* Higher than modals */
+        }
+        .custom-toast {
+            min-width: 250px;
+            font-weight: 500;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            color: white;
+        }
+        .toast-success { background-color: var(--success-green); }
+        .toast-error { background-color: #dc3545; }
+        .toast-info { background-color: var(--primary-blue); }
 
-    </style>
+    </style>
 </head>
 <body>
 
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        </div>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        </div>
 
-    <nav class="navbar navbar-dark shadow-sm">
-        <div class="container-fluid container">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="https://placehold.co/60x55/F78C2F/0A3C59?text=PP" alt="شعار بترو-بارت" class="ms-3 rounded-2 shadow-lg" style="max-height: 55px;">
-                <div>
-                    <div class="header-title">
-                        بترو-بارت للمعدات البترولية
-                    </div>
-                    <div class="header-subtitle">
-                        إدارة المخزون والمبيعات الفورية
-                    </div>
-                </div>
-            </a>
-        </div>
-    </nav>
+    <nav class="navbar navbar-dark shadow-sm">
+        <div class="container-fluid container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="https://placehold.co/60x55/F78C2F/0A3C59?text=PP" alt="شعار بترو-بارت" class="ms-3 rounded-2 shadow-lg" style="max-height: 55px;">
+                <div>
+                    <div class="header-title">
+                        بترو-بارت للمعدات البترولية
+                    </div>
+                    <div class="header-subtitle">
+                        إدارة المخزون والمبيعات الفورية
+                    </div>
+                </div>
+            </a>
+        </div>
+    </nav>
 
-    <div class="container mt-4">
-        <div class="card p-4 mb-4">
-            <h5 class="card-title text-center mb-4" style="color: var(--primary-blue);">
-                <i class="fas fa-tools"></i> لوحة التحكم الرئيسية 
-            </h5>
-            <div class="row g-3 align-items-center">
-                <div class="col-md-4">
-                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 ابحث عن قطعة غيار بالاسم...">
-                </div>
-                <div class="col-md-3">
-                     <div class="input-group">
-                         <span class="input-group-text fw-bold">$ / SDG</span>
-                         <input type="number" id="dollarRateInput" class="form-control" placeholder="سعر الدولار اليوم" min="0" value="3400">
-                     </div>
-                </div>
-                <div class="col-md-5 text-md-end d-flex justify-content-end flex-wrap gap-2">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">
-                        <i class="fas fa-plus"></i> إضافة إسبير
-                    </button>
-                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#withdrawModal" id="openWithdrawModalBtn">
-                        <i class="fas fa-minus"></i> سحب (بيع)
-                    </button>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#salesReportModal">
-                        <i class="fas fa-chart-bar"></i> تقرير المبيعات
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div class="container mt-4">
+        <div class="card p-4 mb-4">
+            <h5 class="card-title text-center mb-4" style="color: var(--primary-blue);">
+                <i class="fas fa-tools"></i> لوحة التحكم الرئيسية 
+            </h5>
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 ابحث عن قطعة غيار بالاسم...">
+                </div>
+                <div class="col-md-3">
+                     <div class="input-group">
+                         <span class="input-group-text fw-bold">$ / SDG</span>
+                         <input type="number" id="dollarRateInput" class="form-control" placeholder="سعر الدولار اليوم" min="0" value="3400">
+                     </div>
+                </div>
+                <div class="col-md-5 text-md-end d-flex justify-content-end flex-wrap gap-2">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">
+                        <i class="fas fa-plus"></i> إضافة إسبير
+                    </button>
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#withdrawModal" id="openWithdrawModalBtn">
+                        <i class="fas fa-minus"></i> سحب (بيع)
+                    </button>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#salesReportModal">
+                        <i class="fas fa-chart-bar"></i> تقرير المبيعات
+                    </button>
+                </div>
+            </div>
+        </div>
 
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5><i class="fas fa-warehouse"></i> جرد المخزون الحالي</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
-                    <table class="table table-striped table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="text-center">ID</th>
-                                <th scope="col">اسم الإسبير</th>
-                                <th scope="col" class="text-center">العدد</th>
-                                <th scope="col" class="text-center">السعر ($)</th>
-                                <th scope="col" class="text-center">السعر (SDG)</th>
-                                <th scope="col" class="text-center">تاريخ التحديث</th>
-                                <th scope="col" class="text-center">إجراء</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTableBody">
-                            <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل المخزون...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-warehouse"></i> جرد المخزون الحالي</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="text-center">ID</th>
+                                <th scope="col">اسم الإسبير</th>
+                                <th scope="col" class="text-center">العدد</th>
+                                <th scope="col" class="text-center">السعر ($)</th>
+                                <th scope="col" class="text-center">السعر (SDG)</th>
+                                <th scope="col" class="text-center">تاريخ التحديث</th>
+                                <th scope="col" class="text-center">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل المخزون...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="modal fade" id="addPartModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-white"><i class="fas fa-plus-circle"></i> إضافة قطعة غيار جديدة</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addPartForm">
-                        <div class="mb-3">
-                            <label class="form-label">اسم الإسبير</label>
-                            <input type="text" class="form-control" id="partName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">الكمية الأولية</label>
-                            <input type="number" class="form-control" id="partQuantity" required min="1">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">السعر بالدولار ($)</label>
-                            <input type="number" class="form-control" id="partPriceUSD" required min="0" step="0.01">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">السعر بالجنيه (SDG)</label>
-                            <input type="text" class="form-control" id="partPriceSDG" readonly style="background-color: #e9ecef;">
-                             <div class="form-text text-muted">يتم حسابه تلقائيًا.</div>
-                        </div>
-                        <button type="submit" id="addPartSubmitBtn" class="btn btn-primary w-100 mt-2">
-                            <i class="fas fa-save"></i> إضافة إلى المخزون
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="addPartModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white"><i class="fas fa-plus-circle"></i> إضافة قطعة غيار جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPartForm">
+                        <div class="mb-3">
+                            <label class="form-label">اسم الإسبير</label>
+                            <input type="text" class="form-control" id="partName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الكمية الأولية</label>
+                            <input type="number" class="form-control" id="partQuantity" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">السعر بالدولار ($)</label>
+                            <input type="number" class="form-control" id="partPriceUSD" required min="0" step="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">السعر بالجنيه (SDG)</label>
+                            <input type="text" class="form-control" id="partPriceSDG" readonly style="background-color: #e9ecef;">
+                             <div class="form-text text-muted">يتم حسابه تلقائيًا.</div>
+                        </div>
+                        <button type="submit" id="addPartSubmitBtn" class="btn btn-primary w-100 mt-2">
+                            <i class="fas fa-save"></i> إضافة إلى المخزون
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="modal fade" id="editPartModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                 <div class="modal-header" style="background-color: #3b82f6;">
-                    <h5 class="modal-title text-white"><i class="fas fa-edit"></i> تعديل تفاصيل الإسبير</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editPartForm">
-                        <input type="hidden" id="editPartId">
-                        
-                        <div class="mb-3">
-                            <label class="form-label">اسم الإسبير</label>
-                            <input type="text" class="form-control" id="editPartName" required>
-                        </div>
+    <div class="modal fade" id="editPartModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                 <div class="modal-header" style="background-color: #3b82f6;">
+                    <h5 class="modal-title text-white"><i class="fas fa-edit"></i> تعديل تفاصيل الإسبير</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPartForm">
+                        <input type="hidden" id="editPartId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">اسم الإسبير</label>
+                            <input type="text" class="form-control" id="editPartName" required>
+                        </div>
 
-                         <div class="mb-3">
-                            <label class="form-label">السعر بالدولار ($)</label>
-                            <input type="number" class="form-control" id="editPartPriceUSD" required min="0" step="0.01">
-                        </div>
-                        
-                        <div class="alert alert-info">
-                            الكمية الحالية: <strong id="editPartCurrentQuantityDisplay">0</strong>. لا يمكن تعديل الكمية من هنا (استخدم السحب أو الإضافة).
-                        </div>
-                        
-                        <button type="submit" id="editPartSubmitBtn" class="btn btn-info w-100 mt-2">
-                            <i class="fas fa-sync-alt"></i> حفظ التعديلات
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+                         <div class="mb-3">
+                            <label class="form-label">السعر بالدولار ($)</label>
+                            <input type="number" class="form-control" id="editPartPriceUSD" required min="0" step="0.01">
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            الكمية الحالية: <strong id="editPartCurrentQuantityDisplay">0</strong>. لا يمكن تعديل الكمية من هنا (استخدم السحب أو الإضافة).
+                        </div>
+                        
+                        <button type="submit" id="editPartSubmitBtn" class="btn btn-info w-100 mt-2">
+                            <i class="fas fa-sync-alt"></i> حفظ التعديلات
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="modal fade" id="withdrawModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                 <div class="modal-header" style="background-color: var(--secondary-gold);">
-                    <h5 class="modal-title" style="color: var(--primary-blue);"><i class="fas fa-shopping-cart"></i> سحب و تسجيل عملية بيع</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: none;"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="withdrawForm">
-                        <div class="mb-3">
-                            <label class="form-label">اختر قطعة الغيار</label>
-                            <select class="form-select" id="withdrawPartSelect" required>
-                                <option value="" disabled selected>اختر الإسبير...</option>
-                            </select>
-                        </div>
+    <div class="modal fade" id="withdrawModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                 <div class="modal-header" style="background-color: var(--secondary-gold);">
+                    <h5 class="modal-title" style="color: var(--primary-blue);"><i class="fas fa-shopping-cart"></i> سحب و تسجيل عملية بيع</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: none;"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="withdrawForm">
+                        <div class="mb-3">
+                            <label class="form-label">اختر قطعة الغيار</label>
+                            <select class="form-select" id="withdrawPartSelect" required>
+                                <option value="" disabled selected>اختر الإسبير...</option>
+                            </select>
+                        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">الكمية المسحوبة (المبيعة)</label>
-                            <input type="number" class="form-control" id="withdrawQuantity" required min="1" placeholder="أدخل الكمية المسحوبة">
-                        </div>
-                        
-                        <div class="alert alert-warning text-center fw-bold" id="withdrawStockInfo">
-                            الكمية المتوفرة: <strong id="currentStockDisplay">0</strong>
-                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الكمية المسحوبة (المبيعة)</label>
+                            <input type="number" class="form-control" id="withdrawQuantity" required min="1" placeholder="أدخل الكمية المسحوبة">
+                        </div>
+                        
+                        <div class="alert alert-warning text-center fw-bold" id="withdrawStockInfo">
+                            الكمية المتوفرة: <strong id="currentStockDisplay">0</strong>
+                        </div>
 
-                        <button type="submit" id="withdrawSubmitBtn" class="btn btn-warning w-100 mt-2">
-                             <i class="fas fa-hand-holding-usd"></i> سحب وتسجيل البيع
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-     <div class="modal fade" id="salesReportModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                 <div class="modal-header" style="background-color: var(--success-green);">
-                    <h5 class="modal-title text-white"><i class="fas fa-file-invoice-dollar"></i> تقرير المبيعات (سجلات السحب)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row mb-4 text-center g-3">
-                        <div class="col-md-6 mb-2">
-                            <div class="p-3 border rounded shadow-sm bg-light">
-                                <h6>إجمالي المبيعات بالدولار</h6>
-                                <h4 class="text-primary fw-bolder">$<span id="totalSalesUSD">0.00</span></h4>
-                            </div>
-                        </div>
-                         <div class="col-md-6 mb-2">
-                            <div class="p-3 border rounded shadow-sm bg-light">
-                                <h6>إجمالي المبيعات بالجنيه السوداني</h6>
-                                <h4 style="color: var(--secondary-gold);" class="fw-bolder"><span id="totalSalesSDG">0.00</span> SDG</h4>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <p class="lead text-center fw-bold text-success border-bottom pb-2">تفاصيل جميع المسحوبات/المبيعات</p>
-                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-striped table-sm">
-                            <thead>
-                                <tr class="table-success">
-                                    <th>#</th>
-                                    <th>ID الإسبير</th>
-                                    <th>اسم الإسبير</th>
-                                    <th>الكمية المسحوبة</th>
-                                    <th>قيمة البيع ($)</th>
-                                    <th>قيمة البيع (SDG)</th>
-                                    <th>التاريخ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="salesReportTableBody">
-                                <tr><td colspan="7" class="text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل سجل المبيعات...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-
-    <script>
-        // ===================================================================================
-        // 🚀 روابط SheetDB API الخاصة بك 
-        // ===================================================================================
-        const STOCK_API_URL = "https://sheetdb.io/api/v1/wf5af4p93mza4"; // رابط ورقة المخزون
-        const LOG_API_URL = "https://sheetdb.io/api/v1/pcpeovdobs6cw"; // رابط ورقة سجل المبيعات
-        // ===================================================================================
-
-        // الحالة العامة للتطبيق
-        let inventoryData = [];
-        let currentDollarRate = 3400; 
-
-        // ===================================================================================
-        // ⚙️ أدوات مساعدة عامة (General Utilities)
-        // ===================================================================================
-
-        const getTodayDate = () => new Date().toISOString().split('T')[0];
-        const formatNumber = (num) => parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        
-        const showToast = (message, type = 'info') => {
-            const toastContainer = document.querySelector('.toast-container');
-            const toastElement = document.createElement('div');
-            
-            toastElement.className = `toast align-items-center text-white custom-toast toast-${type}`;
-            toastElement.setAttribute('role', 'alert');
-            toastElement.setAttribute('aria-live', 'assertive');
-            toastElement.setAttribute('aria-atomic', 'true');
-            toastElement.setAttribute('data-bs-delay', 5000);
-            
-            let icon = '';
-            if (type === 'success') icon = '<i class="fas fa-check-circle me-2"></i>';
-            else if (type === 'error') icon = '<i class="fas fa-times-circle me-2"></i>';
-            else icon = '<i class="fas fa-info-circle me-2"></i>';
-
-            toastElement.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body fw-bold">
-                        ${icon} ${message}
-                    </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" style="filter: invert(1);"></button>
-                </div>
-            `;
-            
-            toastContainer.appendChild(toastElement);
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
-            
-            toastElement.addEventListener('hidden.bs.toast', () => {
-                toastElement.remove();
-            });
-        };
-
-        const toggleLoading = (btnId, isLoading, originalText) => {
-            const btn = document.getElementById(btnId);
-            if (!btn) return;
-
-            if (isLoading) {
-                btn.disabled = true;
-                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> جاري ${originalText.split(' ')[1] || 'العمل'}...`;
-            } else {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        };
-
-        const safeFetch = async (url, options = {}, retries = 3) => {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.ok) {
-                        return response;
-                    }
-                    const errorText = await response.text();
-                    if (i === retries - 1) {
-                        throw new Error(`فشل إكمال الطلب (HTTP ${response.status}). تفاصيل الخادم: ${errorText}.`);
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-                } catch (error) {
-                    if (i === retries - 1) {
-                        throw new Error(`فشل إكمال الطلب بعد ${retries} محاولات. تفاصيل الخطأ الأخير: ${error.message}`);
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-                }
-            }
-        };
+                        <button type="submit" id="withdrawSubmitBtn" class="btn btn-warning w-100 mt-2">
+                             <i class="fas fa-hand-holding-usd"></i> سحب وتسجيل البيع
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+     <div class="modal fade" id="salesReportModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                 <div class="modal-header" style="background-color: var(--success-green);">
+                    <h5 class="modal-title text-white"><i class="fas fa-file-invoice-dollar"></i> تقرير المبيعات (سجلات السحب)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4 text-center g-3">
+                        <div class="col-md-6 mb-2">
+                            <div class="p-3 border rounded shadow-sm bg-light">
+                                <h6>إجمالي المبيعات بالدولار</h6>
+                                <h4 class="text-primary fw-bolder">$<span id="totalSalesUSD">0.00</span></h4>
+                            </div>
+                        </div>
+                         <div class="col-md-6 mb-2">
+                            <div class="p-3 border rounded shadow-sm bg-light">
+                                <h6>إجمالي المبيعات بالجنيه السوداني</h6>
+                                <h4 style="color: var(--secondary-gold);" class="fw-bolder"><span id="totalSalesSDG">0.00</span> SDG</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="lead text-center fw-bold text-success border-bottom pb-2">تفاصيل جميع المسحوبات/المبيعات</p>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr class="table-success">
+                                    <th>#</th>
+                                    <th>ID الإسبير</th>
+                                    <th>اسم الإسبير</th>
+                                    <th>الكمية المسحوبة</th>
+                                    <th>قيمة البيع ($)</th>
+                                    <th>قيمة البيع (SDG)</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesReportTableBody">
+                                <tr><td colspan="7" class="text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل سجل المبيعات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
-        // ===================================================================================
-        // 1. Fetch & Render Inventory (المخزون الرئيسي) - [تم التحديث]
-        // ===================================================================================
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
 
-        const fetchInventory = async () => {
-            currentDollarRate = parseFloat(document.getElementById('dollarRateInput').value) || 0;
-            
-            document.getElementById('inventoryTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل المخزون...</td></tr>';
-            try {
-                const response = await safeFetch(STOCK_API_URL);
-                let data = await response.json();
-                
-                // الاعتماد على عمود 'id' الحقيقي من الملف
-                inventoryData = data.map((item) => {
-                    const priceUSD = parseFloat(item.priceUSD) || 0;
-                    const priceSDG = priceUSD * currentDollarRate; 
-                    return { 
-                        ...item,
-                        id: parseInt(item.id), 
-                        quantity: parseInt(item.quantity) || 0,
-                        priceUSD: priceUSD,
-                        priceSDG: priceSDG,
-                    };
-                }).filter(item => item.partName && item.partName.trim() !== '');
-                
-                renderTable(inventoryData);
-                showToast('✅ تم تحديث المخزون بنجاح.', 'success');
+    <script>
+        // ===================================================================================
+        // 🚀 روابط SheetDB API الخاصة بك 
+        // ===================================================================================
+        const STOCK_API_URL = "https://sheetdb.io/api/v1/wf5af4p93mza4"; // رابط ورقة المخزون
+        const LOG_API_URL = "https://sheetdb.io/api/v1/pcpeovdobs6cw"; // رابط ورقة سجل المبيعات
+        // ===================================================================================
 
-            } catch (error) {
-                console.error("Error fetching inventory: ", error);
-                document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">❌ فشل تحميل المخزون. ${error.message}</td></tr>`;
-                showToast(`❌ فشل تحميل المخزون. تأكد من وجود عمود 'id'.`, 'error');
-            }
-        };
+        // الحالة العامة للتطبيق
+        let inventoryData = [];
+        let currentDollarRate = 3400; 
 
-        const renderTable = (parts) => {
-            const tableBody = document.getElementById('inventoryTableBody');
-            let rows = '';
-            
-            parts.sort((a, b) => (a.partName || '').localeCompare(b.partName || ''));
+        // ===================================================================================
+        // ⚙️ أدوات مساعدة عامة (General Utilities)
+        // ===================================================================================
 
-            parts.forEach((part) => {
-                const quantityClass = part.quantity <= 10 ? 'text-danger fw-bold' : 'text-success fw-bold';
-                rows += `
-                    <tr>
-                        <td class="text-center">${part.id}</td>
-                        <td>${part.partName || 'غير محدد'}</td>
-                        <td class="text-center ${quantityClass}">${part.quantity}</td>
-                        <td class="text-center" style="color: var(--secondary-gold);">$${formatNumber(part.priceUSD)}</td>
-                        <td class="text-center" style="color: var(--primary-blue);">${formatNumber(part.priceSDG)} SDG</td>
-                        <td class="text-center">${part.lastUpdateDate || 'لم يتم تحديثه'}</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-info" onclick="openEditPartModal(${part.id})">
-                                <i class="fas fa-edit"></i> تعديل
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center py-5 text-muted">لا توجد قطع غيار في المخزون.</td></tr>';
-            populateWithdrawalDropdown(parts);
-        };
+        const getTodayDate = () => new Date().toISOString().split('T')[0];
+        const formatNumber = (num) => parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        const showToast = (message, type = 'info') => {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastElement = document.createElement('div');
+            
+            toastElement.className = `toast align-items-center text-white custom-toast toast-${type}`;
+            toastElement.setAttribute('role', 'alert');
+            toastElement.setAttribute('aria-live', 'assertive');
+            toastElement.setAttribute('aria-atomic', 'true');
+            toastElement.setAttribute('data-bs-delay', 5000);
+            
+            let icon = '';
+            if (type === 'success') icon = '<i class="fas fa-check-circle me-2"></i>';
+            else if (type === 'error') icon = '<i class="fas fa-times-circle me-2"></i>';
+            else icon = '<i class="fas fa-info-circle me-2"></i>';
 
-        // ===================================================================================
-        // 2. Add Part Logic (POST to Stock)
-        // ===================================================================================
-        
-        const calculateSDG = (usdInputId, sdgOutputId) => {
-            currentDollarRate = parseFloat(document.getElementById('dollarRateInput').value) || 0;
-            const priceUSD = parseFloat(document.getElementById(usdInputId).value) || 0;
-            document.getElementById(sdgOutputId).value = (currentDollarRate * priceUSD).toFixed(2);
-        };
+            toastElement.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body fw-bold">
+                        ${icon} ${message}
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close" style="filter: invert(1);"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toastElement);
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        };
 
-        document.getElementById('dollarRateInput').addEventListener('input', fetchInventory); 
-        document.getElementById('partPriceUSD').addEventListener('input', () => calculateSDG('partPriceUSD', 'partPriceSDG'));
-        
-        document.getElementById('addPartForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btnId = 'addPartSubmitBtn';
-            const originalText = document.getElementById(btnId).innerHTML;
-            toggleLoading(btnId, true, originalText);
+        const toggleLoading = (btnId, isLoading, originalText) => {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
 
-            calculateSDG('partPriceUSD', 'partPriceSDG'); 
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> جاري ${originalText.split(' ')[1] || 'العمل'}...`;
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        };
 
-            const partName = document.getElementById('partName').value.trim();
-            const quantity = parseInt(document.getElementById('partQuantity').value);
-            const priceUSD = parseFloat(document.getElementById('partPriceUSD').value);
-            const priceSDG = parseFloat(document.getElementById('partPriceSDG').value);
-            
-            try {
-                // ملاحظة: عند الإضافة، يجب ألا نرسل id، ليتم إنشاؤه تلقائيا في ملف Sheet
-                await safeFetch(STOCK_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        data: [{ 
-                            partName: partName,
-                            quantity: quantity,
-                            priceUSD: priceUSD.toFixed(2),
-                            priceSDG: priceSDG.toFixed(2),
-                            lastUpdateDate: getTodayDate(), 
-                        }]
-                    })
-                });
+        const safeFetch = async (url, options = {}, retries = 3) => {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    const errorText = await response.text();
+                    if (i === retries - 1) {
+                        throw new Error(`فشل إكمال الطلب (HTTP ${response.status}). تفاصيل الخادم: ${errorText}.`);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                } catch (error) {
+                    if (i === retries - 1) {
+                        throw new Error(`فشل إكمال الطلب بعد ${retries} محاولات. تفاصيل الخطأ الأخير: ${error.message}`);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                }
+            }
+        };
 
-                showToast(`✅ تمت إضافة "${partName}" إلى المخزون بنجاح.`, 'success');
-                document.getElementById('addPartForm').reset();
-                bootstrap.Modal.getInstance(document.getElementById('addPartModal')).hide();
-                fetchInventory();
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                showToast(`❌ خطأ في الإضافة: ${error.message}`, 'error');
-            } finally {
-                toggleLoading(btnId, false, originalText);
-            }
-        });
-        
-        // ===================================================================================
-        // 3. Edit Details Logic (PATCH to Stock) - [تم التحديث]
-        // ===================================================================================
-        
-        const openEditPartModal = (partId) => {
-            const part = inventoryData.find(p => p.id === partId);
-            if (!part) return showToast('خطأ: لم يتم العثور على قطعة الغيار.', 'error');
 
-            document.getElementById('editPartId').value = part.id;
-            document.getElementById('editPartName').value = part.partName;
-            document.getElementById('editPartPriceUSD').value = part.priceUSD.toFixed(2);
-            document.getElementById('editPartCurrentQuantityDisplay').innerText = part.quantity;
-            
-            const editModal = new bootstrap.Modal(document.getElementById('editPartModal'));
-            editModal.show();
-        };
+        // ===================================================================================
+        // 1. Fetch & Render Inventory (المخزون الرئيسي)
+        // ===================================================================================
 
-        document.getElementById('editPartForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btnId = 'editPartSubmitBtn';
-            const originalText = document.getElementById(btnId).innerHTML;
-            toggleLoading(btnId, true, originalText);
+        const fetchInventory = async () => {
+            currentDollarRate = parseFloat(document.getElementById('dollarRateInput').value) || 0;
+            
+            document.getElementById('inventoryTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل المخزون...</td></tr>';
+            try {
+                const response = await safeFetch(STOCK_API_URL);
+                let data = await response.json();
+                
+                // تجهيز البيانات
+                inventoryData = data.map((item) => {
+                    const priceUSD = parseFloat(item.priceUSD) || 0;
+                    const priceSDG = priceUSD * currentDollarRate; 
+                    return { 
+                        ...item,
+                        id: parseInt(item.id), 
+                        quantity: parseInt(item.quantity) || 0,
+                        priceUSD: priceUSD,
+                        priceSDG: priceSDG,
+                    };
+                }).filter(item => item.partName && item.partName.trim() !== '' && !isNaN(item.id));
+                
+                renderTable(inventoryData);
+                showToast('✅ تم تحديث المخزون بنجاح.', 'success');
 
-            const partId = document.getElementById('editPartId').value;
-            const newPartName = document.getElementById('editPartName').value.trim();
-            const newPriceUSD = parseFloat(document.getElementById('editPartPriceUSD').value);
-            const newPriceSDG = (newPriceUSD * currentDollarRate).toFixed(2); 
-            
-            try {
-                // استخدام عمود 'id' لتحديد الصف المراد تحديثه
-                const updateUrl = `${STOCK_API_URL}/id/${partId}`; 
-                
-                await safeFetch(updateUrl, {
-                    method: 'PATCH', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        data: {
-                            partName: newPartName,
-                            priceUSD: newPriceUSD.toFixed(2),
-                            priceSDG: newPriceSDG, 
-                            lastUpdateDate: getTodayDate(), 
-                        }
-                    })
-                });
+            } catch (error) {
+                console.error("Error fetching inventory: ", error);
+                document.getElementById('inventoryTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">❌ فشل تحميل المخزون. ${error.message}</td></tr>`;
+                showToast(`❌ فشل تحميل المخزون. تأكد من صحة الـ API ووجود عمود 'id'.`, 'error');
+            }
+        };
 
-                showToast(`✅ تم تحديث تفاصيل "${newPartName}" بنجاح.`, 'success');
-                bootstrap.Modal.getInstance(document.getElementById('editPartModal')).hide();
-                fetchInventory(); 
-            } catch (error) {
-                console.error("Error updating details: ", error);
-                showToast(`❌ خطأ في التحديث: ${error.message}`, 'error');
-            } finally {
-                toggleLoading(btnId, false, originalText);
-            }
-        });
-        
-        // ===================================================================================
-        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log) - [تم التحديث]
-        // ===================================================================================
+        const renderTable = (parts) => {
+            const tableBody = document.getElementById('inventoryTableBody');
+            let rows = '';
+            
+            parts.sort((a, b) => (a.partName || '').localeCompare(b.partName || ''));
 
-        const populateWithdrawalDropdown = (parts) => {
-            const select = document.getElementById('withdrawPartSelect');
-            select.innerHTML = '<option value="" disabled selected>اختر الإسبير...</option>';
-            parts.forEach(part => {
-                if (part.quantity > 0) {
-                    const option = document.createElement('option');
-                    option.value = part.id;
-                    option.innerText = `${part.partName} (متوفر: ${part.quantity})`;
-                    select.appendChild(option);
-                }
-            });
-        };
+            parts.forEach((part) => {
+                const quantityClass = part.quantity <= 10 ? 'text-danger fw-bold' : 'text-success fw-bold';
+                rows += `
+                    <tr>
+                        <td class="text-center">${part.id}</td>
+                        <td>${part.partName || 'غير محدد'}</td>
+                        <td class="text-center ${quantityClass}">${part.quantity}</td>
+                        <td class="text-center" style="color: var(--secondary-gold);">$${formatNumber(part.priceUSD)}</td>
+                        <td class="text-center" style="color: var(--primary-blue);">${formatNumber(part.priceSDG)} SDG</td>
+                        <td class="text-center">${part.lastUpdateDate || 'لم يتم تحديثه'}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-info" onclick="openEditPartModal(${part.id})">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center py-5 text-muted">لا توجد قطع غيار في المخزون.</td></tr>';
+            populateWithdrawalDropdown(parts);
+        };
 
-        document.getElementById('withdrawPartSelect').addEventListener('change', (e) => {
-            const selectedId = e.target.value;
-            const part = inventoryData.find(p => p.id == selectedId);
-            document.getElementById('currentStockDisplay').innerText = part ? part.quantity : '0';
-        });
+        // ===================================================================================
+        // 2. Add Part Logic (POST to Stock)
+        // ===================================================================================
+        
+        const calculateSDG = (usdInputId, sdgOutputId) => {
+            currentDollarRate = parseFloat(document.getElementById('dollarRateInput').value) || 0;
+            const priceUSD = parseFloat(document.getElementById(usdInputId).value) || 0;
+            document.getElementById(sdgOutputId).value = (currentDollarRate * priceUSD).toFixed(2);
+        };
 
-        document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btnId = 'withdrawSubmitBtn';
-            const originalText = document.getElementById(btnId).innerHTML;
-            toggleLoading(btnId, true, originalText);
+        document.getElementById('dollarRateInput').addEventListener('input', fetchInventory); 
+        document.getElementById('partPriceUSD').addEventListener('input', () => calculateSDG('partPriceUSD', 'partPriceSDG'));
+        
+        document.getElementById('addPartForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnId = 'addPartSubmitBtn';
+            const originalText = document.getElementById(btnId).innerHTML;
+            toggleLoading(btnId, true, originalText);
 
-            const partId = document.getElementById('withdrawPartSelect').value;
-            const withdrawQuantity = parseInt(document.getElementById('withdrawQuantity').value);
-            
-            const partIdInt = parseInt(partId);
-            const part = inventoryData.find(p => p.id === partIdInt);
+            calculateSDG('partPriceUSD', 'partPriceSDG'); 
 
-            if (!part) {
-                showToast('❌ خطأ: يرجى اختيار قطعة غيار صالحة.', 'error');
-                toggleLoading(btnId, false, originalText); return;
-            }
-            if (isNaN(withdrawQuantity) || withdrawQuantity <= 0) {
-                showToast('❌ خطأ: يرجى إدخال كمية صحيحة.', 'error');
-                toggleLoading(btnId, false, originalText); return;
-            }
-            if (withdrawQuantity > part.quantity) {
-                showToast('❌ الكمية المطلوبة أكبر من المتوفر بالمخزون!', 'error');
-                toggleLoading(btnId, false, originalText); return;
-            }
+            const partName = document.getElementById('partName').value.trim();
+            const quantity = parseInt(document.getElementById('partQuantity').value);
+            const priceUSD = parseFloat(document.getElementById('partPriceUSD').value);
+            const priceSDG = parseFloat(document.getElementById('partPriceSDG').value);
+            
+            try {
+                // ملاحظة: عند الإضافة، لا نرسل id، ليتم إنشاؤه تلقائيا في ملف Sheet
+                await safeFetch(STOCK_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: [{ 
+                            partName: partName,
+                            quantity: quantity,
+                            priceUSD: priceUSD.toFixed(2),
+                            priceSDG: priceSDG.toFixed(2),
+                            lastUpdateDate: getTodayDate(), 
+                        }]
+                    })
+                });
 
-            const newQuantity = part.quantity - withdrawQuantity;
-            const saleValueUSD = withdrawQuantity * part.priceUSD;
-            const saleValueSDG = withdrawQuantity * part.priceSDG;
+                showToast(`✅ تمت إضافة "${partName}" إلى المخزون بنجاح.`, 'success');
+                document.getElementById('addPartForm').reset();
+                bootstrap.Modal.getInstance(document.getElementById('addPartModal')).hide();
+                fetchInventory();
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showToast(`❌ خطأ في الإضافة: ${error.message}`, 'error');
+            } finally {
+                toggleLoading(btnId, false, originalText);
+            }
+        });
+        
+        // ===================================================================================
+        // 3. Edit Details Logic (PATCH to Stock)
+        // ===================================================================================
+        
+        const openEditPartModal = (partId) => {
+            const part = inventoryData.find(p => p.id === partId);
+            if (!part) return showToast('خطأ: لم يتم العثور على قطعة الغيار.', 'error');
 
-            try {
-                // استخدام عمود 'id' لتحديد الصف المراد تحديثه
-                const updateUrl = `${STOCK_API_URL}/id/${part.id}`;
-                
-                await safeFetch(updateUrl, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        data: {
-                            quantity: newQuantity,
-                            lastUpdateDate: getTodayDate()
-                        }
-                    })
-                });
+            document.getElementById('editPartId').value = part.id;
+            document.getElementById('editPartName').value = part.partName;
+            document.getElementById('editPartPriceUSD').value = part.priceUSD.toFixed(2);
+            document.getElementById('editPartCurrentQuantityDisplay').innerText = part.quantity;
+            
+            const editModal = new bootstrap.Modal(document.getElementById('editPartModal'));
+            editModal.show();
+        };
 
-                await safeFetch(LOG_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        data: [{
-                            partId: part.id,
-                            partName: part.partName,
-                            quantitySold: withdrawQuantity,
-                            saleValueUSD: saleValueUSD.toFixed(2),
-                            saleValueSDG: saleValueSDG.toFixed(2),
-                            transactionDate: new Date().toISOString()
-                        }]
-                    })
-                });
+        document.getElementById('editPartForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnId = 'editPartSubmitBtn';
+            const originalText = document.getElementById(btnId).innerHTML;
+            toggleLoading(btnId, true, originalText);
 
-                showToast(`✅ تم سحب ${withdrawQuantity} من "${part.partName}" بنجاح.`, 'success');
-                document.getElementById('withdrawForm').reset();
-                document.getElementById('currentStockDisplay').innerText = '0';
-                bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
-                fetchInventory();
+            const partId = document.getElementById('editPartId').value;
+            const newPartName = document.getElementById('editPartName').value.trim();
+            const newPriceUSD = parseFloat(document.getElementById('editPartPriceUSD').value);
+            const newPriceSDG = (newPriceUSD * currentDollarRate).toFixed(2); 
+            
+            try {
+                // استخدام عمود 'id' لتحديد الصف المراد تحديثه
+                const updateUrl = `${STOCK_API_URL}/id/${partId}`; 
+                
+                await safeFetch(updateUrl, {
+                    method: 'PATCH', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: {
+                            partName: newPartName,
+                            priceUSD: newPriceUSD.toFixed(2),
+                            priceSDG: newPriceSDG, 
+                            lastUpdateDate: getTodayDate(), 
+                        }
+                    })
+                });
 
-            } catch (error) {
-                console.error("Error during withdrawal: ", error);
-                showToast(`❌ فشلت عملية السحب: ${error.message}`, 'error');
-            } finally {
-                toggleLoading(btnId, false, originalText);
-            }
-        });
-        
-        // ===================================================================================
-        // 5. Sales Report Logic (GET from Log)
-        // ===================================================================================
-        
-        document.getElementById('salesReportModal').addEventListener('show.bs.modal', async () => {
-            const tableBody = document.getElementById('salesReportTableBody');
-            tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل سجل المبيعات...</td></tr>';
-            
-            try {
-                const response = await safeFetch(LOG_API_URL);
-                const sales = await response.json();
-                
-                let totalUSD = 0;
-                let totalSDG = 0;
-                let rows = '';
+                showToast(`✅ تم تحديث تفاصيل "${newPartName}" بنجاح.`, 'success');
+                bootstrap.Modal.getInstance(document.getElementById('editPartModal')).hide();
+                fetchInventory(); 
+            } catch (error) {
+                console.error("Error updating details: ", error);
+                showToast(`❌ خطأ في التحديث: ${error.message}`, 'error');
+            } finally {
+                toggleLoading(btnId, false, originalText);
+            }
+        });
+        
+        // ===================================================================================
+        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log) - (الكود المصحح) 🟢
+        // ===================================================================================
 
-                sales.reverse().forEach((sale, index) => {
-                    const saleUSD = parseFloat(sale.saleValueUSD) || 0;
-                    const saleSDG = parseFloat(sale.saleValueSDG) || 0;
-                    totalUSD += saleUSD;
-                    totalSDG += saleSDG;
+        const populateWithdrawalDropdown = (parts) => {
+            const select = document.getElementById('withdrawPartSelect');
+            select.innerHTML = '<option value="" disabled selected>اختر الإسبير...</option>';
+            parts.forEach(part => {
+                if (part.quantity > 0) {
+                    const option = document.createElement('option');
+                    option.value = part.id;
+                    option.innerText = `${part.partName} (متوفر: ${part.quantity})`;
+                    select.appendChild(option);
+                }
+            });
+        };
 
-                    rows += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${sale.partId || '-'}</td>
-                            <td>${sale.partName || 'غير محدد'}</td>
-                            <td>${sale.quantitySold || '0'}</td>
-                            <td>$${formatNumber(saleUSD)}</td>
-                            <td>${formatNumber(saleSDG)} SDG</td>
-                            <td>${new Date(sale.transactionDate).toLocaleDateString('ar-EG')}</td>
-                        </tr>
-                    `;
-                });
-                
-                document.getElementById('totalSalesUSD').innerText = formatNumber(totalUSD);
-                document.getElementById('totalSalesSDG').innerText = formatNumber(totalSDG);
-                tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center text-muted">لا توجد سجلات مبيعات حتى الآن.</td></tr>';
+        document.getElementById('withdrawPartSelect').addEventListener('change', (e) => {
+            const selectedId = e.target.value;
+            const part = inventoryData.find(p => p.id == selectedId);
+            document.getElementById('currentStockDisplay').innerText = part ? part.quantity : '0';
+        });
 
-            } catch(error) {
-                console.error("Error fetching sales report:", error);
-                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل التقرير: ${error.message}</td></tr>`;
-                showToast('❌ فشل تحميل تقرير المبيعات.', 'error');
-            }
-        });
+        document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnId = 'withdrawSubmitBtn';
+            const originalText = document.getElementById(btnId).innerHTML;
+            toggleLoading(btnId, true, originalText);
 
-        // ===================================================================================
-        // 6. Search & Initialization
-        // ===================================================================================
-        
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredData = inventoryData.filter(part => part.partName.toLowerCase().includes(searchTerm));
-            renderTable(filteredData);
-        });
+            const partId = document.getElementById('withdrawPartSelect').value;
+            const withdrawQuantity = parseInt(document.getElementById('withdrawQuantity').value);
+            
+            const partIdInt = parseInt(partId);
+            const part = inventoryData.find(p => p.id === partIdInt);
 
-        document.addEventListener('DOMContentLoaded', fetchInventory);
-    </script>
+            if (!part) {
+                showToast('❌ خطأ: يرجى اختيار قطعة غيار صالحة.', 'error');
+                toggleLoading(btnId, false, originalText); return;
+            }
+            if (isNaN(withdrawQuantity) || withdrawQuantity <= 0) {
+                showToast('❌ خطأ: يرجى إدخال كمية صحيحة.', 'error');
+                toggleLoading(btnId, false, originalText); return;
+            }
+            if (withdrawQuantity > part.quantity) {
+                showToast('❌ الكمية المطلوبة أكبر من المتوفر بالمخزون!', 'error');
+                toggleLoading(btnId, false, originalText); return;
+            }
 
+            const newQuantity = part.quantity - withdrawQuantity;
+            const saleValueUSD = withdrawQuantity * part.priceUSD;
+            const saleValueSDG = withdrawQuantity * part.priceSDG;
+            
+            try {
+                // 1. تحديث كمية المخزون (PATCH Stock)
+                const stockUpdateUrl = `${STOCK_API_URL}/id/${partId}`;
+                await safeFetch(stockUpdateUrl, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: {
+                            quantity: newQuantity,
+                            lastUpdateDate: getTodayDate(),
+                        }
+                    })
+                });
+
+                // 2. تسجيل عملية البيع (POST Log)
+                await safeFetch(LOG_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: [{ 
+                            partId: part.id,
+                            partName: part.partName,
+                            quantitySold: withdrawQuantity,
+                            priceUSD: saleValueUSD.toFixed(2),
+                            priceSDG: saleValueSDG.toFixed(2),
+                            saleDate: getTodayDate(), 
+                        }]
+                    })
+                });
+
+                showToast(`✅ تم بيع ${withdrawQuantity} من "${part.partName}" بنجاح.`, 'success');
+                document.getElementById('withdrawForm').reset();
+                bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
+                fetchInventory(); // إعادة تحميل المخزون ليعكس الكمية الجديدة
+
+            } catch (error) {
+                console.error("Error during withdrawal process: ", error);
+                showToast(`❌ خطأ في عملية السحب: ${error.message}`, 'error');
+            } finally {
+                toggleLoading(btnId, false, originalText);
+            }
+        });
+        
+
+        // ===================================================================================
+        // 5. Fetch & Render Sales Log (تقرير المبيعات) - (وظيفة جديدة) 🟢
+        // ===================================================================================
+
+        const fetchSalesLog = async () => {
+            document.getElementById('salesReportTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل سجل المبيعات...</td></tr>';
+            document.getElementById('totalSalesUSD').innerText = '0.00';
+            document.getElementById('totalSalesSDG').innerText = '0.00';
+
+            try {
+                const response = await safeFetch(LOG_API_URL);
+                const salesData = await response.json();
+
+                let rows = '';
+                let totalUSD = 0;
+                let totalSDG = 0;
+
+                // فرز البيانات بترتيب تنازلي حسب التاريخ (الأحدث أولاً)
+                salesData.sort((a, b) => (b.saleDate || '').localeCompare(a.saleDate || ''));
+
+                salesData.forEach((sale, index) => {
+                    const quantitySold = parseInt(sale.quantitySold) || 0;
+                    const priceUSD = parseFloat(sale.priceUSD) || 0;
+                    const priceSDG = parseFloat(sale.priceSDG) || 0;
+
+                    totalUSD += priceUSD;
+                    totalSDG += priceSDG;
+
+                    rows += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${sale.partId || 'N/A'}</td>
+                            <td>${sale.partName || 'غير محدد'}</td>
+                            <td class="text-center">${quantitySold}</td>
+                            <td class="text-center">$${formatNumber(priceUSD)}</td>
+                            <td class="text-center">${formatNumber(priceSDG)} SDG</td>
+                            <td>${sale.saleDate || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('salesReportTableBody').innerHTML = rows || '<tr><td colspan="7" class="text-center py-3 text-muted">لا توجد سجلات مبيعات حتى الآن.</td></tr>';
+                document.getElementById('totalSalesUSD').innerText = formatNumber(totalUSD);
+                document.getElementById('totalSalesSDG').innerText = formatNumber(totalSDG);
+
+            } catch (error) {
+                console.error("Error fetching sales log: ", error);
+                document.getElementById('salesReportTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">❌ فشل تحميل سجل المبيعات. ${error.message}</td></tr>`;
+                showToast('❌ فشل تحميل تقرير المبيعات.', 'error');
+            }
+        };
+
+
+        // ===================================================================================
+        // 6. Event Listeners & Initial Load
+        // ===================================================================================
+
+        // تصفية البحث
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const filteredData = inventoryData.filter(part => 
+                (part.partName || '').toLowerCase().includes(searchTerm) || 
+                (part.id && part.id.toString().includes(searchTerm))
+            );
+            renderTable(filteredData);
+        });
+
+        // تشغيل وظيفة جلب تقرير المبيعات عند فتح المودال
+        document.getElementById('salesReportModal').addEventListener('show.bs.modal', fetchSalesLog);
+        
+        // تحميل البيانات عند بدء التشغيل
+        document.addEventListener('DOMContentLoaded', fetchInventory);
+
+    </script>
 </body>
 </html>
