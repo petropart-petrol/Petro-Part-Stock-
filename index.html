@@ -3,18 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة مخزن بتروبارت</title>
+    <title>إدارة مخزن قطع غيار - بتروبارت</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --secondary: #1e40af;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --warning: #d97706;
-            --light: #f8fafc;
-            --dark: #1e293b;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -23,28 +13,31 @@
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: var(--dark);
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
         
-        .header {
-            background: white;
-            border-radius: 15px;
+        header {
+            background: #1e3a8a;
+            color: white;
             padding: 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
         }
         
         .logo {
@@ -55,13 +48,12 @@
         
         .logo i {
             font-size: 2rem;
-            color: var(--primary);
         }
         
         .exchange-rate {
-            background: var(--light);
+            background: rgba(255,255,255,0.2);
             padding: 10px 15px;
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -70,39 +62,12 @@
         .exchange-rate input {
             width: 100px;
             padding: 5px 10px;
-            border: 1px solid #ddd;
+            border: none;
             border-radius: 5px;
             text-align: center;
         }
         
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .stat-card i {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-        
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .search-add {
+        .controls {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
@@ -112,14 +77,14 @@
         .search-box {
             flex: 1;
             position: relative;
-            min-width: 250px;
+            min-width: 300px;
         }
         
         .search-box input {
             width: 100%;
             padding: 12px 45px 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 1rem;
         }
         
@@ -132,48 +97,57 @@
         }
         
         .btn {
-            padding: 12px 25px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .btn-primary {
-            background: var(--primary);
+            background: #3b82f6;
             color: white;
         }
         
         .btn-success {
-            background: var(--success);
+            background: #10b981;
             color: white;
         }
         
         .btn-warning {
-            background: var(--warning);
+            background: #f59e0b;
             color: white;
         }
         
         .btn-danger {
-            background: var(--danger);
+            background: #ef4444;
             color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
         
         .card {
             background: white;
-            border-radius: 15px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             overflow: hidden;
         }
         
         .card-header {
-            padding: 20px;
+            padding: 15px 20px;
             border-bottom: 1px solid #eee;
             font-weight: bold;
             font-size: 1.2rem;
+            background: #f8fafc;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -185,7 +159,7 @@
         }
         
         .table th {
-            background: var(--light);
+            background: #f1f5f9;
             padding: 15px;
             text-align: right;
             font-weight: 600;
@@ -198,13 +172,12 @@
         }
         
         .table tr:hover {
-            background: #f8f9fa;
+            background: #f8fafc;
         }
         
         .action-buttons {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
         }
         
         .btn-sm {
@@ -221,12 +194,12 @@
         
         .badge-success {
             background: #dcfce7;
-            color: var(--success);
+            color: #16a34a;
         }
         
         .badge-danger {
             background: #fee2e2;
-            color: var(--danger);
+            color: #dc2626;
         }
         
         .modal {
@@ -244,7 +217,7 @@
         
         .modal-content {
             background: white;
-            border-radius: 15px;
+            border-radius: 10px;
             width: 90%;
             max-width: 500px;
             max-height: 90vh;
@@ -299,7 +272,7 @@
         
         .alert-info {
             background: #dbeafe;
-            color: var(--primary);
+            color: #1e40af;
         }
         
         .loading {
@@ -309,7 +282,7 @@
         
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
+            border-top: 4px solid #3b82f6;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -328,7 +301,7 @@
             left: 20px;
             background: white;
             padding: 15px 20px;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
@@ -343,21 +316,26 @@
         }
         
         .toast-success {
-            border-right: 4px solid var(--success);
+            border-right: 4px solid #10b981;
         }
         
         .toast-error {
-            border-right: 4px solid var(--danger);
+            border-right: 4px solid #ef4444;
         }
         
         @media (max-width: 768px) {
-            .header {
+            .header-content {
                 flex-direction: column;
+                gap: 15px;
                 text-align: center;
             }
             
-            .stats {
-                grid-template-columns: 1fr 1fr;
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
             }
             
             .action-buttons {
@@ -372,62 +350,30 @@
                 padding: 10px 5px;
             }
         }
-        
-        @media (max-width: 480px) {
-            .stats {
-                grid-template-columns: 1fr;
-            }
-            
-            .search-add {
-                flex-direction: column;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- الرأس -->
-        <div class="header">
-            <div class="logo">
-                <i class="fas fa-oil-can"></i>
-                <div>
-                    <h1>نظام إدارة المخزون</h1>
-                    <p>شركة بتروبارت لمعدات البترول</p>
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-oil-can"></i>
+                    <div>
+                        <h1>إدارة مخزن قطع غيار</h1>
+                        <p>شركة بتروبارت لمعدات البترول المحدودة</p>
+                    </div>
+                </div>
+                <div class="exchange-rate">
+                    <span>سعر الدولار:</span>
+                    <input type="number" id="exchangeRate" value="3400">
+                    <span>جنيه سوداني</span>
                 </div>
             </div>
-            <div class="exchange-rate">
-                <span>سعر الدولار:</span>
-                <input type="number" id="exchangeRate" value="3400">
-                <span>جنيه سوداني</span>
-            </div>
-        </div>
+        </header>
 
-        <!-- الإحصائيات -->
-        <div class="stats">
-            <div class="stat-card">
-                <i class="fas fa-boxes"></i>
-                <div class="stat-number" id="totalItems">0</div>
-                <div>إجمالي قطع الغيار</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-shopping-cart"></i>
-                <div class="stat-number" id="totalSales">0</div>
-                <div>إجمالي المبيعات</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-dollar-sign"></i>
-                <div class="stat-number" id="totalValue">0</div>
-                <div>القيمة الإجمالية</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-exchange-alt"></i>
-                <div class="stat-number" id="totalTransactions">0</div>
-                <div>إجمالي العمليات</div>
-            </div>
-        </div>
-
-        <!-- البحث والإضافة -->
-        <div class="search-add">
+        <!-- عناصر التحكم -->
+        <div class="controls">
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="ابحث عن قطع الغيار...">
@@ -435,13 +381,16 @@
             <button class="btn btn-primary" onclick="openModal('addItemModal')">
                 <i class="fas fa-plus"></i> إضافة قطعة غيار
             </button>
+            <button class="btn btn-success" onclick="openModal('salesReportModal')">
+                <i class="fas fa-chart-bar"></i> تقرير المبيعات
+            </button>
         </div>
 
         <!-- جدول المخزون -->
         <div class="card">
             <div class="card-header">
                 <span>سجل المخزون</span>
-                <button class="btn btn-sm btn-primary" onclick="loadAllData()">
+                <button class="btn btn-sm btn-primary" onclick="loadInventoryData()">
                     <i class="fas fa-sync-alt"></i> تحديث
                 </button>
             </div>
@@ -458,40 +407,11 @@
                             <th>الكمية</th>
                             <th>السعر (دولار)</th>
                             <th>السعر (جنيه)</th>
-                            <th>التاريخ</th>
+                            <th>تاريخ التحديث</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryTable">
-                        <!-- سيتم ملؤه ديناميكياً -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- تقرير المبيعات -->
-        <div class="card">
-            <div class="card-header">
-                <span>تقرير المبيعات</span>
-            </div>
-            <div id="salesLoading" class="loading">
-                <div class="spinner"></div>
-                <p>جاري تحميل تقرير المبيعات...</p>
-            </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>اسم قطعة الغيار</th>
-                            <th>الكمية المباعة</th>
-                            <th>السعر (دولار)</th>
-                            <th>القيمة (دولار)</th>
-                            <th>القيمة (جنيه)</th>
-                            <th>التاريخ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="salesReportTable">
                         <!-- سيتم ملؤه ديناميكياً -->
                     </tbody>
                 </table>
@@ -563,31 +483,39 @@
         </div>
     </div>
 
-    <!-- نموذج التعديل -->
-    <div id="editItemModal" class="modal">
-        <div class="modal-content">
+    <!-- نموذج تقرير المبيعات -->
+    <div id="salesReportModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
-                <h3>تعديل بيانات القطعة</h3>
-                <button onclick="closeModal('editItemModal')" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">×</button>
+                <h3>تقرير المبيعات</h3>
+                <button onclick="closeModal('salesReportModal')" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">×</button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="editItemId">
-                <div class="form-group">
-                    <label>اسم قطعة الغيار</label>
-                    <input type="text" id="editItemName" class="form-control" required>
+                <div id="salesLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل تقرير المبيعات...</p>
                 </div>
-                <div class="form-group">
-                    <label>الكمية</label>
-                    <input type="number" id="editItemQuantity" class="form-control" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label>السعر (دولار)</label>
-                    <input type="number" id="editItemPrice" class="form-control" step="0.01" min="0" required>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم قطعة الغيار</th>
+                                <th>الكمية المباعة</th>
+                                <th>السعر (دولار)</th>
+                                <th>القيمة (دولار)</th>
+                                <th>القيمة (جنيه)</th>
+                                <th>التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesReportTable">
+                            <!-- سيتم ملؤه ديناميكياً -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn" onclick="closeModal('editItemModal')">إلغاء</button>
-                <button class="btn btn-primary" onclick="updateItem()">تحديث</button>
+                <button class="btn" onclick="closeModal('salesReportModal')">إغلاق</button>
             </div>
         </div>
     </div>
@@ -615,7 +543,7 @@
         
         // تهيئة التطبيق
         document.addEventListener('DOMContentLoaded', function() {
-            loadAllData();
+            loadInventoryData();
             setupEventListeners();
         });
         
@@ -627,13 +555,6 @@
         function updateExchangeRate() {
             currentExchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 3400;
             renderInventoryTable();
-            renderSalesReport();
-            updateStats();
-        }
-        
-        function loadAllData() {
-            loadInventoryData();
-            loadSalesData();
         }
         
         async function loadInventoryData() {
@@ -643,7 +564,6 @@
                 if (!response.ok) throw new Error('فشل في جلب بيانات المخزون');
                 inventoryData = await response.json();
                 renderInventoryTable();
-                updateStats();
             } catch (error) {
                 showToast('حدث خطأ في تحميل المخزون: ' + error.message, 'error');
             } finally {
@@ -658,7 +578,6 @@
                 if (!response.ok) throw new Error('فشل في جلب بيانات المبيعات');
                 salesData = await response.json();
                 renderSalesReport();
-                updateStats();
             } catch (error) {
                 showToast('حدث خطأ في تحميل المبيعات: ' + error.message, 'error');
             } finally {
@@ -671,7 +590,7 @@
             let html = '';
             
             if (inventoryData.length === 0) {
-                html = '<tr><td colspan="7" class="text-center">لا توجد بيانات</td></tr>';
+                html = '<tr><td colspan="7" class="text-center">لا توجد بيانات في المخزون</td></tr>';
             } else {
                 inventoryData.forEach((item, index) => {
                     const priceSDG = (item.price * currentExchangeRate).toFixed(2);
@@ -685,14 +604,11 @@
                             <td><span class="badge ${badgeClass}">${quantity}</span></td>
                             <td>$${parseFloat(item.price).toFixed(2)}</td>
                             <td>${priceSDG} ج.س</td>
-                            <td>${item.date}</td>
+                            <td>${item.lastupdatedate || item.date}</td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn btn-sm btn-success" onclick="openWithdrawModal('${item.id}')">
                                         <i class="fas fa-minus"></i> سحب
-                                    </button>
-                                    <button class="btn btn-sm btn-warning" onclick="openEditModal('${item.id}')">
-                                        <i class="fas fa-edit"></i> تعديل
                                     </button>
                                     <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}')">
                                         <i class="fas fa-trash"></i> حذف
@@ -711,7 +627,7 @@
             let html = '';
             
             if (salesData.length === 0) {
-                html = '<tr><td colspan="7" class="text-center">لا توجد مبيعات</td></tr>';
+                html = '<tr><td colspan="7" class="text-center">لا توجد مبيعات مسجلة</td></tr>';
             } else {
                 salesData.forEach((sale, index) => {
                     const totalUSD = (sale.quantity * sale.price).toFixed(2);
@@ -725,24 +641,12 @@
                             <td>$${parseFloat(sale.price).toFixed(2)}</td>
                             <td>$${totalUSD}</td>
                             <td>${totalSDG} ج.س</td>
-                            <td>${sale.date}</td>
+                            <td>${sale.lastupdatedate || sale.date}</td>
                         </tr>
                     `;
                 });
             }
             tbody.innerHTML = html;
-        }
-        
-        function updateStats() {
-            document.getElementById('totalItems').textContent = inventoryData.length;
-            
-            const totalSales = salesData.reduce((sum, sale) => sum + parseInt(sale.quantity), 0);
-            document.getElementById('totalSales').textContent = totalSales;
-            
-            const totalValue = inventoryData.reduce((sum, item) => sum + (parseInt(item.quantity) * parseFloat(item.price)), 0);
-            document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
-            
-            document.getElementById('totalTransactions').textContent = inventoryData.length + salesData.length;
         }
         
         function filterInventory() {
@@ -756,6 +660,9 @@
         }
         
         function openModal(modalId) {
+            if (modalId === 'salesReportModal') {
+                loadSalesData();
+            }
             document.getElementById(modalId).style.display = 'flex';
         }
         
@@ -775,17 +682,6 @@
             }
         }
         
-        function openEditModal(itemId) {
-            const item = inventoryData.find(i => i.id === itemId);
-            if (item) {
-                document.getElementById('editItemId').value = item.id;
-                document.getElementById('editItemName').value = item.name;
-                document.getElementById('editItemQuantity').value = item.quantity;
-                document.getElementById('editItemPrice').value = item.price;
-                openModal('editItemModal');
-            }
-        }
-        
         async function addNewItem() {
             const name = document.getElementById('itemName').value.trim();
             const quantity = parseInt(document.getElementById('itemQuantity').value);
@@ -802,7 +698,7 @@
                     name: name,
                     quantity: quantity,
                     price: price,
-                    date: new Date().toISOString().split('T')[0]
+                    lastupdatedate: new Date().toISOString().split('T')[0]
                 };
                 
                 const response = await fetch(SHEETDB_INVENTORY_URL, {
@@ -811,7 +707,7 @@
                     body: JSON.stringify({ data: newItem })
                 });
                 
-                if (!response.ok) throw new Error('فشل في الإضافة');
+                if (!response.ok) throw new Error('فشل في إضافة العنصر');
                 
                 closeModal('addItemModal');
                 document.getElementById('itemName').value = '';
@@ -819,7 +715,7 @@
                 document.getElementById('itemPrice').value = '';
                 
                 await loadInventoryData();
-                showToast('تمت الإضافة بنجاح', 'success');
+                showToast('تمت إضافة قطعة الغيار بنجاح', 'success');
             } catch (error) {
                 showToast('حدث خطأ في الإضافة: ' + error.message, 'error');
             }
@@ -838,7 +734,7 @@
                 if (!item) throw new Error('العنصر غير موجود');
                 
                 if (parseInt(item.quantity) < quantity) {
-                    showToast('الكمية غير متاحة', 'error');
+                    showToast('الكمية غير متاحة في المخزون', 'error');
                     return;
                 }
                 
@@ -847,7 +743,10 @@
                 await fetch(`${SHEETDB_INVENTORY_URL}/id/${currentWithdrawItemId}`, {
                     method: 'PATCH',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ data: { quantity: newQuantity } })
+                    body: JSON.stringify({ data: { 
+                        quantity: newQuantity,
+                        lastupdatedate: new Date().toISOString().split('T')[0]
+                    } })
                 });
                 
                 // إضافة عملية بيع
@@ -857,7 +756,7 @@
                     name: item.name,
                     quantity: quantity,
                     price: item.price,
-                    date: new Date().toISOString().split('T')[0]
+                    lastupdatedate: new Date().toISOString().split('T')[0]
                 };
                 
                 await fetch(SHEETDB_SALES_URL, {
@@ -867,54 +766,25 @@
                 });
                 
                 closeModal('withdrawModal');
-                await loadAllData();
-                showToast('تم السحب بنجاح', 'success');
+                await loadInventoryData();
+                showToast('تم سحب الكمية بنجاح', 'success');
             } catch (error) {
                 showToast('حدث خطأ في السحب: ' + error.message, 'error');
             }
         }
         
-        async function updateItem() {
-            const itemId = document.getElementById('editItemId').value;
-            const name = document.getElementById('editItemName').value.trim();
-            const quantity = parseInt(document.getElementById('editItemQuantity').value);
-            const price = parseFloat(document.getElementById('editItemPrice').value);
-            
-            if (!name || isNaN(quantity) || isNaN(price) || quantity < 0 || price < 0) {
-                showToast('يرجى ملء الحقول بشكل صحيح', 'error');
-                return;
-            }
-            
-            try {
-                const updatedData = { name, quantity, price };
-                const response = await fetch(`${SHEETDB_INVENTORY_URL}/id/${itemId}`, {
-                    method: 'PATCH',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ data: updatedData })
-                });
-                
-                if (!response.ok) throw new Error('فشل في التحديث');
-                
-                closeModal('editItemModal');
-                await loadInventoryData();
-                showToast('تم التحديث بنجاح', 'success');
-            } catch (error) {
-                showToast('حدث خطأ في التحديث: ' + error.message, 'error');
-            }
-        }
-        
         async function deleteItem(itemId) {
-            if (!confirm('هل أنت متأكد من الحذف؟')) return;
+            if (!confirm('هل أنت متأكد من حذف هذه القطعة؟')) return;
             
             try {
                 const response = await fetch(`${SHEETDB_INVENTORY_URL}/id/${itemId}`, {
                     method: 'DELETE'
                 });
                 
-                if (!response.ok) throw new Error('فشل في الحذف');
+                if (!response.ok) throw new Error('فشل في حذف العنصر');
                 
                 await loadInventoryData();
-                showToast('تم الحذف بنجاح', 'success');
+                showToast('تم حذف القطعة بنجاح', 'success');
             } catch (error) {
                 showToast('حدث خطأ في الحذف: ' + error.message, 'error');
             }
