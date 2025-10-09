@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مخزن بترو-بارت - إدارة المخزون والمبيعات</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for better icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
@@ -35,9 +34,9 @@
             line-height: 1.2;
         }
         .header-subtitle {
-             font-weight: 500; 
-             color: #ced4da; 
-             font-size: 0.85rem;
+            font-weight: 500; 
+            color: #ced4da; 
+            font-size: 0.85rem;
         }
         
         .card {
@@ -120,10 +119,8 @@
 </head>
 <body>
 
-    <!-- Toast Container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <!-- Toasts will be appended here -->
-    </div>
+        </div>
 
     <nav class="navbar navbar-dark shadow-sm">
         <div class="container-fluid container">
@@ -152,13 +149,13 @@
                 </div>
                 <div class="col-md-3">
                      <div class="input-group">
-                        <span class="input-group-text fw-bold">$ / SDG</span>
-                        <input type="number" id="dollarRateInput" class="form-control" placeholder="سعر الدولار اليوم" min="0" value="3400">
-                    </div>
+                         <span class="input-group-text fw-bold">$ / SDG</span>
+                         <input type="number" id="dollarRateInput" class="form-control" placeholder="سعر الدولار اليوم" min="0" value="3400">
+                     </div>
                 </div>
                 <div class="col-md-5 text-md-end d-flex justify-content-end flex-wrap gap-2">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">
-                         <i class="fas fa-plus"></i> إضافة إسبير
+                        <i class="fas fa-plus"></i> إضافة إسبير
                     </button>
                     <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#withdrawModal" id="openWithdrawModalBtn">
                         <i class="fas fa-minus"></i> سحب (بيع)
@@ -197,7 +194,6 @@
         </div>
     </div>
 
-    <!-- Modal: Add Part -->
     <div class="modal fade" id="addPartModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -233,7 +229,6 @@
         </div>
     </div>
 
-    <!-- Modal: Edit Part Details -->
     <div class="modal fade" id="editPartModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -268,7 +263,6 @@
         </div>
     </div>
 
-    <!-- Modal: Withdraw/Sale -->
     <div class="modal fade" id="withdrawModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -303,8 +297,7 @@
         </div>
     </div>
     
-     <!-- Modal: Sales Report -->
-    <div class="modal fade" id="salesReportModal" tabindex="-1">
+     <div class="modal fade" id="salesReportModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                  <div class="modal-header" style="background-color: var(--success-green);">
@@ -647,176 +640,166 @@
         });
         
         // ===================================================================================
-        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log) 
+        // 4. Withdraw/Sale Logic (PATCH Stock + POST Log) - النسخة المصححة
         // ===================================================================================
-        
+
         const populateWithdrawalDropdown = (parts) => {
             const select = document.getElementById('withdrawPartSelect');
             select.innerHTML = '<option value="" disabled selected>اختر الإسبير...</option>';
             parts.forEach(part => {
-                const option = document.createElement('option');
-                option.value = part.id;
-                option.innerText = `${part.partName} (متوفر: ${part.quantity})`;
-                option.setAttribute('data-quantity', part.quantity);
-                option.setAttribute('data-price-usd', part.priceUSD);
-                option.setAttribute('data-price-sdg', part.priceSDG);
-                select.appendChild(option);
+                if (part.quantity > 0) { // عرض الأصناف المتوفرة فقط
+                    const option = document.createElement('option');
+                    option.value = part.id;
+                    option.innerText = `${part.partName} (متوفر: ${part.quantity})`;
+                    select.appendChild(option);
+                }
             });
-            // تحديث عرض الكمية عند فتح المودال في حال وجود قيمة محددة مسبقاً
-            const selectedId = select.value;
-            if (selectedId) {
-                const part = inventoryData.find(p => p.id === parseInt(selectedId));
-                document.getElementById('currentStockDisplay').innerText = part ? part.quantity : '0';
-            }
         };
-        
+
         document.getElementById('withdrawPartSelect').addEventListener('change', (e) => {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            const stockDisplay = document.getElementById('currentStockDisplay');
-            stockDisplay.innerText = selectedOption.getAttribute('data-quantity') || '0';
+            const selectedId = e.target.value;
+            const part = inventoryData.find(p => p.id == selectedId);
+            document.getElementById('currentStockDisplay').innerText = part ? part.quantity : '0';
         });
-        
+
         document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btnId = 'withdrawSubmitBtn';
             const originalText = document.getElementById(btnId).innerHTML;
             toggleLoading(btnId, true, originalText);
 
-            const partId = parseInt(document.getElementById('withdrawPartSelect').value);
-            const quantityWithdrawn = parseInt(document.getElementById('withdrawQuantity').value);
+            const partId = document.getElementById('withdrawPartSelect').value;
+            const withdrawQuantity = parseInt(document.getElementById('withdrawQuantity').value);
             
-            const part = inventoryData.find(p => p.id === partId);
+            // تحسين: استخدام parseInt للمقارنة بشكل آمن
+            const partIdInt = parseInt(partId);
+            const part = inventoryData.find(p => p.id === partIdInt);
 
-            if (!part || quantityWithdrawn <= 0 || isNaN(quantityWithdrawn)) {
-                showToast('⚠️ يرجى اختيار إسبير وإدخال كمية صحيحة.', 'error');
+            if (!part) {
+                showToast('❌ خطأ: يرجى اختيار قطعة غيار صالحة.', 'error');
+                toggleLoading(btnId, false, originalText);
+                return;
+            }
+            if (isNaN(withdrawQuantity) || withdrawQuantity <= 0) {
+                showToast('❌ خطأ: يرجى إدخال كمية صحيحة.', 'error');
+                toggleLoading(btnId, false, originalText);
+                return;
+            }
+            if (withdrawQuantity > part.quantity) {
+                showToast('❌ الكمية المطلوبة أكبر من المتوفر بالمخزون!', 'error');
                 toggleLoading(btnId, false, originalText);
                 return;
             }
 
-            if (part.quantity < quantityWithdrawn) {
-                showToast(`⚠️ الكمية المسحوبة (${quantityWithdrawn}) أكبر من المتوفر (${part.quantity}).`, 'error');
-                toggleLoading(btnId, false, originalText);
-                return;
-            }
+            const newQuantity = part.quantity - withdrawQuantity;
+            const saleValueUSD = withdrawQuantity * part.priceUSD;
+            const saleValueSDG = withdrawQuantity * part.priceSDG;
 
-            const newQuantity = part.quantity - quantityWithdrawn;
-            const totalSaleUSD = quantityWithdrawn * part.priceUSD;
-            const totalSaleSDG = quantityWithdrawn * part.priceSDG;
-            
             try {
-                // --- 1. تحديث المخزون الرئيسي (Stock) ---
-                // 🔴 التحديث الهام: استخدام /rows/ لتجنب خطأ "Undefined column: id"
-                const stockUpdateUrl = `${STOCK_API_URL}/rows/${partId}`;
-                await safeFetch(stockUpdateUrl, {
-                    method: 'PATCH', 
+                // === 🔥 هنا تم الإصلاح الرئيسي 🔥 ===
+                // تم تغيير الرابط من /id/${part.id} إلى /rows/${part.id} لتحديث الصف الصحيح
+                const updateUrl = `${STOCK_API_URL}/rows/${part.id}`;
+                
+                // الخطوة 1: تحديث الكمية في المخزون
+                await safeFetch(updateUrl, {
+                    method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         data: {
                             quantity: newQuantity,
-                            lastUpdateDate: getTodayDate(), 
+                            lastUpdateDate: getTodayDate()
                         }
                     })
                 });
-                
-                // --- 2. تسجيل العملية في سجل المبيعات (Log) ---
+
+                // الخطوة 2: تسجيل عملية البيع في السجل
                 await safeFetch(LOG_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        data: { 
+                        data: {
                             partId: part.id,
                             partName: part.partName,
-                            quantitySold: quantityWithdrawn,
-                            totalUSD: totalSaleUSD.toFixed(2),
-                            totalSDG: totalSaleSDG.toFixed(2),
-                            date: getTodayDate(), 
+                            quantitySold: withdrawQuantity,
+                            saleValueUSD: saleValueUSD.toFixed(2),
+                            saleValueSDG: saleValueSDG.toFixed(2),
+                            transactionDate: new Date().toISOString()
                         }
                     })
                 });
 
-                showToast(`✅ تم سحب ${quantityWithdrawn} قطعة من "${part.partName}" وتسجيلها كـ بيع.`, 'success');
-                
-                bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
+                showToast(`✅ تم سحب ${withdrawQuantity} من "${part.partName}" بنجاح.`, 'success');
                 document.getElementById('withdrawForm').reset();
-                fetchInventory(); // تحديث الجدول
-                
+                document.getElementById('currentStockDisplay').innerText = '0';
+                bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
+                fetchInventory();
+
             } catch (error) {
-                console.error("Error during sale transaction: ", error);
-                showToast(`❌ فشل تسجيل البيع. تأكد من الروابط: ${error.message}`, 'error');
+                console.error("Error during withdrawal: ", error);
+                showToast(`❌ فشلت عملية السحب: ${error.message}`, 'error');
             } finally {
                 toggleLoading(btnId, false, originalText);
             }
         });
-
+        
         // ===================================================================================
         // 5. Sales Report Logic (GET from Log)
         // ===================================================================================
         
-        document.getElementById('salesReportModal').addEventListener('shown.bs.modal', fetchSalesReport);
-
-        async function fetchSalesReport() {
+        document.getElementById('salesReportModal').addEventListener('show.bs.modal', async () => {
             const tableBody = document.getElementById('salesReportTableBody');
-            tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل تقرير المبيعات...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i> جاري تحميل سجل المبيعات...</td></tr>';
             
-            document.getElementById('totalSalesUSD').innerText = '0.00';
-            document.getElementById('totalSalesSDG').innerText = '0.00';
-
             try {
                 const response = await safeFetch(LOG_API_URL);
-                let data = await response.json();
+                const sales = await response.json();
                 
-                if (!Array.isArray(data)) { data = []; }
-
-                let rows = '';
                 let totalUSD = 0;
                 let totalSDG = 0;
-                
-                data.sort((a, b) => new Date(b.date) - new Date(a.date));
+                let rows = '';
 
-                data.forEach((sale, index) => {
-                    const usd = parseFloat(sale.totalUSD) || 0;
-                    const sdg = parseFloat(sale.totalSDG) || 0;
-
-                    totalUSD += usd;
-                    totalSDG += sdg;
+                sales.reverse().forEach((sale, index) => { // reverse() to show latest first
+                    const saleUSD = parseFloat(sale.saleValueUSD) || 0;
+                    const saleSDG = parseFloat(sale.saleValueSDG) || 0;
+                    totalUSD += saleUSD;
+                    totalSDG += saleSDG;
 
                     rows += `
                         <tr>
                             <td>${index + 1}</td>
                             <td>${sale.partId || '-'}</td>
-                            <td>${sale.partName || 'غير معروف'}</td>
-                            <td>${sale.quantitySold || 0}</td>
-                            <td class="fw-bold text-primary text-center">$${formatNumber(usd)}</td>
-                            <td class="fw-bold text-center" style="color: var(--secondary-gold);">${formatNumber(sdg)} SDG</td>
-                            <td>${sale.date || '-'}</td>
+                            <td>${sale.partName || 'غير محدد'}</td>
+                            <td>${sale.quantitySold || '0'}</td>
+                            <td>$${formatNumber(saleUSD)}</td>
+                            <td>${formatNumber(saleSDG)} SDG</td>
+                            <td>${new Date(sale.transactionDate).toLocaleDateString('ar-EG')}</td>
                         </tr>
                     `;
                 });
                 
-                tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center py-4 text-info">لا توجد سجلات مبيعات حتى الآن.</td></tr>';
                 document.getElementById('totalSalesUSD').innerText = formatNumber(totalUSD);
                 document.getElementById('totalSalesSDG').innerText = formatNumber(totalSDG);
+                tableBody.innerHTML = rows || '<tr><td colspan="7" class="text-center text-muted">لا توجد سجلات مبيعات حتى الآن.</td></tr>';
 
-            } catch (error) {
-                console.error("Error fetching sales report: ", error);
-                tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">❌ فشل تحميل التقرير: ${error.message}</td></tr>`;
+            } catch(error) {
+                console.error("Error fetching sales report:", error);
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">❌ فشل تحميل التقرير: ${error.message}</td></tr>`;
+                showToast('❌ فشل تحميل تقرير المبيعات.', 'error');
             }
-        }
+        });
 
         // ===================================================================================
-        // 6. Initialization and Search
+        // 6. Search & Initialization
         // ===================================================================================
-
-        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+        
+        document.getElementById('searchInput').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredData = inventoryData.filter(part => part.partName && part.partName.toLowerCase().includes(searchTerm));
+            const filteredData = inventoryData.filter(part => part.partName.toLowerCase().includes(searchTerm));
             renderTable(filteredData);
         });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            calculateSDG('partPriceUSD', 'partPriceSDG'); 
-            fetchInventory();
-        });
+
+        document.addEventListener('DOMContentLoaded', fetchInventory);
     </script>
+
 </body>
 </html>
