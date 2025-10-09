@@ -17,8 +17,6 @@
             --info: #3b82f6;
             --light: #f8fafc;
             --dark: #1e293b;
-            --sidebar: #1e293b;
-            --header: #374151;
         }
         
         * {
@@ -272,6 +270,10 @@
             justify-content: center;
             font-size: 1.5rem;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toast-container {
+            z-index: 1055;
         }
     </style>
 </head>
@@ -533,6 +535,20 @@
         </div>
     </div>
 
+    <!-- منطقة الإشعارات -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-info-circle me-2 text-primary"></i>
+                <strong class="me-auto">إشعار النظام</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- سيتم ملء الرسالة هنا -->
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // إعدادات API
@@ -612,7 +628,7 @@
                 updateStats();
             } catch (error) {
                 console.error('Error loading inventory:', error);
-                showAlert('حدث خطأ في تحميل بيانات المخزون: ' + error.message, 'danger');
+                showToast('حدث خطأ في تحميل بيانات المخزون: ' + error.message, 'danger');
             } finally {
                 inventoryLoading.style.display = 'none';
             }
@@ -634,7 +650,7 @@
                 updateStats();
             } catch (error) {
                 console.error('Error loading sales:', error);
-                showAlert('حدث خطأ في تحميل بيانات المبيعات: ' + error.message, 'danger');
+                showToast('حدث خطأ في تحميل بيانات المبيعات: ' + error.message, 'danger');
             } finally {
                 salesLoading.style.display = 'none';
             }
@@ -647,12 +663,12 @@
             const price = parseFloat(document.getElementById('itemPrice').value);
             
             if (!name || isNaN(quantity) || isNaN(price)) {
-                showAlert('يرجى ملء جميع الحقول بشكل صحيح!', 'warning');
+                showToast('يرجى ملء جميع الحقول بشكل صحيح!', 'warning');
                 return;
             }
             
             if (quantity <= 0 || price < 0) {
-                showAlert('يرجى إدخال قيم صحيحة للكمية والسعر!', 'warning');
+                showToast('يرجى إدخال قيم صحيحة للكمية والسعر!', 'warning');
                 return;
             }
             
@@ -687,10 +703,10 @@
                 // تحديث البيانات
                 await loadInventoryData();
                 
-                showAlert('تمت إضافة قطعة الغيار بنجاح!', 'success');
+                showToast('تمت إضافة قطعة الغيار بنجاح!', 'success');
             } catch (error) {
                 console.error('Error adding item:', error);
-                showAlert('حدث خطأ في إضافة العنصر: ' + error.message, 'danger');
+                showToast('حدث خطأ في إضافة العنصر: ' + error.message, 'danger');
             }
         }
         
@@ -700,7 +716,7 @@
             const quantity = parseInt(document.getElementById('withdrawQuantity').value);
             
             if (isNaN(quantity) || quantity <= 0) {
-                showAlert('يرجى إدخال كمية صحيحة!', 'warning');
+                showToast('يرجى إدخال كمية صحيحة!', 'warning');
                 return;
             }
             
@@ -708,12 +724,12 @@
                 const item = inventoryData.find(i => i.id === itemId);
                 
                 if (!item) {
-                    showAlert('لم يتم العثور على العنصر!', 'danger');
+                    showToast('لم يتم العثور على العنصر!', 'danger');
                     return;
                 }
                 
                 if (parseInt(item.quantity) < quantity) {
-                    showAlert('الكمية المطلوبة غير متاحة في المخزون!', 'warning');
+                    showToast('الكمية المطلوبة غير متاحة في المخزون!', 'warning');
                     return;
                 }
                 
@@ -763,10 +779,10 @@
                 await loadInventoryData();
                 await loadSalesData();
                 
-                showAlert('تم سحب الكمية بنجاح!', 'success');
+                showToast('تم سحب الكمية بنجاح!', 'success');
             } catch (error) {
                 console.error('Error withdrawing item:', error);
-                showAlert('حدث خطأ في عملية السحب: ' + error.message, 'danger');
+                showToast('حدث خطأ في عملية السحب: ' + error.message, 'danger');
             }
         }
         
@@ -778,12 +794,12 @@
             const price = parseFloat(document.getElementById('editItemPrice').value);
             
             if (!name || isNaN(quantity) || isNaN(price)) {
-                showAlert('يرجى ملء جميع الحقول بشكل صحيح!', 'warning');
+                showToast('يرجى ملء جميع الحقول بشكل صحيح!', 'warning');
                 return;
             }
             
             if (quantity < 0 || price < 0) {
-                showAlert('يرجى إدخال قيم صحيحة للكمية والسعر!', 'warning');
+                showToast('يرجى إدخال قيم صحيحة للكمية والسعر!', 'warning');
                 return;
             }
             
@@ -813,10 +829,10 @@
                 // تحديث البيانات
                 await loadInventoryData();
                 
-                showAlert('تم تحديث البيانات بنجاح!', 'success');
+                showToast('تم تحديث البيانات بنجاح!', 'success');
             } catch (error) {
                 console.error('Error updating item:', error);
-                showAlert('حدث خطأ في تحديث العنصر: ' + error.message, 'danger');
+                showToast('حدث خطأ في تحديث العنصر: ' + error.message, 'danger');
             }
         }
         
@@ -838,10 +854,10 @@
                 // تحديث البيانات
                 await loadInventoryData();
                 
-                showAlert('تم حذف القطعة بنجاح!', 'success');
+                showToast('تم حذف القطعة بنجاح!', 'success');
             } catch (error) {
                 console.error('Error deleting item:', error);
-                showAlert('حدث خطأ في حذف العنصر: ' + error.message, 'danger');
+                showToast('حدث خطأ في حذف العنصر: ' + error.message, 'danger');
             }
         }
         
@@ -910,21 +926,4 @@
                             <td>${sale.date}</td>
                         </tr>
                     `;
-                });
-            }
-            
-            salesReportTable.innerHTML = tableHTML;
-        }
-        
-        // تحديث الإحصائيات
-        function updateStats() {
-            // إجمالي قطع الغيار
-            totalItemsElement.textContent = inventoryData.length;
-            
-            // إجمالي المبيعات
-            const totalSales = salesData.reduce((sum, sale) => sum + parseInt(sale.quantity), 0);
-            totalSalesElement.textContent = totalSales;
-            
-            // القيمة الإجمالية للمخزون بالدولار
-            const totalValue = inventoryData.reduce((sum, item) => sum + (parseInt(item.quantity) * parseFloat(item.price)), 0);
-            totalValueElement.textContent = `$${totalValue.toFixed(
+               
