@@ -33,9 +33,15 @@
 
     <div id="app" class="container mx-auto p-4 sm:p-6 lg:p-8">
         
+        <!-- اسم الشركة -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">بتروبارت لمعدات البترول المحدودة</h1>
+            <p class="text-lg text-gray-600">Petro-Part Petroleum Equipment Ltd</p>
+        </div>
+
         <!-- رأس الصفحة ومنطقة التحكم -->
         <header class="bg-white p-4 rounded-lg shadow-md mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
                 <!-- مربع البحث -->
                 <div class="lg:col-span-2">
                     <div class="relative">
@@ -47,16 +53,20 @@
                 </div>
 
                 <!-- سعر الدولار -->
-                <div class="flex items-center gap-2">
+                <div class="lg:col-span-1 flex items-center gap-2">
                     <label for="dollarRate" class="font-semibold text-gray-700 whitespace-nowrap">سعر الدولار:</label>
                     <input type="number" id="dollarRate" value="3400" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <!-- أزرار الإجراءات -->
-                <div class="lg:col-span-2 flex flex-col sm:flex-row gap-3">
+                <div class="lg:col-span-3 flex flex-col sm:flex-row gap-3">
                     <button id="addPartBtn" class="w-full flex items-center justify-center gap-2 bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition duration-300 shadow">
                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                         إضافة قطعة
+                    </button>
+                    <button id="withdrawBtn" class="w-full flex items-center justify-center gap-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition duration-300 shadow">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" /></svg>
+                        سحب كمية
                     </button>
                     <button id="salesReportBtn" class="w-full flex items-center justify-center gap-2 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition duration-300 shadow">
                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h15.75c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125H4.125c-.621 0-1.125-.504-1.125-1.125v-6.75z" /><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125V9.75a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 9.75v3.375" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 7.5h.008v.008h-.008V7.5z" /></svg>
@@ -76,12 +86,13 @@
                 <table id="inventoryTable" class="w-full text-center hidden">
                     <thead class="bg-gray-200">
                         <tr>
+                            <th class="p-3">#</th>
                             <th class="p-3">اسم الاسبير</th>
                             <th class="p-3">العدد</th>
                             <th class="p-3">السعر ($)</th>
                             <th class="p-3">السعر بالجنيه السوداني</th>
                             <th class="p-3">تاريخ آخر سحب</th>
-                            <th class="p-3">إجراءات</th>
+                            <th class="p-3">تعديل</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryTableBody" class="divide-y divide-gray-200">
@@ -120,19 +131,50 @@
         </div>
     </div>
 
-    <!-- Modal: سحب كمية (بيع) -->
-    <div id="sellPartModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden opacity-0">
+    <!-- Modal: تعديل قطعة -->
+    <div id="editPartModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden opacity-0">
         <div class="bg-white rounded-lg p-6 w-full max-w-md transform scale-95 transition-transform duration-300">
-            <h3 class="text-lg font-bold mb-4">سحب كمية / بيع</h3>
-            <form id="sellPartForm">
-                <input type="hidden" id="sellPartId">
+            <h3 class="text-lg font-bold mb-4">تعديل بيانات القطعة</h3>
+            <form id="editPartForm">
+                <input type="hidden" id="editPartId">
                 <div class="mb-4">
-                    <p><strong>القطعة:</strong> <span id="sellPartName"></span></p>
-                    <p><strong>الكمية المتاحة:</strong> <span id="sellPartAvailableQuantity"></span></p>
+                    <label for="editPartName" class="block mb-2">اسم القطعة</label>
+                    <input type="text" id="editPartName" class="w-full p-2 border rounded" required>
                 </div>
                 <div class="mb-4">
-                    <label for="sellQuantity" class="block mb-2">الكمية المراد سحبها</label>
-                    <input type="number" id="sellQuantity" class="w-full p-2 border rounded" required min="1">
+                    <label for="editPartQuantity" class="block mb-2">الكمية</label>
+                    <input type="number" id="editPartQuantity" class="w-full p-2 border rounded" required min="0">
+                </div>
+                <div class="mb-4">
+                    <label for="editPartPrice" class="block mb-2">السعر ($)</label>
+                    <input type="number" id="editPartPrice" class="w-full p-2 border rounded" required min="0" step="0.01">
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" class="close-modal bg-gray-300 text-black px-4 py-2 rounded">إلغاء</button>
+                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">حفظ التعديلات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal: سحب كمية (بيع) -->
+    <div id="withdrawModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md transform scale-95 transition-transform duration-300">
+            <h3 class="text-lg font-bold mb-4">سحب كمية / بيع</h3>
+            <form id="withdrawForm">
+                <div class="mb-4">
+                    <label for="partSelector" class="block mb-2">اختر القطعة</label>
+                    <select id="partSelector" class="w-full p-2 border rounded" required>
+                        <option value="">-- اختر قطعة غيار --</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <p><strong>الكمية المتاحة:</strong> <span id="withdrawAvailableQuantity">N/A</span></p>
+                </div>
+                <div class="mb-4">
+                    <label for="withdrawQuantity" class="block mb-2">الكمية المراد سحبها</label>
+                    <input type="number" id="withdrawQuantity" class="w-full p-2 border rounded" required min="1">
                 </div>
                 <div class="flex justify-end gap-3">
                     <button type="button" class="close-modal bg-gray-300 text-black px-4 py-2 rounded">إلغاء</button>
@@ -187,16 +229,19 @@
 
             // عناصر Modals
             const addPartModal = document.getElementById('addPartModal');
-            const sellPartModal = document.getElementById('sellPartModal');
+            const editPartModal = document.getElementById('editPartModal');
+            const withdrawModal = document.getElementById('withdrawModal');
             const salesReportModal = document.getElementById('salesReportModal');
 
             // أزرار فتح Modals
             const addPartBtn = document.getElementById('addPartBtn');
+            const withdrawBtn = document.getElementById('withdrawBtn');
             const salesReportBtn = document.getElementById('salesReportBtn');
 
             // نماذج
             const addPartForm = document.getElementById('addPartForm');
-            const sellPartForm = document.getElementById('sellPartForm');
+            const editPartForm = document.getElementById('editPartForm');
+            const withdrawForm = document.getElementById('withdrawForm');
 
             let inventoryData = []; // لتخزين بيانات المخزون محلياً
 
@@ -257,7 +302,7 @@
                     if (!response.ok) throw new Error('فشل في جلب البيانات');
                     
                     const data = await response.json();
-                    inventoryData = data;
+                    inventoryData = data.filter(item => item['اسم الاسبير']); // تجاهل الصفوف الفارغة
                     renderTable(inventoryData);
 
                 } catch (error) {
@@ -286,24 +331,24 @@
                 inventoryTable.classList.remove('hidden');
 
                 const dollarRate = parseFloat(dollarRateInput.value) || 0;
-                data.forEach(item => {
+                data.forEach((item, index) => {
                     const localPrice = (parseFloat(item['السعر بالدولار']) * dollarRate).toLocaleString('ar-SD', { style: 'currency', currency: 'SDG' }); // بالجنيه السوداني
                     const lastWithdrawalDate = item['تاريخ آخر سحب'] ? item['تاريخ آخر سحب'] : '—';
                     const row = `
                         <tr class="hover:bg-gray-50" data-name="${item['اسم الاسبير'].toLowerCase()}">
+                            <td class="p-3">${index + 1}</td>
                             <td class="p-3">${item['اسم الاسبير']}</td>
                             <td class="p-3">${item['العدد']}</td>
                             <td class="p-3">$${parseFloat(item['السعر بالدولار']).toFixed(2)}</td>
                             <td class="p-3">${localPrice}</td>
                             <td class="p-3">${lastWithdrawalDate}</td>
                             <td class="p-3">
-                                <button class="sell-btn flex items-center justify-center gap-1 w-full bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" 
-                                    data-id="${item['رقم القطعة']}" 
-                                    data-name="${item['اسم الاسبير']}" 
+                                <button class="edit-btn bg-yellow-500 text-white p-2 rounded-full hover:bg-yellow-600"
+                                    data-id="${item['رقم القطعة']}"
+                                    data-name="${item['اسم الاسبير']}"
                                     data-quantity="${item['العدد']}"
                                     data-price="${item['السعر بالدولار']}">
-                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" /></svg>
-                                    سحب
+                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
                                 </button>
                             </td>
                         </tr>
@@ -326,11 +371,15 @@
             // إضافة قطعة جديدة
             addPartForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const dollarRate = parseFloat(dollarRateInput.value) || 0;
+                const priceInUSD = parseFloat(document.getElementById('partPrice').value);
+
                 const newPart = {
                     'رقم القطعة': `part_${Date.now()}`, // إنشاء ID فريد
                     'اسم الاسبير': document.getElementById('partName').value,
                     'العدد': document.getElementById('partQuantity').value,
-                    'السعر بالدولار': document.getElementById('partPrice').value,
+                    'السعر بالدولار': priceInUSD,
+                    'السعر بالجنيه السوداني': (priceInUSD * dollarRate).toFixed(2)
                 };
 
                 try {
@@ -355,24 +404,104 @@
                 }
             });
 
-            // فتح مودال البيع عند الضغط على زر "سحب"
+            // فتح مودال التعديل وتعبئة البيانات
             inventoryTableBody.addEventListener('click', (e) => {
-                const button = e.target.closest('.sell-btn');
-                if (button) {
-                    document.getElementById('sellPartId').value = button.dataset.id;
-                    document.getElementById('sellPartName').textContent = button.dataset.name;
-                    document.getElementById('sellPartAvailableQuantity').textContent = button.dataset.quantity;
-                    document.getElementById('sellQuantity').max = button.dataset.quantity;
-                    openModal(sellPartModal);
+                const editButton = e.target.closest('.edit-btn');
+                if(editButton) {
+                    document.getElementById('editPartId').value = editButton.dataset.id;
+                    document.getElementById('editPartName').value = editButton.dataset.name;
+                    document.getElementById('editPartQuantity').value = editButton.dataset.quantity;
+                    document.getElementById('editPartPrice').value = editButton.dataset.price;
+                    openModal(editPartModal);
                 }
             });
 
-            // تنفيذ عملية البيع
-            sellPartForm.addEventListener('submit', async (e) => {
+            // حفظ التعديلات
+            editPartForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const partId = document.getElementById('sellPartId').value;
-                const quantityToSell = parseInt(document.getElementById('sellQuantity').value);
+                const partId = document.getElementById('editPartId').value;
+                const dollarRate = parseFloat(dollarRateInput.value) || 0;
+                const priceInUSD = parseFloat(document.getElementById('editPartPrice').value);
                 
+                const updatedData = {
+                    'اسم الاسبير': document.getElementById('editPartName').value,
+                    'العدد': document.getElementById('editPartQuantity').value,
+                    'السعر بالدولار': priceInUSD,
+                    'السعر بالجنيه السوداني': (priceInUSD * dollarRate).toFixed(2)
+                };
+
+                try {
+                    const response = await fetch(`${INVENTORY_API_URL}/رقم القطعة/${partId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ data: updatedData })
+                    });
+                    if (!response.ok) throw new Error('فشل تحديث البيانات');
+                    
+                    showToast('تم تحديث البيانات بنجاح');
+                    editPartForm.reset();
+                    closeModal(editPartModal);
+                    fetchInventory();
+                } catch (error) {
+                     console.error('Error updating part:', error);
+                     showToast('حدث خطأ أثناء التحديث', true);
+                }
+            });
+            
+            // منطق السحب الجديد
+            function populateWithdrawModal() {
+                const partSelector = document.getElementById('partSelector');
+                const availableQtySpan = document.getElementById('withdrawAvailableQuantity');
+                const quantityInput = document.getElementById('withdrawQuantity');
+
+                partSelector.innerHTML = '<option value="">-- اختر قطعة غيار --</option>'; // Reset
+                inventoryData.forEach(part => {
+                    if (parseInt(part['العدد'], 10) > 0) { // Only show parts with stock
+                        const option = document.createElement('option');
+                        option.value = part['رقم القطعة'];
+                        option.textContent = part['اسم الاسبير'];
+                        partSelector.appendChild(option);
+                    }
+                });
+                availableQtySpan.textContent = 'N/A';
+                quantityInput.value = '';
+                quantityInput.max = '';
+            }
+            
+            withdrawBtn.addEventListener('click', () => {
+                populateWithdrawModal();
+                openModal(withdrawModal);
+            });
+
+            document.getElementById('partSelector').addEventListener('change', (e) => {
+                const partId = e.target.value;
+                const availableQtySpan = document.getElementById('withdrawAvailableQuantity');
+                const quantityInput = document.getElementById('withdrawQuantity');
+
+                if (partId) {
+                    const part = inventoryData.find(p => p['رقم القطعة'] === partId);
+                    if (part) {
+                        availableQtySpan.textContent = part['العدد'];
+                        quantityInput.max = part['العدد'];
+                    }
+                } else {
+                    availableQtySpan.textContent = 'N/A';
+                    quantityInput.max = '';
+                }
+            });
+
+
+            // تنفيذ عملية البيع
+            withdrawForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const partId = document.getElementById('partSelector').value;
+                const quantityToSell = parseInt(document.getElementById('withdrawQuantity').value);
+                
+                if (!partId) {
+                    showToast('يرجى اختيار قطعة أولاً!', true);
+                    return;
+                }
+
                 const part = inventoryData.find(p => p['رقم القطعة'] === partId);
                 if (!part) {
                     showToast('لم يتم العثور على القطعة!', true);
@@ -401,8 +530,8 @@
                     await logTransaction('SALE', part, quantityToSell);
                     
                     showToast('تمت عملية السحب بنجاح');
-                    sellPartForm.reset();
-                    closeModal(sellPartModal);
+                    withdrawForm.reset();
+                    closeModal(withdrawModal);
                     fetchInventory(); // إعادة تحميل البيانات
                 } catch(error) {
                      console.error('Error selling part:', error);
