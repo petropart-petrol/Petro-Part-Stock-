@@ -149,11 +149,30 @@
                     <label for="editPartPrice" class="block mb-2">السعر ($)</label>
                     <input type="number" id="editPartPrice" class="w-full p-2 border rounded" required min="0" step="0.01">
                 </div>
-                <div class="flex justify-end gap-3">
-                    <button type="button" class="close-modal bg-gray-300 text-black px-4 py-2 rounded">إلغاء</button>
-                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">حفظ التعديلات</button>
+                <div class="flex justify-between items-center mt-6">
+                     <button type="button" id="triggerDeleteBtn" class="bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-red-700">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.067-2.09 1.02-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                        حذف
+                    </button>
+                    <div class="flex gap-3">
+                        <button type="button" class="close-modal bg-gray-300 text-black px-4 py-2 rounded">إلغاء</button>
+                        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">حفظ التعديلات</button>
+                    </div>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- Modal: تأكيد الحذف -->
+    <div id="deleteConfirmModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="bg-white rounded-lg p-6 w-full max-w-sm transform scale-95 transition-transform duration-300 text-center">
+            <h3 class="text-lg font-bold mb-4">تأكيد الحذف</h3>
+            <p class="mb-6">هل أنت متأكد أنك تريد حذف هذه القطعة؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <input type="hidden" id="deletePartId">
+            <div class="flex justify-center gap-3">
+                <button type="button" class="close-modal bg-gray-300 text-black px-4 py-2 rounded">إلغاء</button>
+                <button type="button" id="confirmDeleteBtn" class="bg-red-600 text-white px-4 py-2 rounded">تأكيد الحذف</button>
+            </div>
         </div>
     </div>
 
@@ -230,6 +249,7 @@
             // عناصر Modals
             const addPartModal = document.getElementById('addPartModal');
             const editPartModal = document.getElementById('editPartModal');
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
             const withdrawModal = document.getElementById('withdrawModal');
             const salesReportModal = document.getElementById('salesReportModal');
 
@@ -431,7 +451,7 @@
                 };
 
                 try {
-                    const response = await fetch(`${INVENTORY_API_URL}/رقم القطعة/${partId}`, {
+                    const response = await fetch(`${INVENTORY_API_URL}/${encodeURIComponent('رقم القطعة')}/${partId}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ data: updatedData })
@@ -448,6 +468,34 @@
                 }
             });
             
+            // فتح نافذة تأكيد الحذف
+            document.getElementById('triggerDeleteBtn').addEventListener('click', () => {
+                const partId = document.getElementById('editPartId').value;
+                document.getElementById('deletePartId').value = partId;
+                closeModal(editPartModal);
+                openModal(deleteConfirmModal);
+            });
+
+            // تنفيذ الحذف
+            document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+                const partId = document.getElementById('deletePartId').value;
+                try {
+                    const response = await fetch(`${INVENTORY_API_URL}/${encodeURIComponent('رقم القطعة')}/${partId}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+                    if (!response.ok) throw new Error('فشل حذف القطعة');
+
+                    showToast('تم حذف القطعة بنجاح');
+                    closeModal(deleteConfirmModal);
+                    fetchInventory();
+                } catch (error) {
+                    console.error('Error deleting part:', error);
+                    showToast('حدث خطأ أثناء الحذف', true);
+                }
+            });
+
+
             // منطق السحب الجديد
             function populateWithdrawModal() {
                 const partSelector = document.getElementById('partSelector');
@@ -519,7 +567,7 @@
 
                 try {
                     // تحديث الكمية وتاريخ السحب في المخزون
-                    const response = await fetch(`${INVENTORY_API_URL}/رقم القطعة/${partId}`, {
+                    const response = await fetch(`${INVENTORY_API_URL}/${encodeURIComponent('رقم القطعة')}/${partId}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ data: { 'العدد': newQuantity, 'تاريخ آخر سحب': newDate } })
