@@ -12,6 +12,41 @@ h1, h2, h3 {
     text-align: center;
 }
 
+/* --- إضافة جديدة: عنوان الشركة والشعار --- */
+.company-header {
+    display: flex; /* لترتيب الشعار والأسماء جنباً إلى جنب */
+    align-items: center; /* لمحاذاة العناصر رأسياً في المنتصف */
+    justify-content: center; /* لمحاذاة العناصر أفقياً في المنتصف */
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.company-logo {
+    max-height: 80px; /* حجم الشعار */
+    margin-left: 20px; /* مسافة بين الشعار والأسماء */
+    border-radius: 5px; /* لإعطاء الشعار حواف مستديرة قليلاً */
+}
+
+.company-names h2, .company-names h3 {
+    margin: 0; /* إزالة الهوامش الافتراضية للعناوين */
+    text-align: right; /* محاذاة النص لليمين */
+    color: #0056b3; /* لون أزرق جذاب */
+}
+
+.company-names h2 {
+    font-size: 1.8em; /* حجم أكبر للاسم العربي */
+}
+
+.company-names h3 {
+    font-size: 1.2em; /* حجم أصغر للاسم الإنجليزي */
+    color: #6c757d; /* لون رمادي للاسم الإنجليزي */
+}
+/* --- نهاية الإضافة الجديدة --- */
+
+
 /* لوحة التحكم والأزرار */
 .controls {
     text-align: center;
@@ -122,7 +157,7 @@ tr:hover {
 
 .modal-content.large {
     max-width: 90%;
-    margin: 5% auto; /* تعديل ليتناسب مع المحتوى الأطول */
+    margin: 5% auto; 
 }
 
 .close {
@@ -148,8 +183,6 @@ tr:hover {
     border-radius: 4px;
 }
 
-/* --- إضافات التعديل --- */
-
 /* تنسيق مساعد السحب */
 .item-details {
     padding: 10px;
@@ -158,7 +191,7 @@ tr:hover {
     margin-bottom: 15px;
     color: #333;
     font-weight: bold;
-    min-height: 1.5em; /* لضمان عدم "قفز" الفورم */
+    min-height: 1.5em; 
 }
 
 /* تنسيق ملخص التقرير */
@@ -191,4 +224,9 @@ tr:hover {
     color: #28a745;
     font-weight: bold;
 }
-/* --- نهاية إضافات التعديل --- */
+```http://googleusercontent.com/image_generation_content/0
+
+**ملاحظة هامة:**
+عند رفع هذه الملفات إلى GitHub، تأكد من أن جميعها في نفس المجلد.
+
+الآن، يجب أن تظهر صفحتك بالشعار واسم الشركة في الأعلى بشكل احترافي.http://googleusercontent.com/image_generation_content/1
