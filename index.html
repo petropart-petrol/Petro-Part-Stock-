@@ -62,7 +62,8 @@
             <span class="close" id="closeWithdrawModal">&times;</span>
             <h2>سحب قطعة من المخزون</h2>
             <form id="withdrawForm">
-                <input type="text" id="withdrawPartName" placeholder="اكتب اسم القطعة للسحب" required>
+                <input type="text" id="withdrawPartName" placeholder="اكتب اسم القطعة للسحب" required list="partNamesList">
+                
                 <div id="withdrawItemDetails" class="item-details"></div>
                 
                 <input type="number" id="withdrawQuantity" placeholder="الكمية المسحوبة" required>
@@ -102,6 +103,8 @@
             </div>
         </div>
     </div>
+
+    <datalist id="partNamesList"></datalist>
 
     <script src="script.js"></script>
 </body>
