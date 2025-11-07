@@ -96,11 +96,19 @@ async function fetchInventory() {
 
         
 
+        // !! تم إضافة هذا السطر لملء قائمة الاقتراحات !!
+
+        populatePartNamesDatalist();
+
+
+
         renderTable(inventoryData);
 
         showLoading(false);
 
-    } catch (error) {
+    } catch (error)
+
+ {
 
         console.error('Error fetching inventory:', error);
 
@@ -170,15 +178,11 @@ function renderTable(data) {
 
 function updateSDGPrices() {
 
-    // نستخدم البيانات التي تم بحث عنها مؤخراً (أو البيانات الكاملة)
-
     searchTable(); 
 
 }
 
 
-
-// دالة البحث (تم التعديل: البحث بالاسم فقط)
 
 function searchTable() {
 
@@ -187,8 +191,6 @@ function searchTable() {
     const filteredData = inventoryData.filter(item => {
 
         const partName = (item.PartName || "").toLowerCase();
-
-        // تم إزالة البحث برقم القطعة
 
         return partName.includes(filter);
 
@@ -210,17 +212,49 @@ function showLoading(isLoading) {
 
 
 
-// --- 2. منطق إضافة قطعة غيار (تم تعديله) ---
+// !! دالة جديدة لملء قائمة البحث التلقائي (الاقتراحات) !!
+
+function populatePartNamesDatalist() {
+
+    const datalist = document.getElementById('partNamesList');
+
+    datalist.innerHTML = ''; // إفراغ القائمة أولاً
+
+
+
+    // استخدام Set لمنع تكرار الأسماء إذا كان هناك خطأ في الإدخال
+
+    const partNames = new Set(inventoryData.map(item => item.PartName.trim()));
+
+
+
+    partNames.forEach(name => {
+
+        if (name) { // التأكد من أن الاسم ليس فارغاً
+
+            const option = document.createElement('option');
+
+            option.value = name;
+
+            datalist.appendChild(option);
+
+        }
+
+    });
+
+}
+
+
+
+
+
+// --- 2. منطق إضافة قطعة غيار ---
 
 
 
 async function handleAddItem(e) {
 
     e.preventDefault(); 
-
-
-
-    // جلب البيانات من الفورم (بدون رقم القطعة)
 
     const itemData = {
 
@@ -244,8 +278,6 @@ async function handleAddItem(e) {
 
 
 
-    // 1. التحقق هل القطعة موجودة مسبقاً (بـ "الاسم")؟
-
     const existingItem = inventoryData.find(item => 
 
         item.PartName.toLowerCase() === itemData.PartName.toLowerCase()
@@ -260,15 +292,11 @@ async function handleAddItem(e) {
 
     if (existingItem) {
 
-        // إذا موجودة: نقوم بتحديث الكمية (PATCH)
-
         const newQuantity = parseInt(existingItem.Quantity) + itemData.Quantity;
 
-        partNumberToLog = existingItem.PartNumber; // استخدم الرقم القديم للتسجيل
+        partNumberToLog = existingItem.PartNumber; 
 
         try {
-
-            // نستخدم رقم القطعة الموجود كـ "مفتاح" للتحديث
 
             await updateSheetDB(`PartNumber/${existingItem.PartNumber}`, { Quantity: newQuantity }, 'Inventory');
 
@@ -282,17 +310,11 @@ async function handleAddItem(e) {
 
     } else {
 
-        // إذا غير موجودة: نقوم بإنشاء رقم تلقائي وإضافة صف جديد (POST)
-
-        
-
-        // 2. إنشاء رقم قطعة تلقائي
-
         const maxId = Math.max(0, ...inventoryData.map(item => parseInt(item.PartNumber) || 0));
 
         const newPartNumber = maxId + 1;
 
-        partNumberToLog = newPartNumber; // استخدم الرقم الجديد للتسجيل
+        partNumberToLog = newPartNumber; 
 
 
 
@@ -322,15 +344,13 @@ async function handleAddItem(e) {
 
 
 
-    // 3. تسجيل العملية في صفحة "Transactions"
-
     const transactionData = {
 
         Timestamp: new Date().toISOString(),
 
         Type: 'إضافة',
 
-        PartNumber: partNumberToLog, // الرقم الذي تم استخدامه
+        PartNumber: partNumberToLog, 
 
         PartName: itemData.PartName,
 
@@ -352,7 +372,7 @@ async function handleAddItem(e) {
 
         closeModal(addModal);
 
-        fetchInventory(); // إعادة تحميل الجدول
+        fetchInventory(); // إعادة تحميل الجدول (وهذا سيقوم بتحديث قائمة الاقتراحات أيضاً)
 
     } catch (error) {
 
@@ -364,31 +384,47 @@ async function handleAddItem(e) {
 
 
 
-// --- 3. منطق سحب قطعة غيار (تم تعديله) ---
+// --- 3. منطق سحب قطعة غيار ---
 
 
 
-// دالة مساعدة لإظهار تفاصيل القطعة عند الكتابة في فورم السحب
+// !! تم تعديل هذه الدالة لتكون أكثر دقة وتستخدم trim() !!
 
-// دالة مساعدة لإظهار تفاصيل القطعة عند الكتابة في فورم السحب
 function showWithdrawItemDetails() {
-    const partName = withdrawPartNameInput.value.toLowerCase().trim(); // نستخدم trim لإزالة المسافات
+
+    // نستخدم trim() لإزالة أي مسافات زائدة قد تأتي من النسخ أو الإدخال
+
+    const partName = withdrawPartNameInput.value.toLowerCase().trim();
+
     if (!partName) {
-        withdrawItemDetails.innerHTML = ''; // إفراغ الحقل إذا كان فارغاً
+
+        withdrawItemDetails.innerHTML = '';
+
         return;
+
     }
+
     
-    // ابحث في البيانات المخزنة مؤقتاً
-    const item = inventoryData.find(i => i.PartName.toLowerCase() === partName);
+
+    // البحث بالمقارنة الدقيقة (بعد تنظيف الإدخال)
+
+    const item = inventoryData.find(i => i.PartName.toLowerCase().trim() === partName);
+
+
 
     if (item) {
-        // وجدنا القطعة
+
         withdrawItemDetails.innerHTML = `القطعة: ${item.PartName} - الكمية المتاحة: <span class="text-success">${item.Quantity}</span>`;
+
     } else {
-        // لم نجد القطعة
+
         withdrawItemDetails.innerHTML = `<span class="text-danger">القطعة غير موجودة</span>`;
+
     }
+
 }
+
+
 
 async function handleWithdrawItem(e) {
 
@@ -414,15 +450,13 @@ async function handleWithdrawItem(e) {
 
 
 
-    // 1. البحث عن القطعة في المخزون (باستخدام الاسم)
-
-    const item = inventoryData.find(i => i.PartName.toLowerCase() === partName.toLowerCase());
+    const item = inventoryData.find(i => i.PartName.toLowerCase().trim() === partName.toLowerCase());
 
 
 
     if (!item) {
 
-        alert('خطأ: اسم القطعة غير موجود في المخزون.');
+        alert('خطأ: اسم القطعة غير موجود في المخزون. (تأكد من اختيارك للاسم من القائمة).');
 
         return;
 
@@ -444,8 +478,6 @@ async function handleWithdrawItem(e) {
 
 
 
-    // 2. حساب الكمية الجديدة وتجهيز بيانات التحديث
-
     const newQuantity = currentQuantity - quantityToWithdraw;
 
     const withdrawalDate = new Date().toLocaleDateString('ar-EG'); 
@@ -464,8 +496,6 @@ async function handleWithdrawItem(e) {
 
 
 
-    // 3. تحديث صفحة "Inventory" (باستخدام PartNumber كـ "مفتاح")
-
     try {
 
         await updateSheetDB(`PartNumber/${item.PartNumber}`, updateData, 'Inventory');
@@ -480,15 +510,13 @@ async function handleWithdrawItem(e) {
 
 
 
-    // 4. تسجيل العملية في صفحة "Transactions"
-
     const currentDollarRate = parseFloat(dollarRateInput.value);
 
     const priceUSD = parseFloat(item.PriceUSD);
 
-    const priceSDG = priceUSD * quantityToWithdraw * currentDollarRate; // السعر الإجمالي بالجنيه
+    const priceSDG = priceUSD * quantityToWithdraw * currentDollarRate;
 
-    const totalUSD = priceUSD * quantityToWithdraw; // السعر الإجمالي بالدولار
+    const totalUSD = priceUSD * quantityToWithdraw;
 
 
 
@@ -506,9 +534,9 @@ async function handleWithdrawItem(e) {
 
         Buyer: buyer,
 
-        PriceUSD: totalUSD, // تسجيل السعر الإجمالي للعملية
+        PriceUSD: totalUSD,
 
-        PriceSDG: priceSDG, // تسجيل السعر الإجمالي للعملية
+        PriceSDG: priceSDG,
 
         DollarRate: currentDollarRate
 
@@ -524,11 +552,11 @@ async function handleWithdrawItem(e) {
 
         withdrawForm.reset();
 
-        withdrawItemDetails.innerHTML = ''; // إفراغ المساعد
+        withdrawItemDetails.innerHTML = ''; 
 
         closeModal(withdrawModal);
 
-        fetchInventory(); // إعادة تحميل الجدول
+        fetchInventory(); // إعادة تحميل الجدول وقائمة الاقتراحات
 
     } catch (error) {
 
@@ -540,7 +568,7 @@ async function handleWithdrawItem(e) {
 
 
 
-// --- 4. منطق تقرير المبيعات (تم تعديله) ---
+// --- 4. منطق تقرير المبيعات ---
 
 
 
@@ -562,8 +590,6 @@ async function handleShowReport() {
 
     try {
 
-        // جلب البيانات من صفحة "Transactions"
-
         const response = await fetch(`${SHEETDB_API_URL}?sheet=Transactions`);
 
         if (!response.ok) throw new Error('فشل جلب بيانات التقرير');
@@ -576,15 +602,13 @@ async function handleShowReport() {
 
 
 
-        // 1. حساب الإحصائيات
-
         let totalUSD = 0;
 
         let totalSDG = 0;
 
-        const buyerSales = {}; // { 'اسم المشتري': إجمالي الدولارات }
+        const buyerSales = {};
 
-        const partSales = {}; // { 'اسم القطعة': إجمالي الكمية }
+        const partSales = {};
 
 
 
@@ -598,25 +622,17 @@ async function handleShowReport() {
 
 
 
-            // إجمالي المبيعات
-
             totalUSD += saleUSD;
 
             totalSDG += saleSDG;
 
 
 
-            // تجميع مبيعات المشترين
-
             if (t.Buyer) {
 
                 buyerSales[t.Buyer] = (buyerSales[t.Buyer] || 0) + saleUSD;
 
             }
-
-
-
-            // تجميع القطع الأكثر مبيعاً (بالكمية)
 
             if (t.PartName) {
 
@@ -627,8 +643,6 @@ async function handleShowReport() {
         });
 
 
-
-        // 2. فرز الإحصائيات لإيجاد "الأكثر"
 
         const sortedBuyers = Object.entries(buyerSales).sort((a, b) => b[1] - a[1]);
 
@@ -641,8 +655,6 @@ async function handleShowReport() {
         const topPart = sortedParts.length > 0 ? `${sortedParts[0][0]} (بكمية ${sortedParts[0][1]})` : 'لا يوجد';
 
 
-
-        // 3. عرض ملخص الإحصائيات
 
         summaryDiv.innerHTML = `
 
@@ -657,8 +669,6 @@ async function handleShowReport() {
         `;
 
 
-
-        // 4. عرض سجل الحركات المفصل (الأحدث أولاً)
 
         transactions.reverse(); 
 
@@ -792,8 +802,6 @@ function closeModal(modal) {
 
 
 
-// ربط أزرار فتح النوافذ
-
 showAddBtn.onclick = () => openModal(addModal);
 
 showWithdrawBtn.onclick = () => openModal(withdrawModal);
@@ -802,15 +810,13 @@ showReportBtn.onclick = () => handleShowReport();
 
 
 
-// ربط أزرار إغلاق النوافذ
-
 closeAddBtn.onclick = () => closeModal(addModal);
 
 closeWithdrawBtn.onclick = () => {
 
     closeModal(withdrawModal);
 
-    withdrawItemDetails.innerHTML = ''; // تنظيف المساعد عند الإغلاق
+    withdrawItemDetails.innerHTML = ''; 
 
     withdrawForm.reset();
 
@@ -830,7 +836,7 @@ window.onclick = function(event) {
 
         closeModal(withdrawModal);
 
-        withdrawItemDetails.innerHTML = ''; // تنظيف المساعد عند الإغلاق
+        withdrawItemDetails.innerHTML = ''; 
 
         withdrawForm.reset();
 
@@ -848,15 +854,11 @@ document.addEventListener('DOMContentLoaded', fetchInventory);
 
 
 
-// ربط استمارات الإضافة والسحب
-
 addForm.addEventListener('submit', handleAddItem);
 
 withdrawForm.addEventListener('submit', handleWithdrawItem);
 
 
-
-// ربط حقل سعر الدولار وحقل البحث
 
 dollarRateInput.addEventListener('change', updateSDGPrices);
 
@@ -866,7 +868,8 @@ searchInput.addEventListener('keyup', searchTable);
 
 
 
-// ربط حقل السحب بالاسم لإظهار التفاصيل
+// !! هذا الربط هو الأهم لعمل الاقتراحات !!
+
+// نستخدم 'input' لأنه يعمل مع كل ضغطة مفتاح ومع الاختيار من القائمة
 
 withdrawPartNameInput.addEventListener('input', showWithdrawItemDetails);
-
