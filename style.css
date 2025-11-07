@@ -12,39 +12,39 @@ h1, h2, h3 {
     text-align: center;
 }
 
-/* --- إضافة جديدة: عنوان الشركة والشعار --- */
+/* --- تعديل: عنوان الشركة والشعار --- */
 .company-header {
     display: flex; /* لترتيب الشعار والأسماء جنباً إلى جنب */
     align-items: center; /* لمحاذاة العناصر رأسياً في المنتصف */
     justify-content: center; /* لمحاذاة العناصر أفقياً في المنتصف */
-    margin-bottom: 30px;
+    margin-bottom: 25px; /* تقليل المسافة السفلية قليلاً */
     padding: 15px;
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* ظل أخف */
 }
 
 .company-logo {
-    max-height: 80px; /* حجم الشعار */
+    max-height: 60px; /* !! تم تصغير الشعار من 80px إلى 60px !! */
     margin-left: 20px; /* مسافة بين الشعار والأسماء */
-    border-radius: 5px; /* لإعطاء الشعار حواف مستديرة قليلاً */
+    border-radius: 4px;
 }
 
 .company-names h2, .company-names h3 {
-    margin: 0; /* إزالة الهوامش الافتراضية للعناوين */
-    text-align: right; /* محاذاة النص لليمين */
-    color: #0056b3; /* لون أزرق جذاب */
+    margin: 0; 
+    text-align: right; 
+    color: #0056b3; 
 }
 
 .company-names h2 {
-    font-size: 1.8em; /* حجم أكبر للاسم العربي */
+    font-size: 1.6em; /* تصغير حجم الخط العربي قليلاً */
 }
 
 .company-names h3 {
-    font-size: 1.2em; /* حجم أصغر للاسم الإنجليزي */
-    color: #6c757d; /* لون رمادي للاسم الإنجليزي */
+    font-size: 1.1em; /* تصغير حجم الخط الإنجليزي قليلاً */
+    color: #6c757d; 
 }
-/* --- نهاية الإضافة الجديدة --- */
+/* --- نهاية التعديل --- */
 
 
 /* لوحة التحكم والأزرار */
@@ -224,9 +224,3 @@ tr:hover {
     color: #28a745;
     font-weight: bold;
 }
-```http://googleusercontent.com/image_generation_content/0
-
-**ملاحظة هامة:**
-عند رفع هذه الملفات إلى GitHub، تأكد من أن جميعها في نفس المجلد.
-
-الآن، يجب أن تظهر صفحتك بالشعار واسم الشركة في الأعلى بشكل احترافي.http://googleusercontent.com/image_generation_content/1
