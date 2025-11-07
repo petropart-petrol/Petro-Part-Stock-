@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة مخزون قطع الغيار</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>نظام إدارة المخزون</h1>
+
+    <div class="controls">
+        <button id="showAddForm" class="btn btn-add">إضافة قطعة غيار +</button>
+        <button id="showWithdrawForm" class="btn btn-withdraw">سحب من المخزون -</button>
+        <button id="showReport" class="btn btn-report">تقرير المبيعات/الحركات 📋</button>
+    </div>
+
+    <div class="filters">
+        <div class="input-group">
+            <label for="dollarRate">سعر دولار اليوم (للحساب):</label>
+            <input type="number" id="dollarRate" value="1500" step="10">
+        </div>
+        <div class="input-group">
+            <label for="searchInput">بحث (برقم القطعة أو الاسم):</label>
+            <input type="text" id="searchInput" placeholder="ابحث هنا...">
+        </div>
+    </div>
+
+    <div id="loading">جاري تحميل البيانات...</div>
+    <table id="inventoryTable">
+        <thead>
+            <tr>
+                <th>رقم القطعة</th>
+                <th>اسم الاسبير</th>
+                <th>العدد (الكمية)</th>
+                <th>السعر (دولار)</th>
+                <th>السعر (جنيه سوداني)</th>
+                <th>آخر سحب</th>
+                <th>آخر مشتري</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeAddModal">&times;</span>
+            <h2>إضافة قطعة غيار جديدة</h2>
+            <form id="addForm">
+                <input type="text" id="addPartNumber" placeholder="رقم القطعة" required>
+                <input type="text" id="addPartName" placeholder="اسم الاسبير" required>
+                <input type="number" id="addQuantity" placeholder="العدد" required>
+                <input type="number" id="addPriceUSD" placeholder="السعر (دولار)" step="0.01" required>
+                <button type="submit" class="btn btn-add">إضافة</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeWithdrawModal">&times;</span>
+            <h2>سحب قطعة من المخزون</h2>
+            <form id="withdrawForm">
+                <input type="text" id="withdrawPartNumber" placeholder="رقم القطعة المسحوبة" required>
+                <input type="number" id="withdrawQuantity" placeholder="الكمية المسحوبة" required>
+                <input type="text" id="withdrawBuyer" placeholder="اسم المشتري" required>
+                <button type="submit" class="btn btn-withdraw">تنفيذ السحب</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="reportModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" id="closeReportModal">&times;</span>
+            <h2>تقرير الحركات (سحب وإضافة)</h2>
+            <div id="reportContent">
+                <table id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>العملية</th>
+                            <th>رقم القطعة</th>
+                            <th>الاسم</th>
+                            <th>الكمية</th>
+                            <th>المشتري</th>
+                            <th>السعر (جنيه)</th>
+                            <th>سعر الدولار</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
