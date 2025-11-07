@@ -370,37 +370,25 @@ async function handleAddItem(e) {
 
 // دالة مساعدة لإظهار تفاصيل القطعة عند الكتابة في فورم السحب
 
+// دالة مساعدة لإظهار تفاصيل القطعة عند الكتابة في فورم السحب
 function showWithdrawItemDetails() {
-
-    const partName = withdrawPartNameInput.value.toLowerCase();
-
+    const partName = withdrawPartNameInput.value.toLowerCase().trim(); // نستخدم trim لإزالة المسافات
     if (!partName) {
-
-        withdrawItemDetails.innerHTML = '';
-
+        withdrawItemDetails.innerHTML = ''; // إفراغ الحقل إذا كان فارغاً
         return;
-
     }
-
     
-
+    // ابحث في البيانات المخزنة مؤقتاً
     const item = inventoryData.find(i => i.PartName.toLowerCase() === partName);
 
-
-
     if (item) {
-
+        // وجدنا القطعة
         withdrawItemDetails.innerHTML = `القطعة: ${item.PartName} - الكمية المتاحة: <span class="text-success">${item.Quantity}</span>`;
-
     } else {
-
+        // لم نجد القطعة
         withdrawItemDetails.innerHTML = `<span class="text-danger">القطعة غير موجودة</span>`;
-
     }
-
 }
-
-
 
 async function handleWithdrawItem(e) {
 
@@ -881,3 +869,4 @@ searchInput.addEventListener('keyup', searchTable);
 // ربط حقل السحب بالاسم لإظهار التفاصيل
 
 withdrawPartNameInput.addEventListener('input', showWithdrawItemDetails);
+
