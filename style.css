@@ -25,9 +25,9 @@ h1, h2, h3 {
 }
 
 .company-logo {
-    max-height: 120px; /* !! تم تصغير الشعار من 80px إلى 60px !! */
-    margin-left: 40px; /* مسافة بين الشعار والأسماء */
-    border-radius: 8px;
+    max-height: 60px; /* !! تم تصغير الشعار من 80px إلى 60px !! */
+    margin-left: 20px; /* مسافة بين الشعار والأسماء */
+    border-radius: 4px;
 }
 
 .company-names h2, .company-names h3 {
@@ -224,4 +224,5 @@ tr:hover {
     color: #28a745;
     font-weight: bold;
 }
+
 
