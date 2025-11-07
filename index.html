@@ -19,11 +19,11 @@
     <div class="filters">
         <div class="input-group">
             <label for="dollarRate">سعر دولار اليوم (للحساب):</label>
-            <input type="number" id="dollarRate" value="1500" step="10">
+            <input type="number" id="dollarRate" value="3400" step="10">
         </div>
         <div class="input-group">
-            <label for="searchInput">بحث (برقم القطعة أو الاسم):</label>
-            <input type="text" id="searchInput" placeholder="ابحث هنا...">
+            <label for="searchInput">بحث (باسم القطعة):</label>
+            <input type="text" id="searchInput" placeholder="اكتب اسم القطعة...">
         </div>
     </div>
 
@@ -49,9 +49,8 @@
             <span class="close" id="closeAddModal">&times;</span>
             <h2>إضافة قطعة غيار جديدة</h2>
             <form id="addForm">
-                <input type="text" id="addPartNumber" placeholder="رقم القطعة" required>
                 <input type="text" id="addPartName" placeholder="اسم الاسبير" required>
-                <input type="number" id="addQuantity" placeholder="العدد" required>
+                <input type="number" id="addQuantity" placeholder="الكمية المضافة" required>
                 <input type="number" id="addPriceUSD" placeholder="السعر (دولار)" step="0.01" required>
                 <button type="submit" class="btn btn-add">إضافة</button>
             </form>
@@ -63,7 +62,9 @@
             <span class="close" id="closeWithdrawModal">&times;</span>
             <h2>سحب قطعة من المخزون</h2>
             <form id="withdrawForm">
-                <input type="text" id="withdrawPartNumber" placeholder="رقم القطعة المسحوبة" required>
+                <input type="text" id="withdrawPartName" placeholder="اكتب اسم القطعة للسحب" required>
+                <div id="withdrawItemDetails" class="item-details"></div>
+                
                 <input type="number" id="withdrawQuantity" placeholder="الكمية المسحوبة" required>
                 <input type="text" id="withdrawBuyer" placeholder="اسم المشتري" required>
                 <button type="submit" class="btn btn-withdraw">تنفيذ السحب</button>
@@ -75,6 +76,13 @@
         <div class="modal-content large">
             <span class="close" id="closeReportModal">&times;</span>
             <h2>تقرير الحركات (سحب وإضافة)</h2>
+            
+            <div id="reportSummary" class="report-summary">
+                <h3>ملخص المبيعات</h3>
+                <div id="summaryContent"></div>
+            </div>
+
+            <h3>سجل الحركات التفصيلي</h3>
             <div id="reportContent">
                 <table id="reportTable">
                     <thead>
