@@ -39,14 +39,11 @@
     <table id="inventoryTable">
         <thead>
             <tr>
-                <th>رقم القطعة</th>
-                <th>اسم الاسبير</th>
+                <th>ت</th> <th>رقم القطعة (ID)</th> <th>اسم الاسبير</th>
                 <th>العدد (الكمية)</th>
                 <th>السعر (دولار)</th>
                 <th>السعر (جنيه سوداني)</th>
-                <th>آخر سحب</th>
-                <th>آخر مشتري</th>
-            </tr>
+                <th>تعديل</th> </tr>
         </thead>
         <tbody id="tableBody">
             </tbody>
@@ -71,12 +68,31 @@
             <h2>سحب قطعة من المخزون</h2>
             <form id="withdrawForm">
                 <input type="text" id="withdrawPartName" placeholder="اكتب اسم القطعة للسحب" required list="partNamesList">
-                
                 <div id="withdrawItemDetails" class="item-details"></div>
-                
                 <input type="number" id="withdrawQuantity" placeholder="الكمية المسحوبة" required>
                 <input type="text" id="withdrawBuyer" placeholder="اسم المشتري" required>
+                <input type="text" id="withdrawLocation" placeholder="مكان المشتري (اختياري)">
                 <button type="submit" class="btn btn-withdraw">تنفيذ السحب</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditModal">&times;</span>
+            <h2>تعديل قطعة غيار</h2>
+            <form id="editForm">
+                <label for="editPartNumber">رقم القطعة (ID)</label>
+                <input type="text" id="editPartNumber" readonly> <label for="editPartName">اسم الاسبير</label>
+                <input type="text" id="editPartName" required>
+                
+                <label for="editQuantity">الكمية الحالية</label>
+                <input type="number" id="editQuantity" required>
+                
+                <label for="editPriceUSD">السعر (دولار)</label>
+                <input type="number" id="editPriceUSD" step="0.01" required>
+                
+                <button type="submit" class="btn btn-edit">حفظ التعديلات</button>
             </form>
         </div>
     </div>
@@ -102,7 +118,7 @@
                             <th>الاسم</th>
                             <th>الكمية</th>
                             <th>المشتري</th>
-                            <th>السعر (جنيه)</th>
+                            <th>مكان المشتري</th> <th>السعر (جنيه)</th>
                             <th>سعر الدولار</th>
                         </tr>
                     </thead>
@@ -117,5 +133,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
