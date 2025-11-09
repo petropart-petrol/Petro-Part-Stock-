@@ -2,7 +2,9 @@
 
 // ⚠️ !! هام جداً: غيّر هذا الرابط بالرابط الخاص بك من SheetDB !! ⚠️
 
-const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/toxu6mq5ih3gc';// -----------------------------------------------------------------
+const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/toxu6mq5ih3gc';
+
+// -----------------------------------------------------------------
 
 
 
@@ -26,7 +28,7 @@ const withdrawModal = document.getElementById('withdrawModal');
 
 const reportModal = document.getElementById('reportModal');
 
-const editModal = document.getElementById('editModal'); // إضافة: نافذة التعديل
+const editModal = document.getElementById('editModal'); 
 
 
 
@@ -48,7 +50,7 @@ const closeWithdrawBtn = document.getElementById('closeWithdrawModal');
 
 const closeReportBtn = document.getElementById('closeReportModal');
 
-const closeEditModalBtn = document.getElementById('closeEditModal'); // إضافة: زر إغلاق نافذة التعديل
+const closeEditModalBtn = document.getElementById('closeEditModal'); 
 
 
 
@@ -58,7 +60,7 @@ const addForm = document.getElementById('addForm');
 
 const withdrawForm = document.getElementById('withdrawForm');
 
-const editForm = document.getElementById('editForm'); // إضافة: فورم التعديل
+const editForm = document.getElementById('editForm'); 
 
 
 
@@ -75,6 +77,10 @@ const reportSummaryContent = document.getElementById('summaryContent');
 // مخزن بيانات مؤقت (Cache)
 
 let inventoryData = [];
+
+// إضافة: مخزن لبيانات التقرير الحالي (للتصدير)
+
+let currentReportData = [];
 
 
 
@@ -95,8 +101,6 @@ async function fetchInventory() {
         
 
         inventoryData = await response.json();
-
-        // الفرز هنا حسب رقم القطعة الرقمي لضمان تسلسل منطقي
 
         inventoryData.sort((a, b) => (parseInt(a.PartNumber) || 0) - (parseInt(b.PartNumber) || 0));
 
@@ -120,7 +124,7 @@ async function fetchInventory() {
 
 
 
-// تم تعديل renderTable لإضافة الرقم التسلسلي وزر التعديل
+// تم تعديل renderTable (حذف "ت" وتعديل colspan)
 
 function renderTable(data) {
 
@@ -132,7 +136,9 @@ function renderTable(data) {
 
     if (data.length === 0) {
 
-        tableBody.innerHTML = '<tr><td colspan="7">لا توجد بيانات لعرضها</td></tr>';
+        // تعديل: تم تغيير colspan من 7 إلى 6
+
+        tableBody.innerHTML = '<tr><td colspan="6">لا توجد بيانات لعرضها</td></tr>';
 
         return;
 
@@ -140,7 +146,7 @@ function renderTable(data) {
 
 
 
-    data.forEach((item, index) => { // إضافة "index" للحصول على الرقم التسلسلي
+    data.forEach((item) => { // حذف "index"
 
         const priceUSD = parseFloat(item.PriceUSD) || 0;
 
@@ -152,7 +158,7 @@ function renderTable(data) {
 
             <tr>
 
-                <td>${index + 1}</td> <td>${item.PartNumber || ''}</td>
+                <td>${item.PartNumber || ''}</td>
 
                 <td>${item.PartName || ''}</td>
 
@@ -272,29 +278,11 @@ async function handleAddItem(e) {
 
     };
 
-    
+    if (!itemData.PartName || itemData.Quantity <= 0 || itemData.PriceUSD <= 0) { alert("الرجاء إدخال اسم وكمية وسعر صحيحين."); return; }
 
-    if (!itemData.PartName || itemData.Quantity <= 0 || itemData.PriceUSD <= 0) {
-
-        alert("الرجاء إدخال اسم وكمية وسعر صحيحين.");
-
-        return;
-
-    }
-
-
-
-    const existingItem = inventoryData.find(item => 
-
-        item.PartName.toLowerCase() === itemData.PartName.toLowerCase()
-
-    );
-
-
+    const existingItem = inventoryData.find(item => item.PartName.toLowerCase() === itemData.PartName.toLowerCase());
 
     let partNumberToLog;
-
-
 
     if (existingItem) {
 
@@ -302,17 +290,9 @@ async function handleAddItem(e) {
 
         partNumberToLog = existingItem.PartNumber; 
 
-        try {
+        try { await updateSheetDB(`PartNumber/${existingItem.PartNumber}`, { Quantity: newQuantity }, 'Inventory'); } 
 
-            await updateSheetDB(`PartNumber/${existingItem.PartNumber}`, { Quantity: newQuantity }, 'Inventory');
-
-        } catch (error) {
-
-            alert('فشل تحديث كمية القطعة الموجودة.');
-
-            return;
-
-        }
+        catch (error) { alert('فشل تحديث كمية القطعة الموجودة.'); return; }
 
     } else {
 
@@ -322,51 +302,21 @@ async function handleAddItem(e) {
 
         partNumberToLog = newPartNumber; 
 
+        const newItem = { ...itemData, PartNumber: newPartNumber };
 
+        try { await postToSheetDB([newItem], 'Inventory'); } 
 
-        const newItem = {
-
-            ...itemData,
-
-            PartNumber: newPartNumber
-
-        };
-
-        
-
-        try {
-
-            await postToSheetDB([newItem], 'Inventory');
-
-        } catch (error) {
-
-            alert('فشل إضافة القطعة الجديدة للمخزون.');
-
-            return;
-
-        }
+        catch (error) { alert('فشل إضافة القطعة الجديدة للمخزون.'); return; }
 
     }
 
-
-
     const transactionData = {
 
-        Timestamp: new Date().toISOString(),
+        Timestamp: new Date().toISOString(), Type: 'إضافة', PartNumber: partNumberToLog, 
 
-        Type: 'إضافة',
-
-        PartNumber: partNumberToLog, 
-
-        PartName: itemData.PartName,
-
-        Quantity: itemData.Quantity,
-
-        PriceUSD: itemData.PriceUSD,
+        PartName: itemData.PartName, Quantity: itemData.Quantity, PriceUSD: itemData.PriceUSD,
 
     };
-
-
 
     try {
 
@@ -374,17 +324,9 @@ async function handleAddItem(e) {
 
         alert('تمت إضافة/تحديث القطعة وتسجيل العملية بنجاح!');
 
-        addForm.reset();
+        addForm.reset(); closeModal(addModal); fetchInventory();
 
-        closeModal(addModal);
-
-        fetchInventory();
-
-    } catch (error) {
-
-        alert('فشل تسجيل عملية الإضافة في التقرير.');
-
-    }
+    } catch (error) { alert('فشل تسجيل عملية الإضافة في التقرير.'); }
 
 }
 
@@ -398,25 +340,13 @@ function showWithdrawItemDetails() {
 
     const partName = withdrawPartNameInput.value.toLowerCase().trim();
 
-    if (!partName) {
-
-        withdrawItemDetails.innerHTML = '';
-
-        return;
-
-    }
+    if (!partName) { withdrawItemDetails.innerHTML = ''; return; }
 
     const item = inventoryData.find(i => i.PartName.toLowerCase().trim() === partName);
 
-    if (item) {
+    if (item) { withdrawItemDetails.innerHTML = `القطعة: ${item.PartName} - الكمية المتاحة: <span class="text-success">${item.Quantity}</span>`; } 
 
-        withdrawItemDetails.innerHTML = `القطعة: ${item.PartName} - الكمية المتاحة: <span class="text-success">${item.Quantity}</span>`;
-
-    } else {
-
-        withdrawItemDetails.innerHTML = `<span class="text-danger">القطعة غير موجودة</span>`;
-
-    }
+    else { withdrawItemDetails.innerHTML = `<span class="text-danger">القطعة غير موجودة</span>`; }
 
 }
 
@@ -426,87 +356,39 @@ async function handleWithdrawItem(e) {
 
     e.preventDefault();
 
-
-
     const partName = withdrawPartNameInput.value.trim();
 
     const quantityToWithdraw = parseInt(document.getElementById('withdrawQuantity').value);
 
     const buyer = document.getElementById('withdrawBuyer').value.trim();
 
-    // إضافة: جلب مكان المشتري
-
     const location = document.getElementById('withdrawLocation').value.trim(); 
 
+    // إضافة: جلب السعر الحقيقي
+
+    const actualSDG = parseFloat(document.getElementById('withdrawActualSDG').value) || 0;
 
 
-    if (!partName || quantityToWithdraw <= 0 || !buyer) {
 
-        alert('الرجاء ملء حقول الاسم والكمية واسم المشتري بشكل صحيح.');
-
-        return;
-
-    }
-
-
+    if (!partName || quantityToWithdraw <= 0 || !buyer) { alert('الرجاء ملء حقول الاسم والكمية واسم المشتري بشكل صحيح.'); return; }
 
     const item = inventoryData.find(i => i.PartName.toLowerCase().trim() === partName.toLowerCase());
 
-
-
-    if (!item) {
-
-        alert('خطأ: اسم القطعة غير موجود في المخزون.');
-
-        return;
-
-    }
-
-
+    if (!item) { alert('خطأ: اسم القطعة غير موجود في المخزون.'); return; }
 
     const currentQuantity = parseInt(item.Quantity);
 
-    
-
-    if (currentQuantity < quantityToWithdraw) {
-
-        alert(`خطأ: الكمية المطلوبة (${quantityToWithdraw}) أكبر من الكمية المتاحة (${currentQuantity}).`);
-
-        return;
-
-    }
+    if (currentQuantity < quantityToWithdraw) { alert(`خطأ: الكمية المطلوبة (${quantityToWithdraw}) أكبر من الكمية المتاحة (${currentQuantity}).`); return; }
 
 
 
     const newQuantity = currentQuantity - quantityToWithdraw;
 
-    const withdrawalDate = new Date().toLocaleDateString('ar-EG'); 
+    const updateData = { Quantity: newQuantity };
 
+    try { await updateSheetDB(`PartNumber/${item.PartNumber}`, updateData, 'Inventory'); } 
 
-
-    // ملاحظة: قمت بإزالة تحديث "آخر مشتري" و "آخر سحب" من جدول المخزون
-
-    // لأنه يسبب بطء. التقرير هو المكان الأفضل لهذه المعلومات.
-
-    const updateData = {
-
-        Quantity: newQuantity
-
-    };
-
-
-
-    try {
-
-        await updateSheetDB(`PartNumber/${item.PartNumber}`, updateData, 'Inventory');
-
-    } catch (error) {
-
-        alert('فشل تحديث المخزون. يرجى المحاولة مرة أخرى.');
-
-        return;
-
-    }
+    catch (error) { alert('فشل تحديث المخزون. يرجى المحاولة مرة أخرى.'); return; }
 
 
 
@@ -514,9 +396,15 @@ async function handleWithdrawItem(e) {
 
     const priceUSD = parseFloat(item.PriceUSD);
 
-    const priceSDG = priceUSD * quantityToWithdraw * currentDollarRate;
-
     const totalUSD = priceUSD * quantityToWithdraw;
+
+    
+
+    // تعديل: منطق حساب السعر بالجنيه
+
+    // إذا أدخل المستخدم سعراً حقيقياً (أكبر من صفر)، استخدمه. وإلا، احسبه.
+
+    const priceSDG = actualSDG > 0 ? actualSDG : (totalUSD * currentDollarRate);
 
 
 
@@ -534,11 +422,11 @@ async function handleWithdrawItem(e) {
 
         Buyer: buyer,
 
-        BuyerLocation: location, // إضافة: مكان المشتري
+        BuyerLocation: location,
 
         PriceUSD: totalUSD,
 
-        PriceSDG: priceSDG,
+        PriceSDG: priceSDG, // استخدام السعر النهائي
 
         DollarRate: currentDollarRate
 
@@ -590,6 +478,8 @@ async function handleShowReport() {
 
     summaryDiv.innerHTML = '<p>جاري حساب الإحصائيات...</p>';
 
+    currentReportData = []; // إفراغ البيانات القديمة
+
 
 
     try {
@@ -602,31 +492,25 @@ async function handleShowReport() {
 
         const transactions = await response.json();
 
+        currentReportData = transactions; // تخزين البيانات للتصدير
+
+        
+
         const withdrawals = transactions.filter(t => t.Type === 'سحب');
 
 
 
         // ... (منطق الإحصائيات لم يتغير) ...
 
-        let totalUSD = 0;
-
-        let totalSDG = 0;
-
-        const buyerSales = {};
-
-        const partSales = {};
+        let totalUSD = 0; let totalSDG = 0; const buyerSales = {}; const partSales = {};
 
         withdrawals.forEach(t => {
 
-            const saleUSD = parseFloat(t.PriceUSD) || 0;
-
-            const saleSDG = parseFloat(t.PriceSDG) || 0;
+            const saleUSD = parseFloat(t.PriceUSD) || 0; const saleSDG = parseFloat(t.PriceSDG) || 0;
 
             const quantity = parseInt(t.Quantity) || 0;
 
-            totalUSD += saleUSD;
-
-            totalSDG += saleSDG;
+            totalUSD += saleUSD; totalSDG += saleSDG;
 
             if (t.Buyer) { buyerSales[t.Buyer] = (buyerSales[t.Buyer] || 0) + saleUSD; }
 
@@ -656,23 +540,11 @@ async function handleShowReport() {
 
 
 
-        // عرض السجل التفصيلي
-
         transactions.reverse(); 
 
         reportBody.innerHTML = '';
 
-
-
-        if (transactions.length === 0) {
-
-            // تعديل: زيادة الـ colspan
-
-            reportBody.innerHTML = '<tr><td colspan="9">لا توجد حركات مسجلة.</td></tr>';
-
-            return;
-
-        }
+        if (transactions.length === 0) { reportBody.innerHTML = '<tr><td colspan="9">لا توجد حركات مسجلة.</td></tr>'; return; }
 
 
 
@@ -696,7 +568,9 @@ async function handleShowReport() {
 
                     <td>${t.Buyer || '---'}</td>
 
-                    <td>${t.BuyerLocation || '---'}</td> <td>${parseFloat(t.PriceSDG || 0).toFixed(2)} ج.س</td>
+                    <td>${t.BuyerLocation || '---'}</td>
+
+                    <td>${parseFloat(t.PriceSDG || 0).toFixed(2)} ج.س</td>
 
                     <td>${t.DollarRate || 'N/A'}</td>
 
@@ -726,19 +600,13 @@ async function handleShowReport() {
 
 // --- 5. دوال مساعدة (للاتصال بـ SheetDB) ---
 
-// (لم تتغير)
-
 async function postToSheetDB(data, sheetName) {
 
     const url = `${SHEETDB_API_URL}?sheet=${sheetName}`;
 
     const response = await fetch(url, {
 
-        method: 'POST',
-
-        headers: { 'Content-Type': 'application/json' },
-
-        body: JSON.stringify({ data: data }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: data }),
 
     });
 
@@ -748,19 +616,13 @@ async function postToSheetDB(data, sheetName) {
 
 }
 
-
-
 async function updateSheetDB(searchKey, data, sheetName) {
 
     const url = `${SHEETDB_API_URL}/${searchKey}?sheet=${sheetName}`;
 
     const response = await fetch(url, {
 
-        method: 'PATCH',
-
-        headers: { 'Content-Type': 'application/json' },
-
-        body: JSON.stringify({ data: data }), 
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: data }), 
 
     });
 
@@ -772,69 +634,31 @@ async function updateSheetDB(searchKey, data, sheetName) {
 
 
 
-// --- 6. إدارة النوافذ المنبثقة (Modals) (تم التعديل) ---
+// --- 6. إدارة النوافذ المنبثقة (Modals) ---
 
+function openModal(modal) { modal.style.display = 'block'; }
 
-
-function openModal(modal) {
-
-    modal.style.display = 'block';
-
-}
-
-
-
-function closeModal(modal) {
-
-    modal.style.display = 'none';
-
-}
-
-
-
-// إضافة: دالة لفتح نافذة التعديل وملء بياناتها
+function closeModal(modal) { modal.style.display = 'none'; }
 
 function openEditModal(event) {
 
     const button = event.target;
 
-    const partNumber = button.dataset.partnumber;
+    document.getElementById('editPartNumber').value = button.dataset.partnumber;
 
-    const name = button.dataset.name;
+    document.getElementById('editPartName').value = button.dataset.name;
 
-    const quantity = button.dataset.quantity;
+    document.getElementById('editQuantity').value = button.dataset.quantity;
 
-    const price = button.dataset.price;
-
-
-
-    // ملء الفورم
-
-    document.getElementById('editPartNumber').value = partNumber;
-
-    document.getElementById('editPartName').value = name;
-
-    document.getElementById('editQuantity').value = quantity;
-
-    document.getElementById('editPriceUSD').value = price;
-
-
+    document.getElementById('editPriceUSD').value = button.dataset.price;
 
     openModal(editModal);
 
 }
 
-
-
-// إضافة: دالة لحفظ التعديلات
-
 async function handleEditItem(e) {
 
     e.preventDefault();
-
-
-
-    // جلب البيانات من فورم التعديل
 
     const partNumber = document.getElementById('editPartNumber').value;
 
@@ -848,17 +672,7 @@ async function handleEditItem(e) {
 
     };
 
-
-
-    if (!updatedData.PartName || updatedData.Quantity < 0 || updatedData.PriceUSD < 0) {
-
-        alert('الرجاء ملء جميع الحقول بشكل صحيح.');
-
-        return;
-
-    }
-
-
+    if (!updatedData.PartName || updatedData.Quantity < 0 || updatedData.PriceUSD < 0) { alert('الرجاء ملء جميع الحقول بشكل صحيح.'); return; }
 
     try {
 
@@ -868,23 +682,13 @@ async function handleEditItem(e) {
 
         closeModal(editModal);
 
-        fetchInventory(); // إعادة تحميل الجدول لعرض التغييرات
+        fetchInventory(); 
 
-    } catch (error) {
-
-        console.error('Error updating item:', error);
-
-        alert('فشل في تعديل القطعة.');
-
-    }
+    } catch (error) { console.error('Error updating item:', error); alert('فشل في تعديل القطعة.'); }
 
 }
 
 
-
-
-
-// ربط أزرار فتح النوافذ
 
 showAddBtn.onclick = () => openModal(addModal);
 
@@ -892,29 +696,13 @@ showWithdrawBtn.onclick = () => openModal(withdrawModal);
 
 showReportBtn.onclick = () => handleShowReport(); 
 
-
-
-// ربط أزرار إغلاق النوافذ
-
 closeAddBtn.onclick = () => closeModal(addModal);
 
-closeEditModalBtn.onclick = () => closeModal(editModal); // إضافة
+closeEditModalBtn.onclick = () => closeModal(editModal); 
 
-closeWithdrawBtn.onclick = () => {
-
-    closeModal(withdrawModal);
-
-    withdrawItemDetails.innerHTML = ''; 
-
-    withdrawForm.reset();
-
-};
+closeWithdrawBtn.onclick = () => { closeModal(withdrawModal); withdrawItemDetails.innerHTML = ''; withdrawForm.reset(); };
 
 closeReportBtn.onclick = () => closeModal(reportModal);
-
-
-
-// إغلاق النوافذ عند الضغط خارجها
 
 window.onclick = function(event) {
 
@@ -922,41 +710,113 @@ window.onclick = function(event) {
 
     if (event.target == reportModal) closeModal(reportModal);
 
-    if (event.target == editModal) closeModal(editModal); // إضافة
+    if (event.target == editModal) closeModal(editModal); 
 
-    if (event.target == withdrawModal) {
-
-        closeModal(withdrawModal);
-
-        withdrawItemDetails.innerHTML = ''; 
-
-        withdrawForm.reset();
-
-    }
+    if (event.target == withdrawModal) { closeModal(withdrawModal); withdrawItemDetails.innerHTML = ''; withdrawForm.reset(); }
 
 }
 
 
 
-// --- 7. ربط الأحداث (تم التعديل) ---
+// --- إضافة: دالة تصدير التقرير إلى CSV (يفتحها Excel) ---
+
+function exportDataToCSV(data, filename) {
+
+    if (data.length === 0) {
+
+        alert('لا توجد بيانات لتصديرها.');
+
+        return;
+
+    }
 
 
+
+    // تحديد الأعمدة (يجب أن تطابق الأسماء في كائن التقرير)
+
+    const headers = [
+
+        "Timestamp", "Type", "PartNumber", "PartName", 
+
+        "Quantity", "Buyer", "BuyerLocation", 
+
+        "PriceUSD", "PriceSDG", "DollarRate"
+
+    ];
+
+    
+
+    // دالة مساعدة للتعامل مع الفواصل والنصوص
+
+    const escapeCSV = (str) => {
+
+        if (str === null || str === undefined) str = "";
+
+        str = String(str);
+
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+
+            return `"${str.replace(/"/g, '""')}"`; // وضع النص بين علامتي اقتباس مزدوجة
+
+        }
+
+        return str;
+
+    };
+
+
+
+    // بناء محتوى CSV
+
+    // \ufeff هو (BOM) لضمان أن Excel يقرأ اللغة العربية بشكل صحيح
+
+    let csvContent = "data:text/csv;charset=utf-8,\ufeff"; 
+
+    csvContent += headers.join(",") + "\n"; // إضافة العناوين
+
+
+
+    data.forEach(row => {
+
+        const rowData = headers.map(header => escapeCSV(row[header]));
+
+        csvContent += rowData.join(",") + "\n";
+
+    });
+
+
+
+    // إنشاء رابط وتنزيل الملف
+
+    const encodedUri = encodeURI(csvContent);
+
+    const link = document.createElement("a");
+
+    link.setAttribute("href", encodedUri);
+
+    link.setAttribute("download", filename);
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+}
+
+
+
+
+
+// --- 7. ربط الأحداث ---
 
 document.addEventListener('DOMContentLoaded', fetchInventory);
-
-
-
-// ربط الاستمارات
 
 addForm.addEventListener('submit', handleAddItem);
 
 withdrawForm.addEventListener('submit', handleWithdrawItem);
 
-editForm.addEventListener('submit', handleEditItem); // إضافة: ربط فورم التعديل
-
-
-
-// ربط البحث وسعر الدولار
+editForm.addEventListener('submit', handleEditItem); 
 
 dollarRateInput.addEventListener('change', updateSDGPrices);
 
@@ -968,8 +828,6 @@ withdrawPartNameInput.addEventListener('input', showWithdrawItemDetails);
 
 
 
-// إضافة: ربط أزرار التعديل (باستخدام تفويض الأحداث)
-
 tableBody.addEventListener('click', (event) => {
 
     if (event.target.classList.contains('btn-edit')) {
@@ -977,5 +835,17 @@ tableBody.addEventListener('click', (event) => {
         openEditModal(event);
 
     }
+
+});
+
+
+
+// إضافة: ربط زر التصدير
+
+document.getElementById('exportReportBtn').addEventListener('click', () => {
+
+    // نستخدم البيانات المخزنة في "currentReportData"
+
+    exportDataToCSV(currentReportData, 'تقرير_المبيعات_بتروبارت.csv');
 
 });
