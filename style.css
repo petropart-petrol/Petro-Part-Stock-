@@ -6,11 +6,7 @@ body {
     margin: 20px;
     line-height: 1.6;
 }
-
-h1, h2, h3 {
-    color: #333;
-    text-align: center;
-}
+h1, h2, h3 { color: #333; text-align: center; }
 
 /* --- عنوان الشركة والشعار --- */
 .company-header {
@@ -23,27 +19,15 @@ h1, h2, h3 {
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
-.company-logo {
-    max-height: 60px;
-    margin-left: 20px;
-    border-radius: 4px;
-}
-.company-names h2, .company-names h3 {
-    margin: 0; 
-    text-align: right; 
-    color: #0056b3; 
-}
+.company-logo { max-height: 60px; margin-left: 20px; border-radius: 4px; }
+.company-names h2, .company-names h3 { margin: 0; text-align: right; color: #0056b3; }
 .company-names h2 { font-size: 1.6em; }
 .company-names h3 { font-size: 1.1em; color: #6c757d; }
 /* --- نهاية العنوان --- */
 
 
 /* لوحة التحكم والأزرار */
-.controls {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
+.controls { text-align: center; margin-bottom: 20px; }
 .btn {
     padding: 10px 20px;
     border: none;
@@ -53,11 +37,10 @@ h1, h2, h3 {
     margin: 5px;
     color: white;
 }
-
 .btn-add { background-color: #28a745; }
 .btn-withdraw { background-color: #dc3545; }
 .btn-report { background-color: #007bff; }
-.btn-edit { background-color: #ffc107; color: #212529; } /* إضافة: تنسيق زر التعديل */
+.btn-edit { background-color: #ffc107; color: #212529; } 
 
 /* الفلاتر والمدخلات */
 .filters {
@@ -121,35 +104,12 @@ tr:hover { background-color: #f1f1f1; }
     cursor: pointer;
 }
 .modal form { display: flex; flex-direction: column; }
-.modal form input {
-    margin-bottom: 15px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-.modal form label {
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 3px;
-}
-/* إضافة: تنسيق حقل الإدخال للقراءة فقط */
-.modal form input[readonly] {
-    background-color: #e9ecef;
-    cursor: not-allowed;
-    color: #777;
-}
+.modal form input { margin-bottom: 15px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+.modal form label { font-weight: bold; color: #555; margin-bottom: 3px; }
+.modal form input[readonly] { background-color: #e9ecef; cursor: not-allowed; color: #777; }
 
 /* تنسيق مساعد السحب */
-.item-details {
-    padding: 10px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    color: #333;
-    font-weight: bold;
-    min-height: 1.5em; 
-}
+.item-details { padding: 10px; background-color: #e9ecef; border-radius: 4px; margin-bottom: 15px; color: #333; font-weight: bold; min-height: 1.5em; }
 
 /* تنسيق ملخص التقرير */
 .report-summary {
@@ -162,6 +122,13 @@ tr:hover { background-color: #f1f1f1; }
 .report-summary h3 { margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
 #summaryContent p { font-size: 1.1em; margin: 8px 0; }
 #summaryContent strong { color: #0056b3; }
+
+/* إضافة: تنسيق زر التصدير */
+#exportReportBtn {
+    display: block;
+    margin: -10px auto 15px auto; /* توسيط الزر وإعطاؤه مساحة */
+    background-color: #17a2b8; /* لون مختلف */
+}
 
 /* تنسيقات ألوان النص */
 .text-danger { color: #dc3545; font-weight: bold; }
