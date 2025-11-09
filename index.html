@@ -39,11 +39,13 @@
     <table id="inventoryTable">
         <thead>
             <tr>
-                <th>ت</th> <th>رقم القطعة (ID)</th> <th>اسم الاسبير</th>
+                <th>رقم القطعة (ID)</th>
+                <th>اسم الاسبير</th>
                 <th>العدد (الكمية)</th>
                 <th>السعر (دولار)</th>
                 <th>السعر (جنيه سوداني)</th>
-                <th>تعديل</th> </tr>
+                <th>تعديل</th>
+            </tr>
         </thead>
         <tbody id="tableBody">
             </tbody>
@@ -51,7 +53,7 @@
 
     <div id="addModal" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeAddModal">&times;</span>
+            <span class="close" id="closeAddModal">×</span>
             <h2>إضافة قطعة غيار جديدة</h2>
             <form id="addForm">
                 <input type="text" id="addPartName" placeholder="اسم الاسبير" required>
@@ -64,7 +66,7 @@
 
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeWithdrawModal">&times;</span>
+            <span class="close" id="closeWithdrawModal">×</span>
             <h2>سحب قطعة من المخزون</h2>
             <form id="withdrawForm">
                 <input type="text" id="withdrawPartName" placeholder="اكتب اسم القطعة للسحب" required list="partNamesList">
@@ -72,6 +74,7 @@
                 <input type="number" id="withdrawQuantity" placeholder="الكمية المسحوبة" required>
                 <input type="text" id="withdrawBuyer" placeholder="اسم المشتري" required>
                 <input type="text" id="withdrawLocation" placeholder="مكان المشتري (اختياري)">
+                <input type="number" id="withdrawActualSDG" placeholder="السعر الحقيقي بالجنيه (اختياري)">
                 <button type="submit" class="btn btn-withdraw">تنفيذ السحب</button>
             </form>
         </div>
@@ -79,19 +82,17 @@
 
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeEditModal">&times;</span>
+            <span class="close" id="closeEditModal">×</span>
             <h2>تعديل قطعة غيار</h2>
             <form id="editForm">
                 <label for="editPartNumber">رقم القطعة (ID)</label>
-                <input type="text" id="editPartNumber" readonly> <label for="editPartName">اسم الاسبير</label>
+                <input type="text" id="editPartNumber" readonly> 
+                <label for="editPartName">اسم الاسبير</label>
                 <input type="text" id="editPartName" required>
-                
                 <label for="editQuantity">الكمية الحالية</label>
                 <input type="number" id="editQuantity" required>
-                
                 <label for="editPriceUSD">السعر (دولار)</label>
                 <input type="number" id="editPriceUSD" step="0.01" required>
-                
                 <button type="submit" class="btn btn-edit">حفظ التعديلات</button>
             </form>
         </div>
@@ -99,8 +100,10 @@
 
     <div id="reportModal" class="modal">
         <div class="modal-content large">
-            <span class="close" id="closeReportModal">&times;</span>
+            <span class="close" id="closeReportModal">×</span>
             <h2>تقرير الحركات (سحب وإضافة)</h2>
+
+            <button id="exportReportBtn" class="btn btn-report">🖨️ تصدير إلى Excel (CSV)</button>
             
             <div id="reportSummary" class="report-summary">
                 <h3>ملخص المبيعات</h3>
@@ -118,7 +121,8 @@
                             <th>الاسم</th>
                             <th>الكمية</th>
                             <th>المشتري</th>
-                            <th>مكان المشتري</th> <th>السعر (جنيه)</th>
+                            <th>مكان المشتري</th>
+                            <th>السعر (جنيه)</th>
                             <th>سعر الدولار</th>
                         </tr>
                     </thead>
