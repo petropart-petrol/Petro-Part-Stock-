@@ -21,12 +21,25 @@ const searchInput = document.getElementById('searchInput');
 const warehouseSelector = document.getElementById('warehouseSelector');
 const mainTableTitle = document.getElementById('mainTableTitle');
 
+// !! تم إصلاح الخطأ هنا !!
+// إضافة: أزرار التحكم الرئيسية (التي تم نسيانها في التحديث)
+const showAddBtn = document.getElementById('showAddForm');
+const showWithdrawBtn = document.getElementById('showWithdrawForm');
+const showReportBtn = document.getElementById('showReport');
+
 // النوافذ
 const addModal = document.getElementById('addModal');
 const withdrawModal = document.getElementById('withdrawModal');
 const reportModal = document.getElementById('reportModal');
 const editModal = document.getElementById('editModal');
 const editTransactionModal = document.getElementById('editTransactionModal'); // جديد
+
+// أزرار إغلاق النوافذ (معرفة هنا للاستخدام في دوال الإغلاق)
+const closeAddBtn = document.getElementById('closeAddModal');
+const closeWithdrawBtn = document.getElementById('closeWithdrawModal');
+const closeReportBtn = document.getElementById('closeReportModal');
+const closeEditModalBtn = document.getElementById('closeEditModal');
+const closeEditTransactionModal = document.getElementById('closeEditTransactionModal'); // جديد
 
 // استمارات
 const addForm = document.getElementById('addForm');
@@ -504,31 +517,4 @@ withdrawPartNameInput.addEventListener('input', showWithdrawItemDetails);
 
 // ربط محدد المخزن الرئيسي
 warehouseSelector.addEventListener('change', (e) => {
-    currentWarehouseKey = e.target.value;
-    renderTable(); // أعد عرض الجدول للمخزن الجديد
-});
-
-// ربط محدد المخزن في نافذة السحب (لملء الاقتراحات)
-withdrawWarehouseSelect.addEventListener('change', (e) => {
-    populatePartNamesDatalist(e.target.value);
-    withdrawPartNameInput.value = ''; // إفراغ الحقل
-    withdrawItemDetails.innerHTML = ''; // إفراغ التفاصيل
-});
-
-// ربط أزرار التعديل (تفويض الأحداث)
-tableBody.addEventListener('click', (event) => {
-    if (event.target.classList.contains('btn-edit')) {
-        openEditModal(event);
-    }
-});
-// ربط أزرار تعديل الحركة (تفويض الأحداث)
-document.getElementById('reportTableBody').addEventListener('click', (event) => {
-    if (event.target.classList.contains('btn-edit-tx')) {
-        openEditTransactionModal(event);
-    }
-});
-
-// ربط زر التصدير
-document.getElementById('exportReportBtn').addEventListener('click', () => {
-    exportDataToCSV(currentReportData, 'تقرير_المبيعات_بتروبارت.csv');
-});
+    currentWarehouseKey = e.targe
