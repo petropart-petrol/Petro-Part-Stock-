@@ -16,7 +16,15 @@
         </div>
     </div>
 
-    <h1>نظام إدارة المخزون</h1>
+    <div class="warehouse-selector-container">
+        <label for="warehouseSelector">عرض مخزن:</label>
+        <select id="warehouseSelector">
+            <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
+            <option value="Inventory_Portsudan">مخزن بورتسودان</option>
+        </select>
+    </div>
+
+    <h1 id="mainTableTitle">نظام إدارة المخزون</h1>
 
     <div class="controls">
         <button id="showAddForm" class="btn btn-add">إضافة قطعة غيار +</button>
@@ -47,8 +55,7 @@
                 <th>تعديل</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
-            </tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 
     <div id="addModal" class="modal">
@@ -56,6 +63,11 @@
             <span class="close" id="closeAddModal">×</span>
             <h2>إضافة قطعة غيار جديدة</h2>
             <form id="addForm">
+                <label for="addWarehouse">اختر المخزن للإضافة إليه:</label>
+                <select id="addWarehouse" required>
+                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
+                    <option value="Inventory_Portsudan">مخزن بورتسودان</option>
+                </select>
                 <input type="text" id="addPartName" placeholder="اسم الاسبير" required>
                 <input type="number" id="addQuantity" placeholder="الكمية المضافة" required>
                 <input type="number" id="addPriceUSD" placeholder="السعر (دولار)" step="0.01" required>
@@ -69,12 +81,21 @@
             <span class="close" id="closeWithdrawModal">×</span>
             <h2>سحب قطعة من المخزون</h2>
             <form id="withdrawForm">
+                <label for="withdrawWarehouse">اختر المخزن للسحب منه:</label>
+                <select id="withdrawWarehouse" required>
+                    <option value="">-- اختر المخزن أولاً --</option>
+                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
+                    <option value="Inventory_Portsudan">مخزن بورتسودان</option>
+                </select>
+                
                 <input type="text" id="withdrawPartName" placeholder="اكتب اسم القطعة للسحب" required list="partNamesList">
                 <div id="withdrawItemDetails" class="item-details"></div>
+                
                 <input type="number" id="withdrawQuantity" placeholder="الكمية المسحوبة" required>
                 <input type="text" id="withdrawBuyer" placeholder="اسم المشتري" required>
                 <input type="text" id="withdrawLocation" placeholder="مكان المشتري (اختياري)">
                 <input type="number" id="withdrawActualSDG" placeholder="السعر الحقيقي بالجنيه (اختياري)">
+                
                 <button type="submit" class="btn btn-withdraw">تنفيذ السحب</button>
             </form>
         </div>
@@ -102,7 +123,6 @@
         <div class="modal-content large">
             <span class="close" id="closeReportModal">×</span>
             <h2>تقرير الحركات (سحب وإضافة)</h2>
-
             <button id="exportReportBtn" class="btn btn-report">🖨️ تصدير إلى Excel (CSV)</button>
             
             <div id="reportSummary" class="report-summary">
@@ -117,18 +137,47 @@
                         <tr>
                             <th>التاريخ</th>
                             <th>العملية</th>
-                            <th>رقم القطعة</th>
-                            <th>الاسم</th>
+                            <th>المخزن</th> <th>الاسم</th>
                             <th>الكمية</th>
                             <th>المشتري</th>
-                            <th>مكان المشتري</th>
+                            <th>المكان</th>
                             <th>السعر (جنيه)</th>
-                            <th>سعر الدولار</th>
-                        </tr>
+                            <th>تعديل</th> </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+    
+    <div id="editTransactionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditTransactionModal">×</span>
+            <h2>تعديل حركة مسجلة</h2>
+            <form id="editTransactionForm">
+                <label>معرف الحركة (Timestamp - للقراءة فقط)</label>
+                <input type="text" id="txTimestamp" readonly>
+                
+                <label for="txPartName">اسم القطعة</label>
+                <input type="text" id="txPartName">
+                
+                <label for="txQuantity">الكمية</label>
+                <input type="number" id="txQuantity">
+                
+                <label for="txBuyer">المشتري</label>
+                <input type="text" id="txBuyer">
+                
+                <label for="txBuyerLocation">مكان المشتري</label>
+                <input type="text" id="txBuyerLocation">
+                
+                <label for="txPriceSDG">السعر (جنيه)</label>
+                <input type="number" id="txPriceSDG" step="0.01">
+                
+                <label for="txWarehouse">المخزن</label>
+                <input type="text" id="txWarehouse">
+                
+                <button type="submit" class="btn btn-edit">حفظ تعديل الحركة</button>
+            </form>
         </div>
     </div>
 
