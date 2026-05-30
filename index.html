@@ -51,19 +51,17 @@
         tr:hover { background-color: #f1f2f6; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
         .modal-content { background-color: #fff; margin: 4% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 550px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; animation: slideDown 0.3s ease-out; max-height: 90vh; overflow-y: auto;}
-        .modal-content.large { max-width: 900px; }
-        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close { position: absolute; top: 15px; left: 20px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: color var(--transition-speed); }
         .close:hover { color: var(--danger-color); }
         .modal-content h2 { margin-top: 0; color: var(--primary-color); margin-bottom: 20px; font-size: 1.4rem; border-right: 4px solid var(--accent-color); padding-right: 10px; }
-        .modal-content form { display: flex; flex-direction: column; gap: 15px; }
-        .modal-content label { font-weight: bold; font-size: 0.9rem; color: #555; margin-bottom: -5px;}
+        .modal-content form { display: flex; flex-direction: column; gap: 12px; }
+        .modal-content label { font-weight: bold; font-size: 0.95rem; color: #2c3e50; margin-bottom: -5px;}
         .modal-content input, .modal-content select { width: 100%; box-sizing: border-box; }
         .toast-notify { position: fixed; bottom: 20px; left: 20px; background: #2ecc71; color: white; padding: 12px 25px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: none; z-index: 2000; font-weight: bold; }
         .processing { opacity: 0.6; pointer-events: none; }
-        .qty-badge { display: inline-block; padding: 5px 10px; border-radius: 4px; background: #e8f4f8; color: #2980b9; font-weight: bold; font-size: 0.85rem; margin-top: -10px;}
-        .readonly-input { background-color: #f1f2f6; color: #2c3e50; font-weight: bold; cursor: not-allowed; border: 1px dashed #ccc;}
-        .total-price-input { background-color: #eafaf1; color: #27ae60; font-weight: bold; font-size: 1.1rem; border: 1px solid #2ecc71;}
+        .qty-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; background: #e8f4f8; color: #0056b3; font-weight: bold; font-size: 0.9rem; border: 1px solid #b8daff; margin-bottom: 5px; text-align: center;}
+        .readonly-input { background-color: #f1f2f6; color: #2c3e50; font-weight: bold; cursor: not-allowed; border: 1px solid #ccc;}
+        .total-price-input { background-color: #eafaf1; color: #27ae60; font-weight: bold; font-size: 1.15rem; border: 2px solid #2ecc71;}
     </style>
 </head>
 <body>
@@ -116,7 +114,7 @@
                     <th>اسم الاسبير (PartName)</th>
                     <th>الكمية (Quantity)</th>
                     <th>السعر (PriceUSD)</th>
-                    <th>السعر (PriceSDG)</th>
+                    <th>السعر بالجنيه (PriceSDG)</th>
                     <th style="text-align: center;">إجراء</th>
                 </tr>
             </thead>
@@ -160,18 +158,20 @@
                 <label for="withdrawPartName">اسم قطعة الغيار:</label>
                 <input type="text" id="withdrawPartName" placeholder="اختر اسم القطعة..." required list="partNamesList">
                 
-                <div id="availableQtyDisplay" class="qty-badge" style="display: none;">الكمية المتوفرة: <span>0</span></div>
+                <div id="availableQtyDisplay" class="qty-badge" style="display: none;">
+                    الكمية المتوفرة بالمخزن: <span id="qtyAvailableSpan" style="font-size: 1.1em;">0</span>
+                </div>
                 
                 <label for="withdrawQuantity">الكميه المسحوبه:</label>
-                <input type="number" id="withdrawQuantity" placeholder="أدخل الكمية..." required min="1">
+                <input type="number" id="withdrawQuantity" placeholder="أدخل الكمية المسحوبة" required min="1">
                 
                 <label for="withdrawBuyer">اسم المشتري:</label>
-                <input type="text" id="withdrawBuyer" placeholder="اسم المشتري" required>
+                <input type="text" id="withdrawBuyer" placeholder="أدخل اسم المشتري" required>
                 
                 <label for="withdrawLocation">مكان المشتري:</label>
-                <input type="text" id="withdrawLocation" placeholder="مكان المشتري">
+                <input type="text" id="withdrawLocation" placeholder="أدخل مكان المشتري">
                 
-                <label for="withdrawUnitPrice">سعر الحبه بالجنيه (تلقائي):</label>
+                <label for="withdrawUnitPrice">سعر الحبه (تلقائي):</label>
                 <input type="text" id="withdrawUnitPrice" class="readonly-input" placeholder="0.00" readonly>
                 
                 <label for="withdrawTotalPrice">مجموع الشراء والسحب (تلقائي):</label>
@@ -240,7 +240,7 @@
             if (currentRate && currentRate > 0) {
                 localStorage.setItem('petro_part_usd_rate', currentRate);
                 showToast(`تم حفظ السعر الجديد (${currentRate} ج.س) بنجاح!`);
-                renderTable(currentInventoryData);
+                renderTable(currentInventoryData); // تحديث الأسعار في الجدول فوراً
             }
         });
 
@@ -292,7 +292,7 @@
                 const priceUsd = parseFloat(item['PriceUSD'] || 0);
                 const remark = item['Remark'] || '';
                 
-                // حساب السعر بالجنيه وإضافة الفواصل والخانات العشرية
+                // حساب السعر بالجنيه مع خانتين عشريتين وفواصل الألوف
                 const priceSdgValue = priceUsd * rate;
                 const formattedPriceSdg = priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -302,7 +302,7 @@
                     <td><strong>${name}</strong></td>
                     <td>${qty}</td>
                     <td style="color: green; direction: ltr;">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                    <td style="font-weight: bold; color: #b7791f;">${formattedPriceSdg} ج.س</td>
+                    <td style="font-weight: bold; color: #b7791f; direction: ltr;">${formattedPriceSdg} ج.س</td>
                     <td style="text-align: center;">
                         <button class="btn-edit-cell" onclick="openEditModal('${id}', '${name}', '${qty}', '${priceUsd}', '${remark}')">تعديل</button>
                     </td>
@@ -330,6 +330,7 @@
         document.getElementById('warehouseSelector').addEventListener('change', fetchData);
         document.getElementById('searchInput').addEventListener('input', () => renderTable(currentInventoryData));
 
+        // --- إضافة ---
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitAddBtn');
@@ -342,7 +343,7 @@
             const partName = document.getElementById('addPartName').value;
             const qty = parseInt(document.getElementById('addQuantity').value);
             const priceUsd = parseFloat(document.getElementById('addPriceUSD').value);
-            const priceSdg = (priceUsd * rate).toFixed(2); // يرسل كقيمة رقمية عادية لقاعدة البيانات
+            const priceSdg = (priceUsd * rate).toFixed(2);
             const remark = document.getElementById('addRemark').value;
 
             const existingPart = currentInventoryData.find(p => p['PartNumber'] === partNum || p['PartName'] === partName);
@@ -390,15 +391,15 @@
             }
         });
 
-        // --- منطق نموذج السحب الجديد (حساب السعر التلقائي وإظهار الكمية) ---
+        // --- منطق نموذج السحب الجديد ---
         const withdrawPartNameInput = document.getElementById('withdrawPartName');
         const availableQtyDisplay = document.getElementById('availableQtyDisplay');
-        const qtySpan = availableQtyDisplay.querySelector('span');
+        const qtyAvailableSpan = document.getElementById('qtyAvailableSpan');
         const withdrawQtyInput = document.getElementById('withdrawQuantity');
         const withdrawUnitPriceInput = document.getElementById('withdrawUnitPrice');
         const withdrawTotalPriceInput = document.getElementById('withdrawTotalPrice');
 
-        // عند اختيار/كتابة اسم القطعة
+        // تحديث البيانات عند اختيار قطعة غيار
         withdrawPartNameInput.addEventListener('input', () => {
             const part = currentInventoryData.find(p => p['PartName'] === withdrawPartNameInput.value);
             if (part) {
@@ -407,14 +408,13 @@
                 const rate = getCurrentRate();
                 const unitPriceSdg = priceUsd * rate;
                 
-                // إظهار الكمية
-                qtySpan.textContent = currentQty;
-                availableQtyDisplay.style.display = 'inline-block';
+                // إظهار الكمية الموجودة
+                qtyAvailableSpan.textContent = currentQty;
+                availableQtyDisplay.style.display = 'block';
                 
-                // إظهار السعر للحبة
-                withdrawUnitPriceInput.value = unitPriceSdg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                // تعيين القيمة الفعلية كبيانات مخفية لتسهيل الحساب (اختياري، أو إعادة الحساب)
-                withdrawUnitPriceInput.dataset.rawPrice = unitPriceSdg;
+                // عرض سعر الحبة بخانات عشرية
+                withdrawUnitPriceInput.value = unitPriceSdg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.س';
+                withdrawUnitPriceInput.dataset.rawPrice = unitPriceSdg; // تخزين القيمة الخام لسهولة الحساب
 
                 calculateWithdrawTotal();
             } else {
@@ -425,7 +425,7 @@
             }
         });
 
-        // عند تعديل الكمية المسحوبة
+        // حساب المجموع تلقائياً عند تغيير الكمية المسحوبة
         withdrawQtyInput.addEventListener('input', calculateWithdrawTotal);
 
         function calculateWithdrawTotal() {
@@ -434,6 +434,7 @@
             
             if (qty > 0 && unitPrice > 0) {
                 const total = qty * unitPrice;
+                // عرض المجموع بخانات عشرية
                 withdrawTotalPriceInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.س';
             } else {
                 withdrawTotalPriceInput.value = '';
@@ -465,7 +466,7 @@
 
             const currentQty = parseInt(part['Quantity']) || 0;
             if (withdrawQty > currentQty) {
-                showToast(`الكمية المطلوبة (${withdrawQty}) أكبر من المتاح (${currentQty})!`, true);
+                showToast(`الكمية المطلوبة (${withdrawQty}) أكبر من المتوفر (${currentQty})!`, true);
                 btn.classList.remove('processing');
                 btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
                 return;
@@ -473,16 +474,18 @@
 
             const newQty = currentQty - withdrawQty;
             const priceUsd = parseFloat(part['PriceUSD']);
-            const priceSdg = (priceUsd * rate).toFixed(2);
+            const unitPriceSdg = (priceUsd * rate).toFixed(2);
             const timestamp = new Date().toLocaleString('en-GB');
 
             try {
+                // 1. خصم الكمية
                 await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: { 'Quantity': newQty, 'PriceSDG': priceSdg } })
+                    body: JSON.stringify({ data: { 'Quantity': newQty, 'PriceSDG': unitPriceSdg } })
                 });
 
+                // 2. تسجيل العملية في الحركات
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -495,7 +498,7 @@
                             'Quantity': withdrawQty,
                             'Buyer': buyer,
                             'PriceUSD': priceUsd,
-                            'PriceSDG': priceSdg, // يرسل سعر الحبة 
+                            'PriceSDG': unitPriceSdg, // تخزين سعر الحبة في قاعدة البيانات
                             'DollarRate': rate,
                             'Warehouse': warehouse,
                             'BuyerLocation': location
@@ -503,7 +506,7 @@
                     })
                 });
 
-                showToast(`✅ تم سحب ${withdrawQty} من ${part['PartName']} وتسجيل العملية بنجاح!`);
+                showToast(`✅ تم سحب ${withdrawQty} من ${part['PartName']} بنجاح!`);
                 document.getElementById('withdrawForm').reset();
                 availableQtyDisplay.style.display = 'none';
                 document.getElementById('withdrawModal').style.display = "none";
@@ -517,6 +520,7 @@
             }
         });
 
+        // --- تعديل يدوي ---
         function openEditModal(id, name, qty, price, remark) {
             document.getElementById('editPartNumber').value = id;
             document.getElementById('editPartName').value = name;
@@ -564,6 +568,7 @@
             }
         });
 
+        // --- التحكم بالنوافذ ---
         function setupModal(openBtnId, modalId, closeBtnId) {
             const openBtn = document.getElementById(openBtnId);
             const modal = document.getElementById(modalId);
