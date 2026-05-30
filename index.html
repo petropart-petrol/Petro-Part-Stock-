@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة مخزون قطع الغيار - بتروبارت</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --primary-color: #0f2027; 
@@ -17,24 +18,29 @@
             --transition-speed: 0.3s;
         }
 
+        * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-bg); color: #333; margin: 0; padding: 0; }
-        .company-header { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #ffffff; padding: 25px 40px; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .company-logo { width: 70px; height: 70px; background-color: #fff; border-radius: 50%; padding: 5px; object-fit: contain; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .company-names h2 { margin: 0; font-size: 1.6rem; font-weight: 600; }
-        .company-names h3 { margin: 5px 0 0 0; font-size: 1.1rem; color: #bdc3c7; font-weight: 300; }
-        .main-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        h1#mainTableTitle { color: var(--primary-color); font-size: 1.8rem; border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 25px; }
-        .dashboard-top-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 25px; }
+        .company-header { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #ffffff; padding: 20px 5%; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); flex-wrap: wrap;}
+        .company-logo { width: 60px; height: 60px; background-color: #fff; border-radius: 50%; padding: 5px; object-fit: contain; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .company-names h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+        .company-names h3 { margin: 5px 0 0 0; font-size: 1rem; color: #bdc3c7; font-weight: 300; }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        h1#mainTableTitle { color: var(--primary-color); font-size: 1.6rem; border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* لوحة التحكم والبحث */
+        .dashboard-top-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         .input-group label { font-weight: bold; color: var(--secondary-color); font-size: 0.95rem; }
-        select, input[type="text"], input[type="number"] { padding: 10px 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; transition: all var(--transition-speed); outline: none; }
+        select, input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; transition: all var(--transition-speed); outline: none; }
         select:focus, input:focus { border-color: var(--info-color); box-shadow: 0 0 5px rgba(52, 152, 219, 0.3); }
         .dollar-input-wrapper { display: flex; gap: 10px; }
         .dollar-input-wrapper input { flex: 1; }
-        .btn-save-rate { background-color: var(--secondary-color); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background var(--transition-speed); }
+        .btn-save-rate { background-color: var(--secondary-color); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background var(--transition-speed); white-space: nowrap;}
         .btn-save-rate:hover { background-color: var(--primary-color); }
-        .controls { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .btn { padding: 12px 24px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all var(--transition-speed); display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* أزرار التحكم */
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { padding: 12px 20px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all var(--transition-speed); display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex: 1; min-width: 200px;}
         .btn-add { background-color: var(--success-color); color: white; }
         .btn-add:hover { background-color: #27ae60; transform: translateY(-2px); }
         .btn-withdraw { background-color: var(--accent-color); color: var(--primary-color); }
@@ -43,33 +49,48 @@
         .btn-report:hover { background-color: #2980b9; transform: translateY(-2px); }
         .btn-edit-cell { background-color: #7f8c8d; color: white; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: none; cursor: pointer; }
         .btn-edit-cell:hover { background-color: #2c3e50; }
+        
+        /* الجدول المتجاوب مع الهاتف */
         #loading { text-align: center; padding: 20px; font-weight: bold; color: var(--info-color); }
-        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: var(--card-shadow); margin-bottom: 30px; }
-        th { background-color: var(--secondary-color); color: #ffffff; padding: 15px; font-weight: 600; text-align: right; }
+        .table-responsive { overflow-x: auto; background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { background-color: var(--secondary-color); color: #ffffff; padding: 15px; font-weight: 600; text-align: right; white-space: nowrap; }
         td { padding: 14px 15px; border-bottom: 1px solid #eeeeee; color: #444; }
         tr:last-child td { border-bottom: none; }
         tr:hover { background-color: #f1f2f6; }
+        
+        /* النوافذ المنبثقة (Modals) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
-        .modal-content { background-color: #fff; margin: 4% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 550px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; animation: slideDown 0.3s ease-out; max-height: 90vh; overflow-y: auto;}
+        .modal-content { background-color: #fff; margin: 5vh auto; padding: 25px; border-radius: 12px; width: 92%; max-width: 500px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; animation: slideDown 0.3s ease-out; max-height: 90vh; overflow-y: auto;}
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close { position: absolute; top: 15px; left: 20px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: color var(--transition-speed); }
         .close:hover { color: var(--danger-color); }
         .modal-content h2 { margin-top: 0; color: var(--primary-color); margin-bottom: 20px; font-size: 1.4rem; border-right: 4px solid var(--accent-color); padding-right: 10px; }
         .modal-content form { display: flex; flex-direction: column; gap: 12px; }
         .modal-content label { font-weight: bold; font-size: 0.95rem; color: #2c3e50; margin-bottom: -5px;}
-        .modal-content input, .modal-content select { width: 100%; box-sizing: border-box; }
-        .toast-notify { position: fixed; bottom: 20px; left: 20px; background: #2ecc71; color: white; padding: 12px 25px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: none; z-index: 2000; font-weight: bold; }
+        .toast-notify { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: white; padding: 12px 25px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: none; z-index: 2000; font-weight: bold; width: 90%; max-width: 400px; text-align: center;}
         .processing { opacity: 0.6; pointer-events: none; }
+        
+        /* مظهر حقول السحب المخصصة */
         .qty-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; background: #e8f4f8; color: #0056b3; font-weight: bold; font-size: 0.9rem; border: 1px solid #b8daff; margin-bottom: 5px; text-align: center;}
         .readonly-input { background-color: #f1f2f6; color: #2c3e50; font-weight: bold; cursor: not-allowed; border: 1px solid #ccc;}
-        .total-price-input { background-color: #eafaf1; color: #27ae60; font-weight: bold; font-size: 1.15rem; border: 2px solid #2ecc71;}
+        .total-price-input { background-color: #eafaf1; color: #27ae60; font-weight: bold; font-size: 1.15rem; border: 2px solid #2ecc71; text-align: center;}
         .editable-price { background-color: #fff; border: 1px solid #3498db; font-weight: bold; color: #2c3e50; transition: all 0.3s;}
         .editable-price:focus { box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
+
+        /* تصميم إشعار السحب (الإيصال) */
+        .receipt-container { padding: 20px; border: 2px dashed #95a5a6; background: #fdfbf7; border-radius: 8px; color: #2c3e50; }
+        .receipt-header { text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px; }
+        .receipt-header h3 { margin: 0; color: #0f2027; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
+        .receipt-row strong { color: #34495e; }
+        .receipt-total { border-top: 2px solid #2c3e50; padding-top: 10px; margin-top: 10px; font-size: 1.2rem; font-weight: bold; text-align: center; color: #27ae60; }
     </style>
 </head>
 <body>
 
     <div class="company-header">
-        <img src="https://lh3.googleusercontent.com/d/1WYy3GVG0Q_kk1m6TrbGNJIMuktShsltt" alt="شعار شركة بتروبارت" class="company-logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23ccc\'/><text x=\'50\' y=\'50\' font-size=\'20\' text-anchor=\'middle\' alignment-baseline=\'middle\' fill=\'%23333\'>Logo</text></svg>'">
+        <img src="https://lh3.googleusercontent.com/d/1WYy3GVG0Q_kk1m6TrbGNJIMuktShsltt" alt="شعار شركة بتروبارت" class="company-logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23ccc\'/><text x=\'50\' y=\'50\' font-size=\'12\' text-anchor=\'middle\' alignment-baseline=\'middle\' fill=\'%23333\'>Logo</text></svg>'">
         <div class="company-names">
             <h2>شركة بتروبارت لمعدات البترول المحدودة</h2>
             <h3>Petro-Part Petroleum Equipment LTD</h3>
@@ -87,7 +108,6 @@
                     <option value="Inventory_Halfa">مخزن حلفا (Inventory_Halfa)</option>
                 </select>
             </div>
-
             <div class="input-group">
                 <label for="dollarRate">💵 سعر دولار اليوم (جنيه سوداني):</label>
                 <div class="dollar-input-wrapper">
@@ -95,7 +115,6 @@
                     <button id="saveDollarBtn" class="btn-save-rate" title="حفظ السعر في المتصفح">💾 حفظ السعر</button>
                 </div>
             </div>
-
             <div class="input-group">
                 <label for="searchInput">🔍 بحث سريع باسم القطعة (PartName):</label>
                 <input type="text" id="searchInput" placeholder="اكتب اسم الاسبير للبحث...">
@@ -109,19 +128,22 @@
         </div>
 
         <div id="loading">جاري تحميل البيانات من السيرفر...</div>
-        <table id="inventoryTable">
-            <thead>
-                <tr>
-                    <th>رقم القطعة (PartNumber)</th>
-                    <th>اسم الاسبير (PartName)</th>
-                    <th>الكمية (Quantity)</th>
-                    <th>السعر (PriceUSD)</th>
-                    <th>السعر بالجنيه (PriceSDG)</th>
-                    <th style="text-align: center;">إجراء</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+        
+        <div class="table-responsive">
+            <table id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>رقم القطعة</th>
+                        <th>اسم الاسبير</th>
+                        <th>الكمية</th>
+                        <th>السعر ($)</th>
+                        <th>السعر بالجنيه (ج.س)</th>
+                        <th style="text-align: center;">إجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="addModal" class="modal">
@@ -134,13 +156,11 @@
                     <option value="Inventory_Khartoum">مخزن الخرطوم</option>
                     <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
                 </select>
-                
                 <input type="text" id="addPartNumber" placeholder="رقم القطعة (PartNumber)" required>
                 <input type="text" id="addPartName" placeholder="اسم الاسبير (PartName)" required>
                 <input type="number" id="addQuantity" placeholder="الكمية المضافة (Quantity)" required>
                 <input type="number" id="addPriceUSD" placeholder="السعر دولار (PriceUSD)" step="0.01" required>
                 <input type="text" id="addRemark" placeholder="ملاحظة (Remark) - اختياري">
-                
                 <button type="submit" class="btn btn-add" id="submitAddBtn">تأكيد الإضافة للمخزن</button>
             </form>
         </div>
@@ -199,9 +219,54 @@
                 <input type="number" id="editPriceUSD" step="0.01" required>
                 <label for="editRemark">ملاحظة (Remark)</label>
                 <input type="text" id="editRemark">
-                
                 <button type="submit" class="btn btn-add" id="submitEditBtn">حفظ التعديلات</button>
             </form>
+        </div>
+    </div>
+
+    <div id="receiptModal" class="modal">
+        <div class="modal-content" style="background-color: #f1f2f6;">
+            <span class="close" id="closeReceiptModal">×</span>
+            
+            <div id="receiptContent" class="receipt-container">
+                <div class="receipt-header">
+                    <h3>بتروبارت لمعدات البترول</h3>
+                    <p style="margin: 5px 0; color: #7f8c8d; font-size: 0.9em;">إشعار سحب / مبيعات</p>
+                </div>
+                
+                <div class="receipt-row">
+                    <strong>تاريخ العملية:</strong>
+                    <span id="recDate"></span>
+                </div>
+                <div class="receipt-row">
+                    <strong>المخزن:</strong>
+                    <span id="recWarehouse"></span>
+                </div>
+                <div class="receipt-row">
+                    <strong>المشتري:</strong>
+                    <span id="recBuyer"></span>
+                </div>
+                <div class="receipt-row">
+                    <strong>القطعة:</strong>
+                    <span id="recPartName"></span>
+                </div>
+                <div class="receipt-row">
+                    <strong>الكمية المسحوبة:</strong>
+                    <span id="recQty"></span>
+                </div>
+                <div class="receipt-row">
+                    <strong>سعر الحبة:</strong>
+                    <span><span id="recUnitPrice"></span> ج.س</span>
+                </div>
+                
+                <div class="receipt-total">
+                    المجموع: <span id="recTotal"></span> ج.س
+                </div>
+            </div>
+
+            <button id="shareReceiptBtn" class="btn btn-report" style="width: 100%; margin-top: 15px; font-size: 1.1rem;">
+                📥 تحميل / مشاركة الإشعار (صورة)
+            </button>
         </div>
     </div>
 
@@ -224,16 +289,11 @@
         }
 
         const dollarRateInput = document.getElementById('dollarRate');
-        
-        function getCurrentRate() {
-            return parseFloat(dollarRateInput.value) || 3400;
-        }
+        function getCurrentRate() { return parseFloat(dollarRateInput.value) || 3400; }
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedRate = localStorage.getItem('petro_part_usd_rate');
-            if (savedRate) {
-                dollarRateInput.value = savedRate;
-            }
+            if (savedRate) { dollarRateInput.value = savedRate; }
             fetchData();
         });
 
@@ -263,7 +323,6 @@
                 
                 loadingDiv.style.display = 'none';
                 renderTable(currentInventoryData);
-
             } catch (error) {
                 console.error('Error:', error);
                 loadingDiv.innerHTML = '<span style="color:red;">❌ حدث خطأ أثناء جلب البيانات.</span>';
@@ -303,14 +362,13 @@
                     <td><strong>${name}</strong></td>
                     <td>${qty}</td>
                     <td style="color: green; direction: ltr;">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                    <td style="font-weight: bold; color: #b7791f; direction: ltr;">${formattedPriceSdg} ج.س</td>
+                    <td style="font-weight: bold; color: #b7791f; direction: ltr;">${formattedPriceSdg}</td>
                     <td style="text-align: center;">
                         <button class="btn-edit-cell" onclick="openEditModal('${id}', '${name}', '${qty}', '${priceUsd}', '${remark}')">تعديل</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
-            
             updateDatalist(data);
         }
 
@@ -331,6 +389,7 @@
         document.getElementById('warehouseSelector').addEventListener('change', fetchData);
         document.getElementById('searchInput').addEventListener('input', () => renderTable(currentInventoryData));
 
+        // --- إضافة ---
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitAddBtn');
@@ -354,44 +413,24 @@
                     await fetch(`${API_URL}/PartNumber/${partNum}?sheet=${warehouse}`, {
                         method: 'PATCH',
                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            data: {
-                                'Quantity': updatedQty,
-                                'PriceUSD': priceUsd,
-                                'PriceSDG': priceSdg,
-                                'Remark': remark || existingPart['Remark']
-                            }
-                        })
+                        body: JSON.stringify({ data: { 'Quantity': updatedQty, 'PriceUSD': priceUsd, 'PriceSDG': priceSdg, 'Remark': remark || existingPart['Remark'] } })
                     });
                 } else {
                     await fetch(`${API_URL}?sheet=${warehouse}`, {
                         method: 'POST',
                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            data: {
-                                'PartNumber': partNum,
-                                'PartName': partName,
-                                'Quantity': qty,
-                                'PriceUSD': priceUsd,
-                                'PriceSDG': priceSdg,
-                                'Remark': remark
-                            }
-                        })
+                        body: JSON.stringify({ data: { 'PartNumber': partNum, 'PartName': partName, 'Quantity': qty, 'PriceUSD': priceUsd, 'PriceSDG': priceSdg, 'Remark': remark } })
                     });
                 }
                 showToast('✅ تمت الإضافة إلى المخزون بنجاح!');
                 document.getElementById('addForm').reset();
                 document.getElementById('addModal').style.display = "none";
                 if(document.getElementById('warehouseSelector').value === warehouse) fetchData();
-            } catch (error) {
-                showToast('❌ حدث خطأ أثناء الإضافة', true);
-            } finally {
-                btn.classList.remove('processing');
-                btn.textContent = 'تأكيد الإضافة للمخزن';
-            }
+            } catch (error) { showToast('❌ حدث خطأ أثناء الإضافة', true); } 
+            finally { btn.classList.remove('processing'); btn.textContent = 'تأكيد الإضافة للمخزن'; }
         });
 
-        // --- منطق نموذج السحب الجديد (قابل للتعديل) ---
+        // --- منطق السحب والمبيعات ---
         const withdrawPartNameInput = document.getElementById('withdrawPartName');
         const availableQtyDisplay = document.getElementById('availableQtyDisplay');
         const qtyAvailableSpan = document.getElementById('qtyAvailableSpan');
@@ -399,7 +438,7 @@
         const withdrawUnitPriceInput = document.getElementById('withdrawUnitPrice');
         const withdrawTotalPriceInput = document.getElementById('withdrawTotalPrice');
 
-        // تحديث البيانات عند اختيار قطعة غيار
+        // تحديث البيانات عند اختيار قطعة
         withdrawPartNameInput.addEventListener('input', () => {
             const part = currentInventoryData.find(p => p['PartName'] === withdrawPartNameInput.value);
             if (part) {
@@ -411,9 +450,8 @@
                 qtyAvailableSpan.textContent = currentQty;
                 availableQtyDisplay.style.display = 'block';
                 
-                // عرض السعر كقيمة رقمية صافية لتسهيل التعديل
+                // تحديث السعر كقيمة رقمية (بدون فواصل آلاف) لتجنب أخطاء الحساب عند التعديل
                 withdrawUnitPriceInput.value = unitPriceSdg.toFixed(2);
-
                 calculateWithdrawTotal();
             } else {
                 availableQtyDisplay.style.display = 'none';
@@ -422,13 +460,11 @@
             }
         });
 
-        // إعادة حساب المجموع عند تغيير الكمية المسحوبة أو تعديل سعر الحبة يدوياً
-        withdrawQtyInput.addEventListener('input', calculateWithdrawTotal);
-        withdrawUnitPriceInput.addEventListener('input', calculateWithdrawTotal);
-
+        // حساب المجموع: (سعر الحبة المدخل) مضروباً في (الكمية المسحوبة)
         function calculateWithdrawTotal() {
             const qty = parseInt(withdrawQtyInput.value) || 0;
-            const unitPrice = parseFloat(withdrawUnitPriceInput.value) || 0;
+            // قراءة القيمة مباشرة من الحقل (ليعكس أي تعديل يدوي)
+            const unitPrice = parseFloat(withdrawUnitPriceInput.value) || 0; 
             
             if (qty > 0 && unitPrice > 0) {
                 const total = qty * unitPrice;
@@ -438,7 +474,10 @@
             }
         }
 
-        // إرسال طلب السحب
+        withdrawQtyInput.addEventListener('input', calculateWithdrawTotal);
+        withdrawUnitPriceInput.addEventListener('input', calculateWithdrawTotal);
+
+        // تنفيذ السحب
         document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitWithdrawBtn');
@@ -446,29 +485,29 @@
             btn.textContent = 'جاري السحب والتسجيل...';
 
             const warehouse = document.getElementById('withdrawWarehouse').value;
+            const warehouseLabel = document.getElementById('withdrawWarehouse').options[document.getElementById('withdrawWarehouse').selectedIndex].text;
             const partNameInput = withdrawPartNameInput.value;
             const withdrawQty = parseInt(withdrawQtyInput.value);
             const buyer = document.getElementById('withdrawBuyer').value;
             const location = document.getElementById('withdrawLocation').value;
             const rate = getCurrentRate();
             
-            // قراءة السعر الجديد (في حال تم تعديله يدوياً)
+            // السعر النهائي والمجموع للإيصال وقاعدة البيانات
             const finalUnitPriceSdg = parseFloat(withdrawUnitPriceInput.value).toFixed(2);
+            const finalTotalStr = withdrawTotalPriceInput.value;
 
             const part = currentInventoryData.find(p => p['PartName'] === partNameInput);
 
             if (!part) {
                 showToast('القطعة غير موجودة في المخزن المعروض حالياً!', true);
-                btn.classList.remove('processing');
-                btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
+                btn.classList.remove('processing'); btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
                 return;
             }
 
             const currentQty = parseInt(part['Quantity']) || 0;
             if (withdrawQty > currentQty) {
                 showToast(`الكمية المطلوبة (${withdrawQty}) أكبر من المتوفر (${currentQty})!`, true);
-                btn.classList.remove('processing');
-                btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
+                btn.classList.remove('processing'); btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
                 return;
             }
 
@@ -477,15 +516,14 @@
             const timestamp = new Date().toLocaleString('en-GB');
 
             try {
-                // 1. خصم الكمية
+                // 1. خصم الكمية من الجدول الأساسي
                 await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: { 'Quantity': newQty } }) 
-                    // لم يتم تحديث PriceSDG في جدول المخزون الأساسي ليبقى ثابتاً كما هو، التحديث للسعر يتم في المبيعات
                 });
 
-                // 2. تسجيل العملية في الحركات باستخدام السعر المُعدل يدوياً
+                // 2. تسجيل العملية في الحركات
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -498,7 +536,7 @@
                             'Quantity': withdrawQty,
                             'Buyer': buyer,
                             'PriceUSD': priceUsd,
-                            'PriceSDG': finalUnitPriceSdg, // تخزين سعر الحبة المُعدل
+                            'PriceSDG': finalUnitPriceSdg, 
                             'DollarRate': rate,
                             'Warehouse': warehouse,
                             'BuyerLocation': location
@@ -506,10 +544,23 @@
                     })
                 });
 
-                showToast(`✅ تم سحب ${withdrawQty} من ${part['PartName']} بنجاح!`);
+                // --- 3. إعداد وفتح نافذة إشعار السحب (الفاتورة) ---
+                document.getElementById('recDate').textContent = timestamp;
+                document.getElementById('recWarehouse').textContent = warehouseLabel;
+                document.getElementById('recBuyer').textContent = buyer;
+                document.getElementById('recPartName').textContent = partNameInput;
+                document.getElementById('recQty').textContent = withdrawQty;
+                document.getElementById('recUnitPrice').textContent = parseFloat(finalUnitPriceSdg).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                document.getElementById('recTotal').textContent = finalTotalStr.replace(' ج.س', ''); // إزالة النص وإبقاء الرقم
+
                 document.getElementById('withdrawForm').reset();
                 availableQtyDisplay.style.display = 'none';
                 document.getElementById('withdrawModal').style.display = "none";
+                
+                // إظهار نافذة الإيصال
+                document.getElementById('receiptModal').style.display = "block";
+                showToast(`✅ تمت العملية بنجاح!`);
+                
                 if(document.getElementById('warehouseSelector').value === warehouse) fetchData();
 
             } catch (error) {
@@ -519,6 +570,54 @@
                 btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
             }
         });
+
+        // تحويل الإيصال لصورة ومشاركته/تحميله
+        document.getElementById('shareReceiptBtn').addEventListener('click', () => {
+            const receiptElement = document.getElementById('receiptContent');
+            const btn = document.getElementById('shareReceiptBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ جاري تجهيز الصورة...';
+            btn.classList.add('processing');
+
+            // استخدام html2canvas لالتقاط الصورة (scale 2 لجودة أوضح)
+            html2canvas(receiptElement, { scale: 2, backgroundColor: "#fdfbf7" }).then(canvas => {
+                // محاولة استخدام واجهة المشاركة (الهاتف)
+                if (navigator.share && navigator.canShare) {
+                    canvas.toBlob(blob => {
+                        const file = new File([blob], "receipt.png", { type: "image/png" });
+                        navigator.share({
+                            title: 'إشعار سحب بتروبارت',
+                            text: 'تفاصيل عملية السحب/البيع المرفقة.',
+                            files: [file]
+                        }).then(() => {
+                            btn.innerHTML = originalText;
+                            btn.classList.remove('processing');
+                        }).catch(err => {
+                            console.log('Share failed or canceled', err);
+                            downloadCanvasFallback(canvas, btn, originalText);
+                        });
+                    });
+                } else {
+                    // إذا لم تكن المشاركة مدعومة (متصفح كمبيوتر)، قم بالتحميل المباشر
+                    downloadCanvasFallback(canvas, btn, originalText);
+                }
+            }).catch(err => {
+                console.error("Error generating image", err);
+                btn.innerHTML = '❌ فشل التحويل لصورة';
+                setTimeout(() => { btn.innerHTML = originalText; btn.classList.remove('processing'); }, 2000);
+            });
+        });
+
+        // دالة بديلة لتحميل الصورة للكمبيوتر
+        function downloadCanvasFallback(canvas, btn, originalText) {
+            const imgData = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `Receipt_${new Date().getTime()}.png`;
+            link.href = imgData;
+            link.click();
+            btn.innerHTML = originalText;
+            btn.classList.remove('processing');
+        }
 
         // --- تعديل يدوي ---
         function openEditModal(id, name, qty, price, remark) {
@@ -533,39 +632,22 @@
         document.getElementById('editForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitEditBtn');
-            btn.classList.add('processing');
-            btn.textContent = 'جاري الحفظ...';
+            btn.classList.add('processing'); btn.textContent = 'جاري الحفظ...';
 
             const warehouse = document.getElementById('warehouseSelector').value;
             const rate = getCurrentRate();
             const partNum = document.getElementById('editPartNumber').value;
             const priceUsd = parseFloat(document.getElementById('editPriceUSD').value);
             const priceSdg = (priceUsd * rate).toFixed(2);
-
-            const updatedData = {
-                'PartName': document.getElementById('editPartName').value,
-                'Quantity': document.getElementById('editQuantity').value,
-                'PriceUSD': priceUsd,
-                'PriceSDG': priceSdg,
-                'Remark': document.getElementById('editRemark').value
-            };
+            const updatedData = { 'PartName': document.getElementById('editPartName').value, 'Quantity': document.getElementById('editQuantity').value, 'PriceUSD': priceUsd, 'PriceSDG': priceSdg, 'Remark': document.getElementById('editRemark').value };
 
             try {
-                await fetch(`${API_URL}/PartNumber/${partNum}?sheet=${warehouse}`, {
-                    method: 'PATCH',
-                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: updatedData })
-                });
-
+                await fetch(`${API_URL}/PartNumber/${partNum}?sheet=${warehouse}`, { method: 'PATCH', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ data: updatedData }) });
                 showToast('✅ تم تعديل البيانات بنجاح!');
                 document.getElementById('editModal').style.display = "none";
                 fetchData();
-            } catch (error) {
-                showToast('❌ حدث خطأ أثناء التعديل', true);
-            } finally {
-                btn.classList.remove('processing');
-                btn.textContent = 'حفظ التعديلات';
-            }
+            } catch (error) { showToast('❌ حدث خطأ أثناء التعديل', true); } 
+            finally { btn.classList.remove('processing'); btn.textContent = 'حفظ التعديلات'; }
         });
 
         // --- التحكم بالنوافذ ---
@@ -587,6 +669,7 @@
 
         setupModal('showAddForm', 'addModal', 'closeAddModal');
         setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
+        setupModal('', 'receiptModal', 'closeReceiptModal'); // ربط زر الإغلاق للإيصال
         
         document.getElementById('showReport').addEventListener('click', () => {
             alert('تم إعداد الكود لتسجيل الحركات في شيت Transactions بنجاح. يمكنك الإطلاع عليها مباشرة من ملف الـ Google Sheet.');
