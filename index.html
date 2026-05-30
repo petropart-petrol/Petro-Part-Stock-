@@ -172,6 +172,8 @@
             padding: 6px 12px;
             font-size: 0.85rem;
             border-radius: 4px;
+            border: none;
+            cursor: pointer;
         }
         .btn-edit-cell:hover { background-color: #2c3e50; }
 
@@ -283,7 +285,7 @@
             box-sizing: border-box;
         }
 
-        /* كود لتأكيد الإشعار أو الحفظ التلقائي */
+        /* إشعار الحفظ */
         .toast-notify {
             position: fixed;
             bottom: 20px;
@@ -302,7 +304,7 @@
 <body>
 
     <div class="company-header">
-        <img src="https://lh3.googleusercontent.com/d/1WYy3GVG0Q_kk1m6TrbGNJIMuktShsltt" alt="شعار شركة بتروبارت" class="company-logo">
+        <img src="https://lh3.googleusercontent.com/d/1WYy3GVG0Q_kk1m6TrbGNJIMuktShsltt" alt="شعار شركة بتروبارت" class="company-logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23ccc\'/><text x=\'50\' y=\'50\' font-size=\'20\' text-anchor=\'middle\' alignment-baseline=\'middle\' fill=\'%23333\'>Logo</text></svg>'">
         <div class="company-names">
             <h2>شركة بتروبارت لمعدات البترول المحدودة</h2>
             <h3>Petro-Part Petroleum Equipment LTD</h3>
@@ -310,15 +312,14 @@
     </div>
 
     <div class="main-container">
-        
         <h1 id="mainTableTitle">نظام إدارة المخزون الذكي</h1>
 
         <div class="dashboard-top-bar">
             <div class="input-group">
                 <label for="warehouseSelector">📍 عرض مخزن الحالي:</label>
                 <select id="warehouseSelector">
-                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
                     <option value="Inventory_Khartoum">مخزن الخرطوم</option>
+                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
                 </select>
             </div>
 
@@ -366,8 +367,8 @@
             <form id="addForm">
                 <label for="addWarehouse">اختر المخزن للإضافة إليه:</label>
                 <select id="addWarehouse" required>
-                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
                     <option value="Inventory_Khartoum">مخزن الخرطوم</option>
+                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
                 </select>
                 
                 <label>بيانات القطعة:</label>
@@ -387,8 +388,8 @@
                 <label for="withdrawWarehouse">اختر المخزن للسحب منه:</label>
                 <select id="withdrawWarehouse" required>
                     <option value="">-- اختر المخزن أولاً --</option>
-                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
                     <option value="Inventory_Khartoum">مخزن الخرطوم</option>
+                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
                 </select>
                 
                 <label>بيانات السحب والمشتري:</label>
@@ -450,7 +451,9 @@
                             <th>تعديل</th>
                         </tr>
                     </thead>
-                    <tbody id="reportTableBody"></tbody>
+                    <tbody id="reportTableBody">
+                        <tr><td colspan="9" style="text-align: center;">سيتم ربط التقرير بجدول Sales قريباً</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -463,93 +466,219 @@
             <form id="editTransactionForm">
                 <label>معرف الحركة (Timestamp)</label>
                 <input type="text" id="txTimestamp" readonly>
-                
                 <label for="txPartName">اسم القطعة</label>
                 <input type="text" id="txPartName">
-                
                 <label for="txQuantity">الكمية</label>
                 <input type="number" id="txQuantity">
-                
                 <label for="txBuyer">المشتري</label>
                 <input type="text" id="txBuyer">
-                
                 <label for="txBuyerLocation">مكان المشتري</label>
                 <input type="text" id="txBuyerLocation">
-                
                 <label for="txPriceSDG">السعر (جنيه)</label>
                 <input type="number" id="txPriceSDG" step="0.01">
-                
                 <label for="txWarehouse">المخزن</label>
                 <input type="text" id="txWarehouse">
-                
                 <button type="submit" class="btn btn-add">حفظ تعديل الحركة</button>
             </form>
         </div>
     </div>
 
     <datalist id="partNamesList"></datalist>
-    <div id="toastNotification" class="toast-notify">تم حفظ السعر بنجاح!</div>
+    <div id="toastNotification" class="toast-notify">تم الإجراء بنجاح!</div>
 
     <script>
-        // دالة لعرض التنبيهات السريعة للمستخدم
+        // رابط الـ API الخاص بك
+        const API_URL = 'https://sheetdb.io/api/v1/toxu6mq5ih3gc';
+        
+        // متغير لتخزين البيانات محلياً
+        let currentInventoryData = [];
+
+        // دالة عرض الإشعارات
         function showToast(message) {
             const toast = document.getElementById('toastNotification');
-            toast.textContent = message;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+            if(toast) {
+                toast.textContent = message;
+                toast.style.display = 'block';
+                setTimeout(() => { toast.style.display = 'none'; }, 3000);
+            }
         }
 
-        // --- ميزة إدارة وحفظ سعر الدولار اليوم في الـ localStorage ---
+        // --- إدارة وحفظ سعر الدولار ---
         const dollarRateInput = document.getElementById('dollarRate');
         const saveDollarBtn = document.getElementById('saveDollarBtn');
 
-        // تحميل السعر المحفوظ بمجرد فتح الصفحة (إذا لم يوجد، يفترض السعر الحالي 3400)
         window.addEventListener('DOMContentLoaded', () => {
             const savedRate = localStorage.getItem('petro_part_usd_rate');
             if (savedRate) {
                 dollarRateInput.value = savedRate;
             } else {
-                dollarRateInput.value = "3400"; // القيمة الافتراضية الأصلية للشركة
+                dollarRateInput.value = "3400"; // السعر الافتراضي
+            }
+            
+            // تحميل البيانات بمجرد فتح الصفحة
+            fetchData();
+        });
+
+        if(saveDollarBtn) {
+            saveDollarBtn.addEventListener('click', () => {
+                const currentRate = dollarRateInput.value;
+                if (currentRate && currentRate > 0) {
+                    localStorage.setItem('petro_part_usd_rate', currentRate);
+                    showToast(`تم حفظ السعر الجديد (${currentRate} ج.س) بنجاح!`);
+                    renderTable(currentInventoryData); // تحديث الأسعار في الجدول فوراً
+                }
+            });
+        }
+
+        // --- جلب البيانات من Google Sheet عبر SheetDB ---
+        async function fetchData() {
+            const warehouse = document.getElementById('warehouseSelector').value; 
+            const loadingDiv = document.getElementById('loading');
+            const tableBody = document.getElementById('tableBody');
+
+            loadingDiv.style.display = 'block';
+            loadingDiv.textContent = 'جاري تحميل البيانات من السيرفر...';
+            tableBody.innerHTML = '';
+
+            try {
+                // إرسال الطلب لاسم الشيت المختار (مخزن الخرطوم أو حلفا)
+                const response = await fetch(`${API_URL}?sheet=${warehouse}`);
+                if (!response.ok) throw new Error('فشل الاتصال بالخادم');
+                
+                const data = await response.json();
+                currentInventoryData = data; 
+                
+                loadingDiv.style.display = 'none';
+                renderTable(currentInventoryData);
+
+            } catch (error) {
+                console.error('Error:', error);
+                loadingDiv.innerHTML = '<span style="color:red;">❌ حدث خطأ أثناء جلب البيانات. تأكد من تطابق اسم الشيت (Inventory_Khartoum) أو اتصال الإنترنت.</span>';
+            }
+        }
+
+        // --- عرض البيانات داخل الجدول وحساب السعر بالجنيه ---
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const currentRate = parseFloat(dollarRateInput.value) || 3400;
+
+            tableBody.innerHTML = '';
+
+            const filteredData = data.filter(item => {
+                const partName = item['اسم الاسبير'] ? item['اسم الاسبير'].toLowerCase() : '';
+                return partName.includes(searchQuery);
+            });
+
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">لا توجد بيانات مطابقة</td></tr>';
+                return;
+            }
+
+            filteredData.forEach((item, index) => {
+                // تحديد أسماء الأعمدة المتوقعة من قوقل شيت (يمكنك تعديلها لتطابق الشيت الخاص بك تماماً)
+                const id = item['ID'] || item['رقم القطعة'] || (index + 1);
+                const name = item['اسم الاسبير'] || '-';
+                const qty = item['الكمية'] || item['الكميه'] || item['العدد'] || 0;
+                const priceUsd = parseFloat(item['سعر بالدولار'] || item['السعر'] || 0);
+                
+                const priceSdg = (priceUsd * currentRate).toFixed(2);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${id}</td>
+                    <td><strong>${name}</strong></td>
+                    <td>${qty}</td>
+                    <td style="color: green; direction: ltr;">$${priceUsd.toFixed(2)}</td>
+                    <td style="font-weight: bold;">${priceSdg} ج.س</td>
+                    <td style="text-align: center;">
+                        <button class="btn-edit-cell" onclick="openEditModal('${id}', '${name}', '${qty}', '${priceUsd}')">تعديل</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // تحديث قائمة الأسماء المقترحة في نموذج السحب
+            updateDatalist(data);
+        }
+
+        // تحديث مقترحات البحث في فورم السحب
+        function updateDatalist(data) {
+            const dataList = document.getElementById('partNamesList');
+            if(dataList) {
+                dataList.innerHTML = '';
+                data.forEach(item => {
+                    const name = item['اسم الاسبير'];
+                    if(name) {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        dataList.appendChild(option);
+                    }
+                });
+            }
+        }
+
+        // --- التفاعلات والمستمعات (Event Listeners) ---
+        
+        // عند تغيير المخزن
+        document.getElementById('warehouseSelector').addEventListener('change', fetchData);
+
+        // عند البحث الفوري
+        document.getElementById('searchInput').addEventListener('input', () => {
+            renderTable(currentInventoryData);
+        });
+
+        // منع إعادة تحميل الصفحة عند الضغط على النماذج
+        const forms = ['addForm', 'withdrawForm', 'editForm', 'editTransactionForm'];
+        forms.forEach(formId => {
+            const form = document.getElementById(formId);
+            if(form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    // هنا سيتم وضع كود الـ POST/PATCH لاحقاً للرفع على قوقل شيت
+                    showToast('تم استقبال الطلب. (جاري برمجة الرفع للشيت مستقبلاً)');
+                });
             }
         });
 
-        // حفظ السعر عند النقر على زر "حفظ السعر"
-        saveDollarBtn.addEventListener('click', () => {
-            const currentRate = dollarRateInput.value;
-            if (currentRate && currentRate > 0) {
-                localStorage.setItem('petro_part_usd_rate', currentRate);
-                showToast(`💾 تم حفظ السعر الجديد اليوم (${currentRate} ج.س) بنجاح!`);
-                // هنا يمكنك استدعاء دالة تحديث الحسابات للجدول إذا لزم الأمر
-            } else {
-                alert('الرجاء إدخال قيمة صحيحة لسعر الدولار');
-            }
-        });
+        // فتح نافذة التعديل مع تعبئة البيانات
+        function openEditModal(id, name, qty, price) {
+            document.getElementById('editPartNumber').value = id;
+            document.getElementById('editPartName').value = name;
+            document.getElementById('editQuantity').value = qty;
+            document.getElementById('editPriceUSD').value = price;
+            document.getElementById('editModal').style.display = 'block';
+        }
 
-        // --- منطق فتح وإغلاق النوافذ المنبثقة (Modals) للتحكم بالنظام العملي ---
+        // --- التحكم في النوافذ المنبثقة (Modals) ---
         function setupModal(openBtnId, modalId, closeBtnId) {
             const openBtn = document.getElementById(openBtnId);
             const modal = document.getElementById(modalId);
             const closeBtn = document.getElementById(closeBtnId);
 
             if(openBtn && modal && closeBtn) {
-                openBtn.onclick = () => modal.style.display = "block";
-                closeBtn.onclick = () => modal.style.display = "none";
+                openBtn.addEventListener('click', () => modal.style.display = "block");
+                closeBtn.addEventListener('click', () => modal.style.display = "none");
             }
         }
 
         setupModal('showAddForm', 'addModal', 'closeAddModal');
         setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
         setupModal('showReport', 'reportModal', 'closeReportModal');
-        
-        document.getElementById('closeEditModal').onclick = () => document.getElementById('editModal').style.display = "none";
-        document.getElementById('closeEditTransactionModal').onclick = () => document.getElementById('editTransactionModal').style.display = "none";
 
-        // إغلاق أي نافذة تلقائياً عند النقر خارج صندوق المحتوى الخاص بها
-        window.onclick = (event) => {
+        const closeEditModalBtn = document.getElementById('closeEditModal');
+        if(closeEditModalBtn) closeEditModalBtn.onclick = () => document.getElementById('editModal').style.display = "none";
+        
+        const closeEditTxBtn = document.getElementById('closeEditTransactionModal');
+        if(closeEditTxBtn) closeEditTxBtn.onclick = () => document.getElementById('editTransactionModal').style.display = "none";
+
+        // إغلاق النافذة عند النقر خارجها
+        window.addEventListener('click', (event) => {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = "none";
             }
-        };
+        });
+
     </script>
 </body>
 </html>
