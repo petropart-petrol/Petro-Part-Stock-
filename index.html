@@ -4,7 +4,300 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة مخزون قطع الغيار - بتروبارت</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- تحسينات المظهر العام والتصميم الحديث --- */
+        :root {
+            --primary-color: #0f2027; /* أزرق نفطي داكن */
+            --secondary-color: #203a43;
+            --accent-color: #f2a900; /* ذهبي / برتقالي نفطي */
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* الهيدر وشعار الشركة */
+        .company-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #ffffff;
+            padding: 25px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .company-logo {
+            width: 70px;
+            height: 70px;
+            background-color: #fff;
+            border-radius: 50%;
+            padding: 5px;
+            object-fit: contain;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .company-names h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+
+        .company-names h3 {
+            margin: 5px 0 0 0;
+            font-size: 1.1rem;
+            color: #bdc3c7;
+            font-weight: 300;
+        }
+
+        /* الحاوية الرئيسية */
+        .main-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        h1#mainTableTitle {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* شريط اختيار المخازن وسعر الدولار */
+        .dashboard-top-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all var(--transition-speed);
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--info-color);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        /* حقل الدولار المطور مع زر الحفظ */
+        .dollar-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+        .dollar-input-wrapper input {
+            flex: 1;
+        }
+        .btn-save-rate {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background var(--transition-speed);
+        }
+        .btn-save-rate:hover {
+            background-color: var(--primary-color);
+        }
+
+        /* أزرار التحكم والعمليات */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-add { background-color: var(--success-color); color: white; }
+        .btn-add:hover { background-color: #27ae60; transform: translateY(-2px); }
+
+        .btn-withdraw { background-color: var(--accent-color); color: var(--primary-color); }
+        .btn-withdraw:hover { background-color: #d49400; transform: translateY(-2px); }
+
+        .btn-report { background-color: var(--info-color); color: white; }
+        .btn-report:hover { background-color: #2980b9; transform: translateY(-2px); }
+
+        .btn-edit-cell {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+        .btn-edit-cell:hover { background-color: #2c3e50; }
+
+        /* جدول البيانات المعزز */
+        #loading {
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+            color: var(--info-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: #ffffff;
+            padding: 15px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        td {
+            padding: 14px 15px;
+            border-bottom: 1px solid #eeeeee;
+            color: #444;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f1f2f6; }
+
+        /* النوافذ المنبثقة (Modals) العصرية */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 6% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-content.large {
+            max-width: 900px;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            color: #aaa;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color var(--transition-speed);
+        }
+
+        .close:hover { color: var(--danger-color); }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            border-right: 4px solid var(--accent-color);
+            padding-right: 10px;
+        }
+
+        .modal-content form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-content label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .modal-content input, .modal-content select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* كود لتأكيد الإشعار أو الحفظ التلقائي */
+        .toast-notify {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 2000;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
@@ -16,47 +309,55 @@
         </div>
     </div>
 
-    <div class="warehouse-selector-container">
-        <label for="warehouseSelector">عرض مخزن:</label>
-        <select id="warehouseSelector">
-            <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
-            <option value="Inventory_Portsudan">مخزن بورتسودان</option>
-        </select>
-    </div>
+    <div class="main-container">
+        
+        <h1 id="mainTableTitle">نظام إدارة المخزون الذكي</h1>
 
-    <h1 id="mainTableTitle">نظام إدارة المخزون</h1>
+        <div class="dashboard-top-bar">
+            <div class="input-group">
+                <label for="warehouseSelector">📍 عرض مخزن الحالي:</label>
+                <select id="warehouseSelector">
+                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
+                    <option value="Inventory_Khartoum">مخزن الخرطوم</option>
+                </select>
+            </div>
 
-    <div class="controls">
-        <button id="showAddForm" class="btn btn-add">إضافة قطعة غيار +</button>
-        <button id="showWithdrawForm" class="btn btn-withdraw">سحب من المخزون -</button>
-        <button id="showReport" class="btn btn-report">تقرير المبيعات/الحركات 📋</button>
-    </div>
+            <div class="input-group">
+                <label for="dollarRate">💵 سعر دولار اليوم (جنيه سوداني):</label>
+                <div class="dollar-input-wrapper">
+                    <input type="number" id="dollarRate" value="3400" step="10">
+                    <button id="saveDollarBtn" class="btn-save-rate" title="حفظ السعر في المتصفح">💾 حفظ السعر</button>
+                </div>
+            </div>
 
-    <div class="filters">
-        <div class="input-group">
-            <label for="dollarRate">سعر دولار اليوم (للحساب):</label>
-            <input type="number" id="dollarRate" value="3400" step="10">
+            <div class="input-group">
+                <label for="searchInput">🔍 بحث سريع باسم القطعة:</label>
+                <input type="text" id="searchInput" placeholder="اكتب اسم الاسبير للبحث...">
+            </div>
         </div>
-        <div class="input-group">
-            <label for="searchInput">بحث (باسم القطعة):</label>
-            <input type="text" id="searchInput" placeholder="اكتب اسم القطعة...">
-        </div>
-    </div>
 
-    <div id="loading">جاري تحميل البيانات...</div>
-    <table id="inventoryTable">
-        <thead>
-            <tr>
-                <th>رقم القطعة (ID)</th>
-                <th>اسم الاسبير</th>
-                <th>العدد (الكمية)</th>
-                <th>السعر (دولار)</th>
-                <th>السعر (جنيه سوداني)</th>
-                <th>تعديل</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+        <div class="controls">
+            <button id="showAddForm" class="btn btn-add">إضافة قطعة غيار +</button>
+            <button id="showWithdrawForm" class="btn btn-withdraw">سحب من المخزون (مبيعات) -</button>
+            <button id="showReport" class="btn btn-report">تقرير المبيعات/الحركات 📋</button>
+        </div>
+
+        <div id="loading">جاري تحميل البيانات من السيرفر...</div>
+        <table id="inventoryTable">
+            <thead>
+                <tr>
+                    <th>رقم القطعة (ID)</th>
+                    <th>اسم الاسبير</th>
+                    <th>العدد (الكمية)</th>
+                    <th>السعر (دولار)</th>
+                    <th>السعر (جنيه سوداني)</th>
+                    <th style="text-align: center;">إجراء</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
 
     <div id="addModal" class="modal">
         <div class="modal-content">
@@ -66,12 +367,14 @@
                 <label for="addWarehouse">اختر المخزن للإضافة إليه:</label>
                 <select id="addWarehouse" required>
                     <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
-                    <option value="Inventory_Portsudan">مخزن بورتسودان</option>
+                    <option value="Inventory_Khartoum">مخزن الخرطوم</option>
                 </select>
+                
+                <label>بيانات القطعة:</label>
                 <input type="text" id="addPartName" placeholder="اسم الاسبير" required>
                 <input type="number" id="addQuantity" placeholder="الكمية المضافة" required>
                 <input type="number" id="addPriceUSD" placeholder="السعر (دولار)" step="0.01" required>
-                <button type="submit" class="btn btn-add">إضافة</button>
+                <button type="submit" class="btn btn-add">تأكيد الإضافة للمخزن</button>
             </form>
         </div>
     </div>
@@ -79,15 +382,16 @@
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeWithdrawModal">×</span>
-            <h2>سحب قطعة من المخزون</h2>
+            <h2>سحب قطعة من المخزون (عملية بيع)</h2>
             <form id="withdrawForm">
                 <label for="withdrawWarehouse">اختر المخزن للسحب منه:</label>
                 <select id="withdrawWarehouse" required>
                     <option value="">-- اختر المخزن أولاً --</option>
                     <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
-                    <option value="Inventory_Portsudan">مخزن بورتسودان</option>
+                    <option value="Inventory_Khartoum">مخزن الخرطوم</option>
                 </select>
                 
+                <label>بيانات السحب والمشتري:</label>
                 <input type="text" id="withdrawPartName" placeholder="اكتب اسم القطعة للسحب" required list="partNamesList">
                 <div id="withdrawItemDetails" class="item-details"></div>
                 
@@ -96,7 +400,7 @@
                 <input type="text" id="withdrawLocation" placeholder="مكان المشتري (اختياري)">
                 <input type="number" id="withdrawActualSDG" placeholder="السعر الحقيقي بالجنيه (اختياري)">
                 
-                <button type="submit" class="btn btn-withdraw">تنفيذ السحب</button>
+                <button type="submit" class="btn btn-withdraw">تنفيذ السحب وتسجيل حركة المبيعات</button>
             </form>
         </div>
     </div>
@@ -104,7 +408,7 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeEditModal">×</span>
-            <h2>تعديل قطعة غيار</h2>
+            <h2>تعديل يدوي لبيانات اسبير</h2>
             <form id="editForm">
                 <label for="editPartNumber">رقم القطعة (ID)</label>
                 <input type="text" id="editPartNumber" readonly> 
@@ -114,7 +418,7 @@
                 <input type="number" id="editQuantity" required>
                 <label for="editPriceUSD">السعر (دولار)</label>
                 <input type="number" id="editPriceUSD" step="0.01" required>
-                <button type="submit" class="btn btn-edit">حفظ التعديلات</button>
+                <button type="submit" class="btn btn-add">حفظ التعديلات الحالية</button>
             </form>
         </div>
     </div>
@@ -122,27 +426,29 @@
     <div id="reportModal" class="modal">
         <div class="modal-content large">
             <span class="close" id="closeReportModal">×</span>
-            <h2>تقرير الحركات (سحب وإضافة)</h2>
-            <button id="exportReportBtn" class="btn btn-report">🖨️ تصدير إلى Excel (CSV)</button>
+            <h2>تقرير الحركات والمبيعات (سحب وإضافة)</h2>
+            <button id="exportReportBtn" class="btn btn-report">🖨️ تصدير التقرير إلى Excel (CSV)</button>
             
-            <div id="reportSummary" class="report-summary">
-                <h3>ملخص المبيعات</h3>
-                <div id="summaryContent"></div>
+            <div id="reportSummary" style="background: #f1f2f6; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <h3>📊 ملخص المبيعات والحركات الإجمالية</h3>
+                <div id="summaryContent">جاري حساب الإجماليات...</div>
             </div>
 
-            <h3>سجل الحركات التفصيلي</h3>
-            <div id="reportContent">
-                <table id="reportTable">
+            <h3>سجل العمليات التفصيلي (شيت Sales)</h3>
+            <div style="overflow-x: auto; max-height: 350px;">
+                <table id="reportTable" style="box-shadow: none; border: 1px solid #ddd;">
                     <thead>
                         <tr>
                             <th>التاريخ</th>
                             <th>العملية</th>
-                            <th>المخزن</th> <th>الاسم</th>
+                            <th>المخزن</th>
+                            <th>الاسم</th>
                             <th>الكمية</th>
                             <th>المشتري</th>
                             <th>المكان</th>
                             <th>السعر (جنيه)</th>
-                            <th>تعديل</th> </tr>
+                            <th>تعديل</th>
+                        </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
                 </table>
@@ -153,9 +459,9 @@
     <div id="editTransactionModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeEditTransactionModal">×</span>
-            <h2>تعديل حركة مسجلة</h2>
+            <h2>تعديل حركة مسجلة بالتقرير</h2>
             <form id="editTransactionForm">
-                <label>معرف الحركة (Timestamp - للقراءة فقط)</label>
+                <label>معرف الحركة (Timestamp)</label>
                 <input type="text" id="txTimestamp" readonly>
                 
                 <label for="txPartName">اسم القطعة</label>
@@ -176,13 +482,74 @@
                 <label for="txWarehouse">المخزن</label>
                 <input type="text" id="txWarehouse">
                 
-                <button type="submit" class="btn btn-edit">حفظ تعديل الحركة</button>
+                <button type="submit" class="btn btn-add">حفظ تعديل الحركة</button>
             </form>
         </div>
     </div>
 
     <datalist id="partNamesList"></datalist>
+    <div id="toastNotification" class="toast-notify">تم حفظ السعر بنجاح!</div>
 
-    <script src="script.js"></script>
+    <script>
+        // دالة لعرض التنبيهات السريعة للمستخدم
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // --- ميزة إدارة وحفظ سعر الدولار اليوم في الـ localStorage ---
+        const dollarRateInput = document.getElementById('dollarRate');
+        const saveDollarBtn = document.getElementById('saveDollarBtn');
+
+        // تحميل السعر المحفوظ بمجرد فتح الصفحة (إذا لم يوجد، يفترض السعر الحالي 3400)
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedRate = localStorage.getItem('petro_part_usd_rate');
+            if (savedRate) {
+                dollarRateInput.value = savedRate;
+            } else {
+                dollarRateInput.value = "3400"; // القيمة الافتراضية الأصلية للشركة
+            }
+        });
+
+        // حفظ السعر عند النقر على زر "حفظ السعر"
+        saveDollarBtn.addEventListener('click', () => {
+            const currentRate = dollarRateInput.value;
+            if (currentRate && currentRate > 0) {
+                localStorage.setItem('petro_part_usd_rate', currentRate);
+                showToast(`💾 تم حفظ السعر الجديد اليوم (${currentRate} ج.س) بنجاح!`);
+                // هنا يمكنك استدعاء دالة تحديث الحسابات للجدول إذا لزم الأمر
+            } else {
+                alert('الرجاء إدخال قيمة صحيحة لسعر الدولار');
+            }
+        });
+
+        // --- منطق فتح وإغلاق النوافذ المنبثقة (Modals) للتحكم بالنظام العملي ---
+        function setupModal(openBtnId, modalId, closeBtnId) {
+            const openBtn = document.getElementById(openBtnId);
+            const modal = document.getElementById(modalId);
+            const closeBtn = document.getElementById(closeBtnId);
+
+            if(openBtn && modal && closeBtn) {
+                openBtn.onclick = () => modal.style.display = "block";
+                closeBtn.onclick = () => modal.style.display = "none";
+            }
+        }
+
+        setupModal('showAddForm', 'addModal', 'closeAddModal');
+        setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
+        setupModal('showReport', 'reportModal', 'closeReportModal');
+        
+        document.getElementById('closeEditModal').onclick = () => document.getElementById('editModal').style.display = "none";
+        document.getElementById('closeEditTransactionModal').onclick = () => document.getElementById('editTransactionModal').style.display = "none";
+
+        // إغلاق أي نافذة تلقائياً عند النقر خارج صندوق المحتوى الخاص بها
+        window.onclick = (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        };
+    </script>
 </body>
 </html>
