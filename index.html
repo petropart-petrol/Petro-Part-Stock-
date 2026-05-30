@@ -19,12 +19,12 @@
         }
 
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-bg); color: #333; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-bg); color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh;}
         .company-header { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #ffffff; padding: 20px 5%; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); flex-wrap: wrap;}
         .company-logo { width: 60px; height: 60px; background-color: #fff; border-radius: 50%; padding: 5px; object-fit: contain; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .company-names h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
         .company-names h3 { margin: 5px 0 0 0; font-size: 1rem; color: #bdc3c7; font-weight: 300; }
-        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; flex: 1; width: 100%;}
         h1#mainTableTitle { color: var(--primary-color); font-size: 1.6rem; border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
         
         /* لوحة التحكم والبحث */
@@ -85,6 +85,18 @@
         .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
         .receipt-row strong { color: #34495e; }
         .receipt-total { border-top: 2px solid #2c3e50; padding-top: 10px; margin-top: 10px; font-size: 1.2rem; font-weight: bold; text-align: center; color: #27ae60; }
+
+        /* الفوتر (حقوق النشر) */
+        .site-footer {
+            background-color: var(--primary-color);
+            color: #ecf0f1;
+            text-align: center;
+            padding: 15px 20px;
+            font-size: 0.9rem;
+            margin-top: auto;
+            border-top: 3px solid var(--accent-color);
+        }
+        .site-footer p { margin: 0; }
     </style>
 </head>
 <body>
@@ -145,6 +157,10 @@
             </table>
         </div>
     </div>
+
+    <footer class="site-footer">
+        <p>copyrighted 2026 - Syber Technology - ENG.ISLAM Mohamed AL-Fatih</p>
+    </footer>
 
     <div id="addModal" class="modal">
         <div class="modal-content">
@@ -438,7 +454,6 @@
         const withdrawUnitPriceInput = document.getElementById('withdrawUnitPrice');
         const withdrawTotalPriceInput = document.getElementById('withdrawTotalPrice');
 
-        // تحديث البيانات عند اختيار قطعة
         withdrawPartNameInput.addEventListener('input', () => {
             const part = currentInventoryData.find(p => p['PartName'] === withdrawPartNameInput.value);
             if (part) {
@@ -450,7 +465,6 @@
                 qtyAvailableSpan.textContent = currentQty;
                 availableQtyDisplay.style.display = 'block';
                 
-                // تحديث السعر كقيمة رقمية (بدون فواصل آلاف) لتجنب أخطاء الحساب عند التعديل
                 withdrawUnitPriceInput.value = unitPriceSdg.toFixed(2);
                 calculateWithdrawTotal();
             } else {
@@ -460,10 +474,8 @@
             }
         });
 
-        // حساب المجموع: (سعر الحبة المدخل) مضروباً في (الكمية المسحوبة)
         function calculateWithdrawTotal() {
             const qty = parseInt(withdrawQtyInput.value) || 0;
-            // قراءة القيمة مباشرة من الحقل (ليعكس أي تعديل يدوي)
             const unitPrice = parseFloat(withdrawUnitPriceInput.value) || 0; 
             
             if (qty > 0 && unitPrice > 0) {
@@ -477,7 +489,6 @@
         withdrawQtyInput.addEventListener('input', calculateWithdrawTotal);
         withdrawUnitPriceInput.addEventListener('input', calculateWithdrawTotal);
 
-        // تنفيذ السحب
         document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitWithdrawBtn');
@@ -492,7 +503,6 @@
             const location = document.getElementById('withdrawLocation').value;
             const rate = getCurrentRate();
             
-            // السعر النهائي والمجموع للإيصال وقاعدة البيانات
             const finalUnitPriceSdg = parseFloat(withdrawUnitPriceInput.value).toFixed(2);
             const finalTotalStr = withdrawTotalPriceInput.value;
 
@@ -516,14 +526,12 @@
             const timestamp = new Date().toLocaleString('en-GB');
 
             try {
-                // 1. خصم الكمية من الجدول الأساسي
                 await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: { 'Quantity': newQty } }) 
                 });
 
-                // 2. تسجيل العملية في الحركات
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -544,20 +552,18 @@
                     })
                 });
 
-                // --- 3. إعداد وفتح نافذة إشعار السحب (الفاتورة) ---
                 document.getElementById('recDate').textContent = timestamp;
                 document.getElementById('recWarehouse').textContent = warehouseLabel;
                 document.getElementById('recBuyer').textContent = buyer;
                 document.getElementById('recPartName').textContent = partNameInput;
                 document.getElementById('recQty').textContent = withdrawQty;
                 document.getElementById('recUnitPrice').textContent = parseFloat(finalUnitPriceSdg).toLocaleString('en-US', { minimumFractionDigits: 2 });
-                document.getElementById('recTotal').textContent = finalTotalStr.replace(' ج.س', ''); // إزالة النص وإبقاء الرقم
+                document.getElementById('recTotal').textContent = finalTotalStr.replace(' ج.س', ''); 
 
                 document.getElementById('withdrawForm').reset();
                 availableQtyDisplay.style.display = 'none';
                 document.getElementById('withdrawModal').style.display = "none";
                 
-                // إظهار نافذة الإيصال
                 document.getElementById('receiptModal').style.display = "block";
                 showToast(`✅ تمت العملية بنجاح!`);
                 
@@ -571,7 +577,6 @@
             }
         });
 
-        // تحويل الإيصال لصورة ومشاركته/تحميله
         document.getElementById('shareReceiptBtn').addEventListener('click', () => {
             const receiptElement = document.getElementById('receiptContent');
             const btn = document.getElementById('shareReceiptBtn');
@@ -579,9 +584,7 @@
             btn.innerHTML = '⏳ جاري تجهيز الصورة...';
             btn.classList.add('processing');
 
-            // استخدام html2canvas لالتقاط الصورة (scale 2 لجودة أوضح)
             html2canvas(receiptElement, { scale: 2, backgroundColor: "#fdfbf7" }).then(canvas => {
-                // محاولة استخدام واجهة المشاركة (الهاتف)
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(blob => {
                         const file = new File([blob], "receipt.png", { type: "image/png" });
@@ -598,7 +601,6 @@
                         });
                     });
                 } else {
-                    // إذا لم تكن المشاركة مدعومة (متصفح كمبيوتر)، قم بالتحميل المباشر
                     downloadCanvasFallback(canvas, btn, originalText);
                 }
             }).catch(err => {
@@ -608,7 +610,6 @@
             });
         });
 
-        // دالة بديلة لتحميل الصورة للكمبيوتر
         function downloadCanvasFallback(canvas, btn, originalText) {
             const imgData = canvas.toDataURL('image/png');
             const link = document.createElement('a');
@@ -669,7 +670,7 @@
 
         setupModal('showAddForm', 'addModal', 'closeAddModal');
         setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
-        setupModal('', 'receiptModal', 'closeReceiptModal'); // ربط زر الإغلاق للإيصال
+        setupModal('', 'receiptModal', 'closeReceiptModal');
         
         document.getElementById('showReport').addEventListener('click', () => {
             alert('تم إعداد الكود لتسجيل الحركات في شيت Transactions بنجاح. يمكنك الإطلاع عليها مباشرة من ملف الـ Google Sheet.');
