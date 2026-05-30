@@ -512,6 +512,17 @@
             .controls { flex-direction: column; }
             .btn { width: 100%; min-width: unset; }
             .modal-content { padding: 20px; width: 95%; margin: 2vh auto; }
+            .modal-content.large { width: 95%; }
+        }
+
+        /* شبكة الحقول في التعديل */
+        .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 600px) {
+            .grid-form { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -572,7 +583,7 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </main>
@@ -602,4 +613,931 @@
                 <input type="number" id="addQuantity" placeholder="أدخل الكمية" required>
                 
                 <label>السعر دولار:</label>
-                <input type="number" id="addPriceUSD" placeholder="أدخل
+                <input type="number" id="addPriceUSD" placeholder="أدخل السعر بالدولار" step="0.01" required>
+                
+                <label>ملاحظة (اختياري):</label>
+                <input type="text" id="addRemark" placeholder="اكتب ملاحظاتك هنا">
+                
+                <button type="submit" class="btn btn-add" id="submitAddBtn" style="margin-top: 10px;">تأكيد الإضافة للمخزن</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeWithdrawModal">×</span>
+            <h2>سحب قطعة من المخزون (عملية بيع)</h2>
+            <form id="withdrawForm">
+                <label for="withdrawWarehouse">المخزن المراد السحب منه:</label>
+                <select id="withdrawWarehouse" required>
+                    <option value="Inventory_Khartoum">مخزن الخرطوم</option>
+                    <option value="Inventory_Halfa">مخزن حلفا الجديدة</option>
+                </select>
+                
+                <label for="withdrawPartName">اسم قطعة الغيار:</label>
+                <input type="text" id="withdrawPartName" placeholder="اختر أو اكتب اسم القطعة..." required list="partNamesList">
+                
+                <div id="availableQtyDisplay" class="qty-badge" style="display: none;">
+                    الكمية المتوفرة بالمخزن: <span id="qtyAvailableSpan" style="font-size: 1.1em;">0</span>
+                </div>
+                
+                <label for="withdrawQuantity">الكميه المسحوبه:</label>
+                <input type="number" id="withdrawQuantity" placeholder="أدخل الكمية المسحوبة" required min="1">
+                
+                <label for="withdrawBuyer">اسم المشتري / الشركة:</label>
+                <input type="text" id="withdrawBuyer" placeholder="أدخل اسم المشتري" required>
+                
+                <label for="withdrawLocation">مكان المشتري (اختياري):</label>
+                <input type="text" id="withdrawLocation" placeholder="أدخل مكان المشتري">
+                
+                <label for="withdrawUnitPrice">سعر الحبه بالجنيه (قابل للتعديل):</label>
+                <input type="number" id="withdrawUnitPrice" class="editable-price" placeholder="0.00" step="0.01" required>
+                
+                <label for="withdrawTotalPrice">إجمالي مبلغ السحب (تلقائي):</label>
+                <input type="text" id="withdrawTotalPrice" class="readonly-input total-price-input" placeholder="0.00 ج.س" readonly>
+                
+                <button type="submit" class="btn btn-withdraw" id="submitWithdrawBtn" style="margin-top: 10px;">تنفيذ السحب وتسجيل المبيعات</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditModal">×</span>
+            <h2>تعديل يدوي لبيانات اسبير</h2>
+            <form id="editForm">
+                <label for="editPartNumber">رقم القطعة (غير قابل للتعديل):</label>
+                <input type="text" id="editPartNumber" class="readonly-input" readonly> 
+                
+                <label for="editPartName">اسم الاسبير:</label>
+                <input type="text" id="editPartName" required>
+                
+                <label for="editQuantity">الكمية الحالية:</label>
+                <input type="number" id="editQuantity" required>
+                
+                <label for="editPriceUSD">السعر دولار:</label>
+                <input type="number" id="editPriceUSD" step="0.01" required>
+                
+                <label for="editRemark">ملاحظة:</label>
+                <input type="text" id="editRemark">
+                
+                <button type="submit" class="btn btn-add" id="submitEditBtn" style="margin-top: 10px;">حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="receiptModal" class="modal">
+        <div class="modal-content" style="background-color: #f4f7f6;">
+            <span class="close" id="closeReceiptModal">×</span>
+            
+            <div id="receiptContent" class="receipt-container">
+                <div class="receipt-header">
+                    <h3>شركة بتروبارت لمعدات البترول</h3>
+                    <p style="margin: 5px 0; color: #7f8c8d; font-size: 0.95em;">إشعار سحب / مبيعات معتمد</p>
+                </div>
+                
+                <div class="receipt-row"><strong>تاريخ العملية:</strong><span id="recDate"></span></div>
+                <div class="receipt-row"><strong>المخزن:</strong><span id="recWarehouse"></span></div>
+                <div class="receipt-row"><strong>المشتري:</strong><span id="recBuyer"></span></div>
+                <div class="receipt-row"><strong>القطعة:</strong><span id="recPartName"></span></div>
+                <div class="receipt-row"><strong>الكمية المسحوبة:</strong><span id="recQty"></span></div>
+                <div class="receipt-row"><strong>سعر الحبة:</strong><span class="currency-sdg"><span id="recUnitPrice"></span> ج.س</span></div>
+                
+                <div class="receipt-total">
+                    المجموع الكلي: <span id="recTotal"></span> ج.س
+                </div>
+            </div>
+            
+            <button id="shareReceiptBtn" class="btn btn-report" style="width: 100%; margin-top: 20px; font-size: 1.1rem;">
+                📥 تحميل كصورة / مشاركة الإشعار
+            </button>
+        </div>
+    </div>
+
+    <div id="reportModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" id="closeReportModal">×</span>
+            <h2>تقرير المبيعات والحركات المفصل</h2>
+            
+            <button id="exportExcelBtn" class="btn btn-excel">📥 تصدير التقرير الكامل إلى Excel</button>
+
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h4>إجمالي المبيعات (دولار)</h4>
+                    <p id="totalSalesUSD" class="currency-usd">$0.00</p>
+                </div>
+                <div class="summary-card">
+                    <h4>إجمالي المبيعات (جنيه)</h4>
+                    <p id="totalSalesSDG" class="currency-sdg">0.00 ج.س</p>
+                </div>
+                <div class="summary-card">
+                    <h4>الشركة/المشتري الأكثر مبيعاً</h4>
+                    <p id="topBuyer">-</p>
+                    <span class="small-text" id="topBuyerVal"></span>
+                </div>
+                <div class="summary-card">
+                    <h4>القطعة الأكثر مبيعاً</h4>
+                    <p id="topPart">-</p>
+                    <span class="small-text" id="topPartVal"></span>
+                </div>
+            </div>
+
+            <div id="reportLoading" style="text-align: center; font-weight: bold; padding: 20px; color: var(--info-color);">جاري تحميل تقرير العمليات...</div>
+            
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                <table id="reportTableExport">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>العملية</th>
+                            <th>المخزن</th>
+                            <th>القطعة</th>
+                            <th>الكمية</th>
+                            <th>المشتري</th>
+                            <th>المكان</th>
+                            <th>سعر الوحدة ($)</th>
+                            <th>سعر الوحدة (ج.س)</th>
+                            <th>الإجمالي ($)</th>
+                            <th>الإجمالي (ج.س)</th>
+                            <th class="no-export" style="text-align: center;">تعديل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="editTxModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditTxModal">×</span>
+            <h2>تعديل حركة مسجلة (شامل)</h2>
+            <form id="editTxForm">
+                <label>معرف الحركة (التاريخ والوقت):</label>
+                <input type="text" id="txTimestamp" class="readonly-input" readonly>
+                
+                <div class="grid-form">
+                    <div class="input-group">
+                        <label>نوع العملية:</label>
+                        <input type="text" id="txType" required>
+                    </div>
+                    <div class="input-group">
+                        <label>المخزن:</label>
+                        <select id="txWarehouse" required>
+                            <option value="Inventory_Khartoum">مخزن الخرطوم</option>
+                            <option value="Inventory_Halfa">مخزن حلفا</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>رقم القطعة:</label>
+                        <input type="text" id="txPartNumber">
+                    </div>
+                    <div class="input-group">
+                        <label>اسم القطعة:</label>
+                        <input type="text" id="txPartName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>الكمية المعدلة:</label>
+                        <input type="number" id="txQty" required>
+                    </div>
+                    <div class="input-group">
+                        <label>سعر صرف الدولار (وقت الحركة):</label>
+                        <input type="number" id="txDollarRate" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>سعر الوحدة ($):</label>
+                        <input type="number" id="txPriceUSD" step="0.01" required>
+                    </div>
+                    <div class="input-group">
+                        <label>سعر الوحدة (ج.س):</label>
+                        <input type="number" id="txPriceSDG" step="0.01" required>
+                    </div>
+                    <div class="input-group">
+                        <label>المشتري/الشركة:</label>
+                        <input type="text" id="txBuyer">
+                    </div>
+                    <div class="input-group">
+                        <label>مكان المشتري:</label>
+                        <input type="text" id="txLocation">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-add" id="submitEditTxBtn" style="margin-top: 15px;">حفظ التعديلات الشاملة في الداتا بيس</button>
+            </form>
+        </div>
+    </div>
+
+    <datalist id="partNamesList"></datalist>
+    <div id="toastNotification" class="toast-notify">تم الإجراء بنجاح!</div>
+
+
+    <script>
+        // -----------------------------------------
+        // 1. الإعدادات والمتغيرات العامة
+        // -----------------------------------------
+        const API_URL = 'https://sheetdb.io/api/v1/toxu6mq5ih3gc';
+        const TRANSACTIONS_SHEET = 'Transactions'; 
+        let currentInventoryData = [];
+        let currentTransactionsData = []; // تخزين الحركات لسهولة التعديل
+
+        const dollarRateInput = document.getElementById('dollarRate');
+        
+        // -----------------------------------------
+        // 2. الدوال المساعدة (Helpers)
+        // -----------------------------------------
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastNotification');
+            if(toast) {
+                toast.textContent = message;
+                toast.style.backgroundColor = isError ? 'var(--danger-color)' : 'var(--success-color)';
+                toast.style.display = 'block';
+                setTimeout(() => { toast.style.display = 'none'; }, 4000);
+            }
+        }
+
+        function getCurrentRate() { 
+            return parseFloat(dollarRateInput.value) || 3400; 
+        }
+
+        // دالة هامة لضمان صحة الأرقام حتى لو احتوت على فواصل (,) من السيرفر
+        function parseNum(value) {
+            if (!value) return 0;
+            if (typeof value === 'number') return value;
+            return parseFloat(value.toString().replace(/,/g, '')) || 0;
+        }
+
+        // -----------------------------------------
+        // 3. التهيئة عند تحميل الصفحة (Init)
+        // -----------------------------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedRate = localStorage.getItem('petro_part_usd_rate');
+            if (savedRate) { 
+                dollarRateInput.value = savedRate; 
+            }
+            fetchInventoryData();
+        });
+
+        // حفظ سعر الدولار
+        document.getElementById('saveDollarBtn').addEventListener('click', () => {
+            const currentRate = dollarRateInput.value;
+            if (currentRate && currentRate > 0) {
+                localStorage.setItem('petro_part_usd_rate', currentRate);
+                showToast(`تم حفظ السعر الجديد (${currentRate} ج.س) بنجاح!`);
+                renderInventoryTable(currentInventoryData);
+            }
+        });
+
+        // -----------------------------------------
+        // 4. إدارة المخزون (Inventory GET & Render)
+        // -----------------------------------------
+        async function fetchInventoryData() {
+            const warehouse = document.getElementById('warehouseSelector').value; 
+            const loadingDiv = document.getElementById('loading');
+            const tableBody = document.getElementById('tableBody');
+
+            loadingDiv.style.display = 'block';
+            tableBody.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}?sheet=${warehouse}`);
+                if (!response.ok) throw new Error('فشل الاتصال بالخادم');
+                
+                const data = await response.json();
+                currentInventoryData = data; 
+                
+                loadingDiv.style.display = 'none';
+                renderInventoryTable(currentInventoryData);
+            } catch (error) {
+                console.error('Error fetching inventory:', error);
+                loadingDiv.innerHTML = '<span style="color:var(--danger-color);">❌ حدث خطأ أثناء جلب البيانات. يرجى التأكد من اتصال الإنترنت.</span>';
+            }
+        }
+
+        function renderInventoryTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const rate = getCurrentRate();
+
+            tableBody.innerHTML = '';
+
+            // تصفية حسب البحث
+            const filteredData = data.filter(item => {
+                const partName = item['PartName'] ? item['PartName'].toLowerCase() : '';
+                return partName.includes(searchQuery);
+            });
+
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">لا توجد بيانات مطابقة للبحث</td></tr>';
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const id = item['PartNumber'] || '-';
+                const name = item['PartName'] || '-';
+                const qty = parseNum(item['Quantity']);
+                const priceUsd = parseNum(item['PriceUSD']);
+                const remark = item['Remark'] || '';
+                
+                const priceSdgValue = priceUsd * rate;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${id}</td>
+                    <td><strong>${name}</strong></td>
+                    <td style="font-weight: bold; text-align: center;">${qty}</td>
+                    <td class="currency-usd">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td class="currency-sdg">${priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-edit-cell" onclick="openEditModal('${id}', '${name}', '${qty}', '${priceUsd}', '${remark}')">تعديل ✏️</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            updateDatalist(data);
+        }
+
+        function updateDatalist(data) {
+            const dataList = document.getElementById('partNamesList');
+            if(dataList) {
+                dataList.innerHTML = '';
+                data.forEach(item => {
+                    if(item['PartName']) {
+                        const option = document.createElement('option');
+                        option.value = item['PartName'];
+                        dataList.appendChild(option);
+                    }
+                });
+            }
+        }
+
+        // مستمعات التغيير والبحث
+        document.getElementById('warehouseSelector').addEventListener('change', fetchInventoryData);
+        document.getElementById('searchInput').addEventListener('input', () => renderInventoryTable(currentInventoryData));
+
+        // -----------------------------------------
+        // 5. إضافة للمخزون (Add to Inventory)
+        // -----------------------------------------
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitAddBtn');
+            btn.classList.add('processing');
+            btn.textContent = 'جاري حفظ البيانات...';
+
+            const warehouse = document.getElementById('addWarehouse').value;
+            const rate = getCurrentRate();
+            const partNum = document.getElementById('addPartNumber').value;
+            const partName = document.getElementById('addPartName').value;
+            const qty = parseNum(document.getElementById('addQuantity').value);
+            const priceUsd = parseNum(document.getElementById('addPriceUSD').value);
+            const priceSdg = (priceUsd * rate).toFixed(2);
+            const remark = document.getElementById('addRemark').value;
+
+            const existingPart = currentInventoryData.find(p => p['PartNumber'] === partNum || p['PartName'] === partName);
+
+            try {
+                if (existingPart && document.getElementById('warehouseSelector').value === warehouse) {
+                    const updatedQty = parseNum(existingPart['Quantity']) + qty;
+                    await fetch(`${API_URL}/PartNumber/${partNum}?sheet=${warehouse}`, {
+                        method: 'PATCH',
+                        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ data: { 'Quantity': updatedQty, 'PriceUSD': priceUsd, 'PriceSDG': priceSdg, 'Remark': remark || existingPart['Remark'] } })
+                    });
+                } else {
+                    await fetch(`${API_URL}?sheet=${warehouse}`, {
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ data: { 'PartNumber': partNum, 'PartName': partName, 'Quantity': qty, 'PriceUSD': priceUsd, 'PriceSDG': priceSdg, 'Remark': remark } })
+                    });
+                }
+                showToast('✅ تمت إضافة القطعة إلى المخزون بنجاح!');
+                document.getElementById('addForm').reset();
+                document.getElementById('addModal').style.display = "none";
+                
+                if(document.getElementById('warehouseSelector').value === warehouse) {
+                    fetchInventoryData();
+                }
+            } catch (error) { 
+                showToast('❌ حدث خطأ أثناء رفع البيانات للسيرفر', true); 
+            } finally { 
+                btn.classList.remove('processing'); 
+                btn.textContent = 'تأكيد الإضافة للمخزن'; 
+            }
+        });
+
+        // -----------------------------------------
+        // 6. السحب والمبيعات (Withdraw & Sales)
+        // -----------------------------------------
+        const withdrawPartNameInput = document.getElementById('withdrawPartName');
+        const availableQtyDisplay = document.getElementById('availableQtyDisplay');
+        const qtyAvailableSpan = document.getElementById('qtyAvailableSpan');
+        const withdrawQtyInput = document.getElementById('withdrawQuantity');
+        const withdrawUnitPriceInput = document.getElementById('withdrawUnitPrice');
+        const withdrawTotalPriceInput = document.getElementById('withdrawTotalPrice');
+
+        withdrawPartNameInput.addEventListener('input', () => {
+            const part = currentInventoryData.find(p => p['PartName'] === withdrawPartNameInput.value);
+            if (part) {
+                const currentQty = parseNum(part['Quantity']);
+                const priceUsd = parseNum(part['PriceUSD']);
+                const rate = getCurrentRate();
+                const unitPriceSdg = priceUsd * rate;
+                
+                qtyAvailableSpan.textContent = currentQty;
+                availableQtyDisplay.style.display = 'block';
+                
+                withdrawUnitPriceInput.value = unitPriceSdg.toFixed(2);
+                calculateWithdrawTotal();
+            } else {
+                availableQtyDisplay.style.display = 'none';
+                withdrawUnitPriceInput.value = '';
+                withdrawTotalPriceInput.value = '';
+            }
+        });
+
+        function calculateWithdrawTotal() {
+            const qty = parseNum(withdrawQtyInput.value);
+            const unitPrice = parseNum(withdrawUnitPriceInput.value); 
+            
+            if (qty > 0 && unitPrice > 0) {
+                const total = qty * unitPrice;
+                withdrawTotalPriceInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.س';
+            } else {
+                withdrawTotalPriceInput.value = '';
+            }
+        }
+
+        withdrawQtyInput.addEventListener('input', calculateWithdrawTotal);
+        withdrawUnitPriceInput.addEventListener('input', calculateWithdrawTotal);
+
+        document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitWithdrawBtn');
+            btn.classList.add('processing');
+            btn.textContent = 'جاري السحب والتسجيل...';
+
+            const warehouse = document.getElementById('withdrawWarehouse').value;
+            const warehouseLabel = document.getElementById('withdrawWarehouse').options[document.getElementById('withdrawWarehouse').selectedIndex].text;
+            const partNameInput = withdrawPartNameInput.value;
+            const withdrawQty = parseNum(withdrawQtyInput.value);
+            const buyer = document.getElementById('withdrawBuyer').value;
+            const location = document.getElementById('withdrawLocation').value;
+            const rate = getCurrentRate();
+            
+            const finalUnitPriceSdg = parseNum(withdrawUnitPriceInput.value).toFixed(2);
+            const finalTotalStr = withdrawTotalPriceInput.value;
+
+            const part = currentInventoryData.find(p => p['PartName'] === partNameInput);
+
+            if (!part) {
+                showToast('⚠️ القطعة غير موجودة في المخزن المعروض حالياً!', true);
+                btn.classList.remove('processing'); 
+                btn.textContent = 'تنفيذ السحب وتسجيل المبيعات';
+                return;
+            }
+
+            const currentQty = parseNum(part['Quantity']);
+            if (withdrawQty > currentQty) {
+                showToast(`⚠️ الكمية المطلوبة (${withdrawQty}) أكبر من المتاح بالمخزن (${currentQty})!`, true);
+                btn.classList.remove('processing'); 
+                btn.textContent = 'تنفيذ السحب وتسجيل المبيعات';
+                return;
+            }
+
+            const newQty = currentQty - withdrawQty;
+            const priceUsd = parseNum(part['PriceUSD']);
+            const timestamp = new Date().toLocaleString('en-GB'); 
+
+            try {
+                // خصم الكمية من الجدول الأساسي
+                await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
+                    method: 'PATCH',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: { 'Quantity': newQty } }) 
+                });
+
+                // تسجيل العملية
+                await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: {
+                            'Timestamp': timestamp,
+                            'Type': 'Withdraw (Sale)',
+                            'PartNumber': part['PartNumber'],
+                            'PartName': part['PartName'],
+                            'Quantity': withdrawQty,
+                            'Buyer': buyer,
+                            'PriceUSD': priceUsd,
+                            'PriceSDG': finalUnitPriceSdg, 
+                            'DollarRate': rate,
+                            'Warehouse': warehouse,
+                            'Location': location
+                        }
+                    })
+                });
+
+                // تعبئة الإيصال
+                document.getElementById('recDate').textContent = timestamp;
+                document.getElementById('recWarehouse').textContent = warehouseLabel;
+                document.getElementById('recBuyer').textContent = buyer;
+                document.getElementById('recPartName').textContent = partNameInput;
+                document.getElementById('recQty').textContent = withdrawQty;
+                document.getElementById('recUnitPrice').textContent = parseNum(finalUnitPriceSdg).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                document.getElementById('recTotal').textContent = finalTotalStr.replace(' ج.س', ''); 
+
+                document.getElementById('withdrawForm').reset();
+                availableQtyDisplay.style.display = 'none';
+                document.getElementById('withdrawModal').style.display = "none";
+                
+                showToast(`✅ تمت عملية السحب بنجاح!`);
+                document.getElementById('receiptModal').style.display = "block";
+                
+                if(document.getElementById('warehouseSelector').value === warehouse) {
+                    fetchInventoryData(); 
+                }
+
+            } catch (error) {
+                showToast('❌ حدث خطأ أثناء الاتصال بقاعدة البيانات', true);
+            } finally {
+                btn.classList.remove('processing');
+                btn.textContent = 'تنفيذ السحب وتسجيل المبيعات';
+            }
+        });
+
+        // -----------------------------------------
+        // 7. تحويل الإيصال لصورة (Receipt to Image)
+        // -----------------------------------------
+        document.getElementById('shareReceiptBtn').addEventListener('click', () => {
+            const receiptElement = document.getElementById('receiptContent');
+            const btn = document.getElementById('shareReceiptBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '⏳ جاري تجهيز الصورة...';
+            btn.classList.add('processing');
+
+            html2canvas(receiptElement, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                if (navigator.share && navigator.canShare) {
+                    canvas.toBlob(blob => {
+                        const file = new File([blob], `Petropart_Receipt_${new Date().getTime()}.png`, { type: "image/png" });
+                        navigator.share({ 
+                            title: 'إشعار سحب بتروبارت', 
+                            text: 'مرفق تفاصيل عملية السحب/البيع.', 
+                            files: [file] 
+                        }).then(() => { 
+                            btn.innerHTML = originalText; 
+                            btn.classList.remove('processing'); 
+                        }).catch(err => { 
+                            downloadCanvasFallback(canvas, btn, originalText); 
+                        });
+                    });
+                } else {
+                    downloadCanvasFallback(canvas, btn, originalText);
+                }
+            }).catch(err => {
+                btn.innerHTML = '❌ فشل التحويل لصورة';
+                setTimeout(() => { btn.innerHTML = originalText; btn.classList.remove('processing'); }, 2500);
+            });
+        });
+
+        function downloadCanvasFallback(canvas, btn, originalText) {
+            const imgData = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `Petropart_Receipt_${new Date().getTime()}.png`;
+            link.href = imgData;
+            link.click();
+            btn.innerHTML = originalText;
+            btn.classList.remove('processing');
+        }
+
+        // -----------------------------------------
+        // 8. تقرير المبيعات المتقدم والملخص الشهري
+        // -----------------------------------------
+        document.getElementById('showReport').addEventListener('click', async () => {
+            document.getElementById('reportModal').style.display = "block";
+            const reportLoading = document.getElementById('reportLoading');
+            const tableBody = document.getElementById('reportTableBody');
+            
+            reportLoading.style.display = 'block';
+            tableBody.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`);
+                if (!response.ok) throw new Error('فشل تحميل التقرير');
+                
+                const transactions = await response.json();
+                currentTransactionsData = transactions; // حفظ البيانات عالمياً للتعديل
+                
+                let totalUSD = 0;
+                let totalSDG = 0;
+                let buyersMap = {};
+                let partsMap = {};
+                let monthlyTotals = {};
+
+                transactions.forEach(tx => {
+                    const type = (tx['TypePart'] || tx['Type'] || '').toString().toLowerCase();
+                    const qty = parseNum(tx['Quantity']);
+                    const priceUsd = parseNum(tx['PriceUSD']);
+                    const priceSdg = parseNum(tx['PriceSDG']); 
+                    const buyer = (tx['Buyer'] || '').trim();
+                    const part = (tx['PartName'] || tx['Name'] || '').trim();
+                    
+                    let warehouseStr = tx['WarehouseBuyer'] || tx['Warehouse'] || '-';
+                    if(warehouseStr === 'Inventory_Khartoum') warehouseStr = 'الخرطوم';
+                    else if(warehouseStr === 'Inventory_Halfa') warehouseStr = 'حلفا';
+
+                    // تصفية وحساب المبيعات فقط
+                    if (type.includes('withdraw') || type.includes('sale') || type.includes('بيع') || type.includes('سحب')) {
+                        const lineTotalUSD = qty * priceUsd;
+                        const lineTotalSDG = qty * priceSdg;
+                        
+                        totalUSD += lineTotalUSD;
+                        totalSDG += lineTotalSDG;
+
+                        if(buyer !== '' && buyer !== 'غير محدد') {
+                            buyersMap[buyer] = (buyersMap[buyer] || 0) + lineTotalSDG;
+                        }
+                        if(part !== '' && part !== 'غير محدد') {
+                            partsMap[part] = (partsMap[part] || 0) + qty;
+                        }
+
+                        // إعداد الملخص الشهري
+                        let monthYear = 'تاريخ غير محدد';
+                        if (tx['Timestamp']) {
+                            const dateOnly = String(tx['Timestamp']).split(',')[0].trim();
+                            const parts = dateOnly.includes('/') ? dateOnly.split('/') : dateOnly.split('-');
+                            if (parts.length >= 3) {
+                                // تنسيق شهر/سنة
+                                monthYear = parts[1].padStart(2, '0') + '/' + (parts[2].length === 4 ? parts[2] : parts[0]);
+                            }
+                        }
+                        
+                        if (!monthlyTotals[monthYear]) {
+                            monthlyTotals[monthYear] = { usd: 0, sdg: 0 };
+                        }
+                        monthlyTotals[monthYear].usd += lineTotalUSD;
+                        monthlyTotals[monthYear].sdg += lineTotalSDG;
+                    }
+
+                    // الحسابات للصف
+                    const rowTotalUSD = qty * priceUsd;
+                    const rowTotalSDG = qty * priceSdg;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${tx['Timestamp'] || '-'}</td>
+                        <td>${type.includes('withdraw') ? 'مبيعات' : (tx['Type'] || tx['TypePart'])}</td>
+                        <td>${warehouseStr}</td>
+                        <td><strong>${part}</strong></td>
+                        <td style="text-align:center; font-weight:bold;">${qty}</td>
+                        <td>${buyer || '-'}</td>
+                        <td>${tx['Location'] || '-'}</td>
+                        <td class="currency-usd">$${priceUsd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="currency-sdg">${priceSdg.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="currency-usd" style="background:#eafaf1;">$${rowTotalUSD.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="currency-sdg" style="background:#fef5e7;">${rowTotalSDG.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="no-export" style="text-align: center;">
+                            <button class="btn-edit-cell" onclick="openEditTx('${tx['Timestamp']}')">تعديل ✏️</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                // إضافة صفوف الملخص الشهري في أسفل الجدول
+                if (Object.keys(monthlyTotals).length > 0) {
+                    const sepRow = document.createElement('tr');
+                    sepRow.innerHTML = `<td colspan="12" style="background-color: var(--secondary-color); color: white; font-weight: bold; text-align: center; font-size: 1.1em; padding: 15px;">📊 ملخص المبيعات الشهرية</td>`;
+                    tableBody.appendChild(sepRow);
+
+                    const sortedMonths = Object.keys(monthlyTotals).sort((a, b) => {
+                        if(a.includes('/') && b.includes('/')) {
+                            const [mA, yA] = a.split('/');
+                            const [mB, yB] = b.split('/');
+                            return (yA+mA).localeCompare(yB+mB);
+                        }
+                        return a.localeCompare(b);
+                    });
+
+                    sortedMonths.forEach(month => {
+                        const data = monthlyTotals[month];
+                        const sumRow = document.createElement('tr');
+                        sumRow.style.backgroundColor = '#fdfbf7';
+                        sumRow.innerHTML = `
+                            <td colspan="8" style="font-weight: bold; text-align: right; color: var(--primary-color);">إجمالي مبيعات شهر (${month}):</td>
+                            <td class="currency-usd" style="font-size: 1.1em; background: #eafaf1; font-weight: bold;">$${data.usd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                            <td class="currency-sdg" style="font-size: 1.1em; background: #fef5e7; font-weight: bold;">${data.sdg.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                            <td colspan="2" class="no-export"></td>
+                        `;
+                        tableBody.appendChild(sumRow);
+                    });
+                }
+
+                // حساب أعلى مشتري وأعلى قطعة بأمان
+                let topBuyer = null, maxBuyerVal = 0;
+                for (const [b, val] of Object.entries(buyersMap)) {
+                    if (val > maxBuyerVal) { maxBuyerVal = val; topBuyer = b; }
+                }
+
+                let topPart = null, maxPartVal = 0;
+                for (const [p, val] of Object.entries(partsMap)) {
+                    if (val > maxPartVal) { maxPartVal = val; topPart = p; }
+                }
+
+                // تحديث البطاقات العلوية
+                document.getElementById('totalSalesUSD').textContent = `$${totalUSD.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+                document.getElementById('totalSalesSDG').textContent = `${totalSDG.toLocaleString('en-US', {minimumFractionDigits:2})} ج.س`;
+                
+                document.getElementById('topBuyer').textContent = topBuyer || 'لا توجد بيانات';
+                document.getElementById('topBuyerVal').textContent = topBuyer ? `(بقيمة ${maxBuyerVal.toLocaleString('en-US', {minimumFractionDigits:2})} ج.س)` : '';
+                
+                document.getElementById('topPart').textContent = topPart || 'لا توجد بيانات';
+                document.getElementById('topPartVal').textContent = topPart ? `(تم بيع ${maxPartVal} قطعة)` : '';
+
+                reportLoading.style.display = 'none';
+
+            } catch (error) {
+                console.error(error);
+                reportLoading.innerHTML = '<span style="color:var(--danger-color);">❌ حدث خطأ أثناء تحميل التقرير.</span>';
+            }
+        });
+
+        // -----------------------------------------
+        // 9. استخراج التقرير إلى Excel
+        // -----------------------------------------
+        document.getElementById('exportExcelBtn').addEventListener('click', () => {
+            const table = document.getElementById('reportTableExport');
+            const tableClone = table.cloneNode(true);
+            
+            const noExportCells = tableClone.querySelectorAll('.no-export');
+            noExportCells.forEach(cell => cell.remove());
+            
+            const wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sales_Report" });
+            XLSX.writeFile(wb, `PetroPart_Report_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`);
+        });
+
+        // -----------------------------------------
+        // 10. التعديلات اليدوية (Inventory & Transactions)
+        // -----------------------------------------
+        
+        // تعديل في الجدول الرئيسي (المخزون)
+        function openEditModal(id, name, qty, price, remark) {
+            document.getElementById('editPartNumber').value = id;
+            document.getElementById('editPartName').value = name;
+            document.getElementById('editQuantity').value = qty;
+            document.getElementById('editPriceUSD').value = price;
+            document.getElementById('editRemark').value = remark;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitEditBtn');
+            btn.classList.add('processing'); 
+            btn.textContent = 'جاري الحفظ...';
+
+            const warehouse = document.getElementById('warehouseSelector').value;
+            const rate = getCurrentRate();
+            const partNum = document.getElementById('editPartNumber').value;
+            const priceUsd = parseNum(document.getElementById('editPriceUSD').value);
+            const priceSdg = (priceUsd * rate).toFixed(2);
+            
+            const updatedData = { 
+                'PartName': document.getElementById('editPartName').value, 
+                'Quantity': document.getElementById('editQuantity').value, 
+                'PriceUSD': priceUsd, 
+                'PriceSDG': priceSdg, 
+                'Remark': document.getElementById('editRemark').value 
+            };
+
+            try {
+                await fetch(`${API_URL}/PartNumber/${partNum}?sheet=${warehouse}`, { 
+                    method: 'PATCH', 
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ data: updatedData }) 
+                });
+                
+                showToast('✅ تم تعديل بيانات القطعة بنجاح!');
+                document.getElementById('editModal').style.display = "none";
+                fetchInventoryData();
+            } catch (error) { 
+                showToast('❌ حدث خطأ أثناء التعديل', true); 
+            } finally { 
+                btn.classList.remove('processing'); 
+                btn.textContent = 'حفظ التعديلات'; 
+            }
+        });
+
+        // فتح نافذة التعديل الشامل للحركة
+        function openEditTx(timestamp) {
+            const tx = currentTransactionsData.find(t => t.Timestamp === timestamp);
+            if (!tx) {
+                showToast('خطأ: لم يتم العثور على الحركة', true);
+                return;
+            }
+            
+            document.getElementById('txTimestamp').value = tx.Timestamp || '';
+            document.getElementById('txType').value = tx.Type || tx.TypePart || '';
+            
+            const wh = tx.Warehouse || tx.WarehouseBuyer || '';
+            const whSelect = document.getElementById('txWarehouse');
+            if (wh.includes('Khartoum')) whSelect.value = 'Inventory_Khartoum';
+            else if (wh.includes('Halfa')) whSelect.value = 'Inventory_Halfa';
+            else whSelect.value = 'Inventory_Khartoum'; 
+
+            document.getElementById('txPartNumber').value = tx.PartNumber || '';
+            document.getElementById('txPartName').value = tx.PartName || tx.Name || '';
+            document.getElementById('txQty').value = parseNum(tx.Quantity);
+            document.getElementById('txPriceUSD').value = parseNum(tx.PriceUSD);
+            document.getElementById('txPriceSDG').value = parseNum(tx.PriceSDG);
+            document.getElementById('txDollarRate').value = parseNum(tx.DollarRate);
+            document.getElementById('txBuyer').value = tx.Buyer || '';
+            document.getElementById('txLocation').value = tx.Location || '';
+
+            document.getElementById('editTxModal').style.display = "block";
+        }
+        
+        // إرسال التعديل الشامل للحركة للداتا بيس
+        document.getElementById('editTxForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitEditTxBtn');
+            btn.classList.add('processing');
+            btn.textContent = 'جاري الحفظ...';
+            
+            const timestamp = document.getElementById('txTimestamp').value;
+            
+            const updatedData = {
+                'Type': document.getElementById('txType').value,
+                'Warehouse': document.getElementById('txWarehouse').value,
+                'PartNumber': document.getElementById('txPartNumber').value,
+                'PartName': document.getElementById('txPartName').value,
+                'Quantity': parseNum(document.getElementById('txQty').value),
+                'PriceUSD': parseNum(document.getElementById('txPriceUSD').value),
+                'PriceSDG': parseNum(document.getElementById('txPriceSDG').value),
+                'DollarRate': parseNum(document.getElementById('txDollarRate').value),
+                'Buyer': document.getElementById('txBuyer').value,
+                'Location': document.getElementById('txLocation').value
+            };
+            
+            try {
+                await fetch(`${API_URL}/Timestamp/${encodeURIComponent(timestamp)}?sheet=${TRANSACTIONS_SHEET}`, {
+                    method: 'PATCH',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: updatedData })
+                });
+                
+                showToast('✅ تم تعديل الحركة بكافة بياناتها بنجاح!');
+                document.getElementById('editTxModal').style.display = "none";
+                document.getElementById('showReport').click(); 
+                
+            } catch (error) {
+                showToast('❌ حدث خطأ أثناء التعديل', true);
+            } finally {
+                btn.classList.remove('processing');
+                btn.textContent = 'حفظ التعديلات الشاملة في الداتا بيس';
+            }
+        });
+
+        // -----------------------------------------
+        // 11. إدارة النوافذ المنبثقة (Modals Handler)
+        // -----------------------------------------
+        function setupModal(openBtnId, modalId, closeBtnId) {
+            const modal = document.getElementById(modalId);
+            if(openBtnId) {
+                const openBtn = document.getElementById(openBtnId);
+                if(openBtn) openBtn.addEventListener('click', () => modal.style.display = "block");
+            }
+            if(closeBtnId) {
+                const closeBtn = document.getElementById(closeBtnId);
+                if(closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        modal.style.display = "none";
+                        if(modalId === 'withdrawModal') {
+                            document.getElementById('withdrawForm').reset();
+                            document.getElementById('availableQtyDisplay').style.display = 'none';
+                        }
+                    });
+                }
+            }
+        }
+
+        setupModal('showAddForm', 'addModal', 'closeAddModal');
+        setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
+        setupModal(null, 'receiptModal', 'closeReceiptModal');
+        setupModal(null, 'reportModal', 'closeReportModal');
+        setupModal(null, 'editTxModal', 'closeEditTxModal');
+        setupModal(null, 'editModal', 'closeEditModal'); 
+
+        window.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+                if (event.target.id === 'withdrawModal') {
+                    document.getElementById('withdrawForm').reset();
+                    document.getElementById('availableQtyDisplay').style.display = 'none';
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
