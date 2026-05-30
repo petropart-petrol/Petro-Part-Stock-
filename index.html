@@ -63,7 +63,7 @@
         .modal-content { background-color: #fff; margin: 5vh auto; padding: 25px; border-radius: 12px; width: 92%; max-width: 500px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; animation: slideDown 0.3s ease-out; max-height: 90vh; overflow-y: auto;}
         .modal-content.large { max-width: 1100px; }
         @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .close { position: absolute; top: 15px; left: 20px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: color var(--transition-speed); }
+        .close { position: absolute; top: 15px; left: 20px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: color var(--transition-speed); z-index: 10;}
         .close:hover { color: var(--danger-color); }
         .modal-content h2 { margin-top: 0; color: var(--primary-color); margin-bottom: 20px; font-size: 1.4rem; border-right: 4px solid var(--accent-color); padding-right: 10px; }
         .modal-content form { display: flex; flex-direction: column; gap: 12px; }
@@ -77,14 +77,13 @@
         .editable-price { background-color: #fff; border: 1px solid #3498db; font-weight: bold; color: #2c3e50; transition: all 0.3s;}
         .editable-price:focus { box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
 
-        .receipt-container { padding: 20px; border: 2px dashed #95a5a6; background: #fdfbf7; border-radius: 8px; color: #2c3e50; }
+        .receipt-container { padding: 20px; border: 2px dashed #95a5a6; background: #fdfbf7; border-radius: 8px; color: #2c3e50; position: relative;}
         .receipt-header { text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px; }
         .receipt-header h3 { margin: 0; color: #0f2027; }
         .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
         .receipt-row strong { color: #34495e; }
         .receipt-total { border-top: 2px solid #2c3e50; padding-top: 10px; margin-top: 10px; font-size: 1.2rem; font-weight: bold; text-align: center; color: #27ae60; }
 
-        /* بطاقات الإحصائيات لتقرير المبيعات */
         .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .summary-card { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .summary-card h4 { margin: 0 0 10px 0; color: var(--secondary-color); font-size: 0.95rem; }
@@ -564,14 +563,12 @@
             const timestamp = new Date().toLocaleString('en-GB');
 
             try {
-                // خصم الكمية من الجدول الأساسي
                 await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: { 'Quantity': newQty } }) 
                 });
 
-                // تسجيل العملية في الحركات بأسماء الحقول المحدثة
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -651,7 +648,7 @@
             btn.classList.remove('processing');
         }
 
-        // --- تقرير المبيعات المتقدم والأسماء المحدثة ---
+        // --- تقرير المبيعات المتقدم ---
         document.getElementById('showReport').addEventListener('click', async () => {
             document.getElementById('reportModal').style.display = "block";
             const reportLoading = document.getElementById('reportLoading');
@@ -796,13 +793,17 @@
             finally { btn.classList.remove('processing'); btn.textContent = 'حفظ التعديلات'; }
         });
 
-        // --- التحكم بالنوافذ ---
+        // --- التحكم بالنوافذ المعالج (الذي تم تصحيحه) ---
         function setupModal(openBtnId, modalId, closeBtnId) {
-            const openBtn = document.getElementById(openBtnId);
+            const openBtn = openBtnId ? document.getElementById(openBtnId) : null;
             const modal = document.getElementById(modalId);
             const closeBtn = document.getElementById(closeBtnId);
-            if(openBtn && modal && closeBtn) {
+            
+            if(openBtn && modal) {
                 openBtn.addEventListener('click', () => modal.style.display = "block");
+            }
+            
+            if(closeBtn && modal) {
                 closeBtn.addEventListener('click', () => {
                     modal.style.display = "none";
                     if(modalId === 'withdrawModal') {
@@ -813,15 +814,17 @@
             }
         }
 
+        // ربط أزرار الفتح والإغلاق للنوافذ
         setupModal('showAddForm', 'addModal', 'closeAddModal');
         setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
-        setupModal('', 'receiptModal', 'closeReceiptModal');
-        setupModal('', 'reportModal', 'closeReportModal');
-        setupModal('', 'editTxModal', 'closeEditTxModal');
+        
+        // النوافذ التي تُفتح برمجياً (ليس لها زر فتح مباشر هنا)
+        setupModal(null, 'receiptModal', 'closeReceiptModal');
+        setupModal(null, 'reportModal', 'closeReportModal');
+        setupModal(null, 'editTxModal', 'closeEditTxModal');
+        setupModal(null, 'editModal', 'closeEditModal'); 
 
-        const closeEditModalBtn = document.getElementById('closeEditModal');
-        if(closeEditModalBtn) closeEditModalBtn.onclick = () => document.getElementById('editModal').style.display = "none";
-
+        // إغلاق النافذة عند الضغط في أي مكان خارجها
         window.addEventListener('click', (event) => {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = "none";
