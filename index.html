@@ -25,7 +25,7 @@
         .company-logo { width: 60px; height: 60px; background-color: #fff; border-radius: 50%; padding: 5px; object-fit: contain; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .company-names h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
         .company-names h3 { margin: 5px 0 0 0; font-size: 1rem; color: #bdc3c7; font-weight: 300; }
-        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; flex: 1; width: 100%;}
+        .main-container { max-width: 1300px; margin: 20px auto; padding: 0 15px; flex: 1; width: 100%;}
         h1#mainTableTitle { color: var(--primary-color); font-size: 1.6rem; border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
         
         .dashboard-top-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 20px; }
@@ -53,15 +53,15 @@
         
         #loading { text-align: center; padding: 20px; font-weight: bold; color: var(--info-color); }
         .table-responsive { overflow-x: auto; background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th { background-color: var(--secondary-color); color: #ffffff; padding: 15px; font-weight: 600; text-align: right; white-space: nowrap; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background-color: var(--secondary-color); color: #ffffff; padding: 15px; font-weight: 600; text-align: right; white-space: nowrap; border-bottom: 3px solid var(--accent-color);}
         td { padding: 14px 15px; border-bottom: 1px solid #eeeeee; color: #444; }
         tr:last-child td { border-bottom: none; }
         tr:hover { background-color: #f1f2f6; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
         .modal-content { background-color: #fff; margin: 5vh auto; padding: 25px; border-radius: 12px; width: 92%; max-width: 500px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; animation: slideDown 0.3s ease-out; max-height: 90vh; overflow-y: auto;}
-        .modal-content.large { max-width: 1100px; }
+        .modal-content.large { max-width: 1200px; }
         @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close { position: absolute; top: 15px; left: 20px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: color var(--transition-speed); z-index: 10;}
         .close:hover { color: var(--danger-color); }
@@ -84,7 +84,7 @@
         .receipt-row strong { color: #34495e; }
         .receipt-total { border-top: 2px solid #2c3e50; padding-top: 10px; margin-top: 10px; font-size: 1.2rem; font-weight: bold; text-align: center; color: #27ae60; }
 
-        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .summary-card { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .summary-card h4 { margin: 0 0 10px 0; color: var(--secondary-color); font-size: 0.95rem; }
         .summary-card p { margin: 0; font-size: 1.25rem; font-weight: bold; color: var(--accent-color); }
@@ -92,6 +92,9 @@
 
         .site-footer { background-color: var(--primary-color); color: #ecf0f1; text-align: center; padding: 15px 20px; font-size: 0.9rem; margin-top: auto; border-top: 3px solid var(--accent-color); }
         .site-footer p { margin: 0; }
+        
+        .currency-usd { color: #27ae60; font-weight: bold; direction: ltr; display: inline-block; }
+        .currency-sdg { color: #b7791f; font-weight: bold; direction: ltr; display: inline-block; }
     </style>
 </head>
 <body>
@@ -198,16 +201,16 @@
                 <label for="withdrawQuantity">الكميه المسحوبه:</label>
                 <input type="number" id="withdrawQuantity" placeholder="أدخل الكمية المسحوبة" required min="1">
                 
-                <label for="withdrawBuyer">اسم المشتري:</label>
+                <label for="withdrawBuyer">اسم المشتري / الشركة:</label>
                 <input type="text" id="withdrawBuyer" placeholder="أدخل اسم المشتري" required>
                 
-                <label for="withdrawLocation">مكان المشتري:</label>
+                <label for="withdrawLocation">مكان المشتري (اختياري):</label>
                 <input type="text" id="withdrawLocation" placeholder="أدخل مكان المشتري">
                 
-                <label for="withdrawUnitPrice">سعر الحبه (قابل للتعديل):</label>
+                <label for="withdrawUnitPrice">سعر الحبه بالجنيه (قابل للتعديل):</label>
                 <input type="number" id="withdrawUnitPrice" class="editable-price" placeholder="0.00" step="0.01" required>
                 
-                <label for="withdrawTotalPrice">مجموع الشراء والسحب (تلقائي):</label>
+                <label for="withdrawTotalPrice">إجمالي مبلغ السحب (تلقائي):</label>
                 <input type="text" id="withdrawTotalPrice" class="readonly-input total-price-input" placeholder="0.00 ج.س" readonly>
                 
                 <button type="submit" class="btn btn-withdraw" id="submitWithdrawBtn">تنفيذ السحب وتسجيل حركة المبيعات</button>
@@ -260,21 +263,21 @@
     <div id="reportModal" class="modal">
         <div class="modal-content large">
             <span class="close" id="closeReportModal">×</span>
-            <h2>تقرير المبيعات والحركات</h2>
+            <h2>تقرير المبيعات والحركات المفصل</h2>
             
-            <button id="exportExcelBtn" class="btn btn-excel">📥 استخراج التقرير كملف Excel</button>
+            <button id="exportExcelBtn" class="btn btn-excel">📥 تصدير التقرير الكامل لـ Excel</button>
 
             <div class="summary-cards">
                 <div class="summary-card">
                     <h4>إجمالي المبيعات (دولار)</h4>
-                    <p id="totalSalesUSD">$0.00</p>
+                    <p id="totalSalesUSD" class="currency-usd">$0.00</p>
                 </div>
                 <div class="summary-card">
                     <h4>إجمالي المبيعات (جنيه)</h4>
-                    <p id="totalSalesSDG">0.00 ج.س</p>
+                    <p id="totalSalesSDG" class="currency-sdg">0.00 ج.س</p>
                 </div>
                 <div class="summary-card">
-                    <h4>المشتري الأكثر مبيعاً</h4>
+                    <h4>الشركة/المشتري الأكثر مبيعاً</h4>
                     <p id="topBuyer">-</p>
                     <span class="small-text" id="topBuyerVal"></span>
                 </div>
@@ -286,18 +289,20 @@
             </div>
 
             <div id="reportLoading" style="text-align: center; font-weight: bold; padding: 20px;">جاري تحميل التقرير...</div>
-            <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                 <table id="reportTableExport">
                     <thead>
                         <tr>
                             <th>التاريخ</th>
                             <th>العملية</th>
                             <th>المخزن</th>
-                            <th>الاسم</th>
+                            <th>القطعة</th>
                             <th>الكمية</th>
                             <th>المشتري</th>
-                            <th>المكان</th>
-                            <th>السعر (جنيه)</th>
+                            <th>سعر الوحدة ($)</th>
+                            <th>سعر الوحدة (ج.س)</th>
+                            <th>الإجمالي ($)</th>
+                            <th>الإجمالي (ج.س)</th>
                             <th class="no-export">تعديل</th>
                         </tr>
                     </thead>
@@ -407,15 +412,14 @@
                 const remark = item['Remark'] || '';
                 
                 const priceSdgValue = priceUsd * rate;
-                const formattedPriceSdg = priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${id}</td>
                     <td><strong>${name}</strong></td>
                     <td>${qty}</td>
-                    <td style="color: green; direction: ltr;">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                    <td style="font-weight: bold; color: #b7791f; direction: ltr;">${formattedPriceSdg}</td>
+                    <td class="currency-usd">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td class="currency-sdg">${priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td style="text-align: center;">
                         <button class="btn-edit-cell" onclick="openEditModal('${id}', '${name}', '${qty}', '${priceUsd}', '${remark}')">تعديل</button>
                     </td>
@@ -563,19 +567,21 @@
             const timestamp = new Date().toLocaleString('en-GB');
 
             try {
+                // خصم الكمية من الجدول الأساسي
                 await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: { 'Quantity': newQty } }) 
                 });
 
+                // تسجيل العملية في الحركات بأسماء الحقول المحدثة
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         data: {
                             'Timestamp': timestamp,
-                            'Type': 'Withdraw',
+                            'Type': 'Withdraw (Sale)',
                             'PartNumber': part['PartNumber'],
                             'PartName': part['PartName'],
                             'Quantity': withdrawQty,
@@ -648,7 +654,7 @@
             btn.classList.remove('processing');
         }
 
-        // --- تقرير المبيعات المتقدم ---
+        // --- تقرير المبيعات المتقدم والاحترافي ---
         document.getElementById('showReport').addEventListener('click', async () => {
             document.getElementById('reportModal').style.display = "block";
             const reportLoading = document.getElementById('reportLoading');
@@ -674,8 +680,9 @@
                     const priceSdg = parseFloat(tx['PriceSDG']) || 0; 
                     const buyer = tx['Buyer'] || 'غير محدد';
                     const part = tx['PartName'] || 'غير محدد';
-                    const warehouseStr = tx['Warehouse'] === 'Inventory_Khartoum' ? 'الخرطوم' : (tx['Warehouse'] === 'Inventory_Halfa' ? 'حلفا' : (tx['Warehouse'] || ''));
+                    const warehouseStr = tx['Warehouse'] === 'Inventory_Khartoum' ? 'الخرطوم' : (tx['Warehouse'] === 'Inventory_Halfa' ? 'حلفا' : (tx['Warehouse'] || '-'));
 
+                    // تصفية وتجميع العمليات الخاصة بالسحب (المبيعات)
                     if (type.toLowerCase().includes('withdraw')) {
                         const lineTotalUSD = qty * priceUsd;
                         const lineTotalSDG = qty * priceSdg;
@@ -683,20 +690,30 @@
                         totalUSD += lineTotalUSD;
                         totalSDG += lineTotalSDG;
 
-                        buyersMap[buyer] = (buyersMap[buyer] || 0) + lineTotalUSD;
-                        partsMap[part] = (partsMap[part] || 0) + qty;
+                        if(buyer !== 'غير محدد' && buyer.trim() !== '') {
+                            buyersMap[buyer] = (buyersMap[buyer] || 0) + lineTotalSDG;
+                        }
+                        if(part !== 'غير محدد' && part.trim() !== '') {
+                            partsMap[part] = (partsMap[part] || 0) + qty;
+                        }
                     }
+
+                    // حسابات الصف لكل عملية
+                    const rowTotalUSD = qty * priceUsd;
+                    const rowTotalSDG = qty * priceSdg;
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${tx['Timestamp'] || '-'}</td>
-                        <td>${type.includes('Withdraw') ? 'سحب/مبيعات' : type}</td>
+                        <td>${type.includes('Withdraw') ? 'مبيعات' : type}</td>
                         <td>${warehouseStr}</td>
                         <td><strong>${part}</strong></td>
                         <td>${qty}</td>
                         <td>${buyer}</td>
-                        <td>${tx['Location'] || '-'}</td>
-                        <td style="color:#b7791f; font-weight:bold; direction:ltr;">${priceSdg.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="currency-usd">$${priceUsd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="currency-sdg">${priceSdg.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="currency-usd">$${rowTotalUSD.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="currency-sdg">${rowTotalSDG.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
                         <td class="no-export">
                             <button class="btn-edit-cell" onclick="openEditTx('${tx['Timestamp']}', '${qty}', '${priceSdg}')">تعديل</button>
                         </td>
@@ -704,17 +721,19 @@
                     tableBody.appendChild(tr);
                 });
 
-                const topBuyer = Object.keys(buyersMap).reduce((a, b) => buyersMap[a] > buyersMap[b] ? a : b, null);
-                const topPart = Object.keys(partsMap).reduce((a, b) => partsMap[a] > partsMap[b] ? a : b, null);
+                // استخراج المشتري والقطعة الأكثر مبيعاً بأمان
+                const topBuyer = Object.keys(buyersMap).length > 0 ? Object.keys(buyersMap).reduce((a, b) => buyersMap[a] > buyersMap[b] ? a : b) : null;
+                const topPart = Object.keys(partsMap).length > 0 ? Object.keys(partsMap).reduce((a, b) => partsMap[a] > partsMap[b] ? a : b) : null;
 
+                // تحديث البطاقات
                 document.getElementById('totalSalesUSD').textContent = `$${totalUSD.toLocaleString('en-US', {minimumFractionDigits:2})}`;
                 document.getElementById('totalSalesSDG').textContent = `${totalSDG.toLocaleString('en-US', {minimumFractionDigits:2})} ج.س`;
                 
-                document.getElementById('topBuyer').textContent = topBuyer || '-';
-                document.getElementById('topBuyerVal').textContent = topBuyer ? `(بقيمة $${buyersMap[topBuyer].toLocaleString('en-US', {minimumFractionDigits:2})})` : '';
+                document.getElementById('topBuyer').textContent = topBuyer || 'لا توجد بيانات';
+                document.getElementById('topBuyerVal').textContent = topBuyer ? `(بقيمة ${buyersMap[topBuyer].toLocaleString('en-US', {minimumFractionDigits:2})} ج.س)` : '';
                 
-                document.getElementById('topPart').textContent = topPart || '-';
-                document.getElementById('topPartVal').textContent = topPart ? `(تم سحب ${partsMap[topPart]} قطعة)` : '';
+                document.getElementById('topPart').textContent = topPart || 'لا توجد بيانات';
+                document.getElementById('topPartVal').textContent = topPart ? `(تم بيع ${partsMap[topPart]} قطعة)` : '';
 
                 reportLoading.style.display = 'none';
 
