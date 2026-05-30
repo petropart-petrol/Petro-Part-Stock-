@@ -274,7 +274,6 @@
         tr:last-child td { border-bottom: none; }
         tr:hover { background-color: #f8f9fa; }
 
-        /* تم إزالة display: inline-block للحفاظ على هيكل خلايا الجدول <td> */
         .currency-usd { color: #27ae60; font-weight: bold; direction: ltr; white-space: nowrap; }
         .currency-sdg { color: #b7791f; font-weight: bold; direction: ltr; white-space: nowrap; }
 
@@ -307,7 +306,7 @@
             animation: slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .modal-content.large { max-width: 1300px; }
+        .modal-content.large { max-width: 1200px; }
 
         @keyframes slideDown {
             from { transform: translateY(-40px); opacity: 0; }
@@ -744,7 +743,6 @@
                             <th>القطعة</th>
                             <th>الكمية</th>
                             <th>المشتري</th>
-                            <th>المكان</th>
                             <th>سعر الوحدة ($)</th>
                             <th>سعر الوحدة (ج.س)</th>
                             <th>الإجمالي ($)</th>
@@ -887,7 +885,7 @@
                 tr.innerHTML = `
                     <td>${id}</td>
                     <td><strong>${name}</strong></td>
-                    <td style="font-weight: bold; text-align: center;">${qty}</td>
+                    <td style="font-weight: bold;">${qty}</td>
                     <td class="currency-usd">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td class="currency-sdg">${priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td style="text-align: center;">
@@ -1039,7 +1037,7 @@
             if (!part) {
                 showToast('⚠️ القطعة غير موجودة في المخزن المعروض حالياً!', true);
                 btn.classList.remove('processing'); 
-                btn.textContent = 'تنفيذ السحب وتسجيل المبيعات';
+                btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
                 return;
             }
 
@@ -1047,13 +1045,13 @@
             if (withdrawQty > currentQty) {
                 showToast(`⚠️ الكمية المطلوبة (${withdrawQty}) أكبر من المتاح بالمخزن (${currentQty})!`, true);
                 btn.classList.remove('processing'); 
-                btn.textContent = 'تنفيذ السحب وتسجيل المبيعات';
+                btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
                 return;
             }
 
             const newQty = currentQty - withdrawQty;
             const priceUsd = parseFloat(part['PriceUSD']);
-            const timestamp = new Date().toLocaleString('en-GB'); 
+            const timestamp = new Date().toLocaleString('en-GB'); // صيغة الوقت للـ ID
 
             try {
                 // 1. خصم الكمية من جدول المخزون الأساسي
@@ -1070,15 +1068,15 @@
                     body: JSON.stringify({
                         data: {
                             'Timestamp': timestamp,
-                            'TypePart': 'Withdraw (Sale)',
+                            'Type': 'Withdraw (Sale)',
                             'PartNumber': part['PartNumber'],
-                            'Name': part['PartName'],
+                            'PartName': part['PartName'],
                             'Quantity': withdrawQty,
                             'Buyer': buyer,
                             'PriceUSD': priceUsd,
                             'PriceSDG': finalUnitPriceSdg, 
                             'DollarRate': rate,
-                            'WarehouseBuyer': warehouse,
+                            'Warehouse': warehouse,
                             'Location': location
                         }
                     })
@@ -1110,7 +1108,7 @@
                 console.error(error);
             } finally {
                 btn.classList.remove('processing');
-                btn.textContent = 'تنفيذ السحب وتسجيل المبيعات';
+                btn.textContent = 'تنفيذ السحب وتسجيل حركة المبيعات';
             }
         });
 
@@ -1125,7 +1123,9 @@
             btn.innerHTML = '⏳ جاري تجهيز الصورة...';
             btn.classList.add('processing');
 
+            // التقاط صورة للعنصر
             html2canvas(receiptElement, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                // تجربة مشاركة الصورة مباشرة (تعمل بشكل أساسي على الجوال)
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(blob => {
                         const file = new File([blob], `Petropart_Receipt_${new Date().getTime()}.png`, { type: "image/png" });
@@ -1144,6 +1144,7 @@
                         });
                     });
                 } else {
+                    // التحميل المباشر للكمبيوتر
                     downloadCanvasFallback(canvas, btn, originalText);
                 }
             }).catch(err => {
@@ -1168,7 +1169,7 @@
         }
 
         // -----------------------------------------
-        // 8. تقرير المبيعات المتقدم (Advanced Report)
+        // 8. تقرير المبيعات المتقدم (Advanced Report) مع الملخص الشهري
         // -----------------------------------------
         document.getElementById('showReport').addEventListener('click', async () => {
             document.getElementById('reportModal').style.display = "block";
@@ -1188,16 +1189,19 @@
                 let totalSDG = 0;
                 let buyersMap = {};
                 let partsMap = {};
+                
+                // كائن لتخزين الإجماليات الشهرية
+                let monthlyTotals = {};
 
                 transactions.forEach(tx => {
-                    const type = tx['TypePart'] || tx['Type'] || '';
+                    const type = tx['Type'] || '';
                     const qty = parseInt(tx['Quantity']) || 0;
                     const priceUsd = parseFloat(tx['PriceUSD']) || 0;
                     const priceSdg = parseFloat(tx['PriceSDG']) || 0; 
                     const buyer = tx['Buyer'] || 'غير محدد';
-                    const part = tx['Name'] || tx['PartName'] || 'غير محدد';
+                    const part = tx['PartName'] || 'غير محدد';
                     
-                    let warehouseStr = tx['WarehouseBuyer'] || tx['Warehouse'] || '-';
+                    let warehouseStr = tx['Warehouse'] || '-';
                     if(warehouseStr === 'Inventory_Khartoum') warehouseStr = 'الخرطوم';
                     else if(warehouseStr === 'Inventory_Halfa') warehouseStr = 'حلفا';
 
@@ -1215,6 +1219,25 @@
                         if(part !== 'غير محدد' && part.trim() !== '') {
                             partsMap[part] = (partsMap[part] || 0) + qty;
                         }
+                        
+                        // استخراج الشهر والسنة للملخص الشهري
+                        let monthYear = 'غير محدد';
+                        if (tx['Timestamp']) {
+                            const dateOnly = tx['Timestamp'].split(',')[0].trim(); 
+                            const parts = dateOnly.split('/');
+                            if (parts.length >= 3) {
+                                // افتراض أن التنسيق هو يوم/شهر/سنة (en-GB)
+                                monthYear = parts[1].padStart(2, '0') + '/' + parts[2];
+                            } else {
+                                monthYear = dateOnly;
+                            }
+                        }
+                        
+                        if (!monthlyTotals[monthYear]) {
+                            monthlyTotals[monthYear] = { usd: 0, sdg: 0 };
+                        }
+                        monthlyTotals[monthYear].usd += lineTotalUSD;
+                        monthlyTotals[monthYear].sdg += lineTotalSDG;
                     }
 
                     // حساب الإجمالي لكل صف على حدة للعرض
@@ -1229,7 +1252,6 @@
                         <td><strong>${part}</strong></td>
                         <td style="text-align:center; font-weight:bold;">${qty}</td>
                         <td>${buyer}</td>
-                        <td>${tx['Location'] || '-'}</td>
                         <td class="currency-usd">$${priceUsd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
                         <td class="currency-sdg">${priceSdg.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
                         <td class="currency-usd" style="background:#eafaf1;">$${rowTotalUSD.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
@@ -1240,6 +1262,37 @@
                     `;
                     tableBody.appendChild(tr);
                 });
+                
+                // إضافة الملخص الشهري في أسفل الجدول لكي يُطبع في الإكسيل تلقائياً
+                if (Object.keys(monthlyTotals).length > 0) {
+                    const sepRow = document.createElement('tr');
+                    sepRow.innerHTML = `<td colspan="11" style="background-color: var(--secondary-color); color: white; font-weight: bold; text-align: center; font-size: 1.1em; padding: 15px;">📊 ملخص المبيعات الشهرية</td>`;
+                    tableBody.appendChild(sepRow);
+
+                    // ترتيب الأشهر تصاعدياً
+                    const sortedMonths = Object.keys(monthlyTotals).sort((a, b) => {
+                        if(a.includes('/') && b.includes('/')) {
+                            const [mA, yA] = a.split('/');
+                            const [mB, yB] = b.split('/');
+                            return (yA+mA).localeCompare(yB+mB);
+                        }
+                        return a.localeCompare(b);
+                    });
+
+                    sortedMonths.forEach(month => {
+                        const data = monthlyTotals[month];
+                        const sumRow = document.createElement('tr');
+                        sumRow.style.backgroundColor = '#fdfbf7';
+                        sumRow.innerHTML = `
+                            <td colspan="4" style="font-weight: bold; text-align: right; color: var(--primary-color);">إجمالي مبيعات شهر (${month}):</td>
+                            <td colspan="4"></td>
+                            <td class="currency-usd" style="font-size: 1.1em; background: #eafaf1;">$${data.usd.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                            <td class="currency-sdg" style="font-size: 1.1em; background: #fef5e7;">${data.sdg.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                            <td class="no-export"></td>
+                        `;
+                        tableBody.appendChild(sumRow);
+                    });
+                }
 
                 // استخراج أعلى المبيعات بأمان
                 const topBuyer = Object.keys(buyersMap).length > 0 ? Object.keys(buyersMap).reduce((a, b) => buyersMap[a] > buyersMap[b] ? a : b) : null;
@@ -1376,47 +1429,6 @@
         function setupModal(openBtnId, modalId, closeBtnId) {
             const modal = document.getElementById(modalId);
             
+            // زر الفتح (إن وُجد)
             if(openBtnId) {
-                const openBtn = document.getElementById(openBtnId);
-                if(openBtn) {
-                    openBtn.addEventListener('click', () => {
-                        modal.style.display = "block";
-                    });
-                }
-            }
-            
-            if(closeBtnId) {
-                const closeBtn = document.getElementById(closeBtnId);
-                if(closeBtn) {
-                    closeBtn.addEventListener('click', () => {
-                        modal.style.display = "none";
-                        if(modalId === 'withdrawModal') {
-                            document.getElementById('withdrawForm').reset();
-                            document.getElementById('availableQtyDisplay').style.display = 'none';
-                        }
-                    });
-                }
-            }
-        }
-
-        setupModal('showAddForm', 'addModal', 'closeAddModal');
-        setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
-        setupModal(null, 'receiptModal', 'closeReceiptModal');
-        setupModal(null, 'reportModal', 'closeReportModal');
-        setupModal(null, 'editTxModal', 'closeEditTxModal');
-        setupModal(null, 'editModal', 'closeEditModal'); 
-
-        window.addEventListener('click', (event) => {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = "none";
-                
-                if (event.target.id === 'withdrawModal') {
-                    document.getElementById('withdrawForm').reset();
-                    document.getElementById('availableQtyDisplay').style.display = 'none';
-                }
-            }
-        });
-
-    </script>
-</body>
-</html>
+                const openBtn = document.getElementById
