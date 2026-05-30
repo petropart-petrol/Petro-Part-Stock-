@@ -62,6 +62,8 @@
         .qty-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; background: #e8f4f8; color: #0056b3; font-weight: bold; font-size: 0.9rem; border: 1px solid #b8daff; margin-bottom: 5px; text-align: center;}
         .readonly-input { background-color: #f1f2f6; color: #2c3e50; font-weight: bold; cursor: not-allowed; border: 1px solid #ccc;}
         .total-price-input { background-color: #eafaf1; color: #27ae60; font-weight: bold; font-size: 1.15rem; border: 2px solid #2ecc71;}
+        .editable-price { background-color: #fff; border: 1px solid #3498db; font-weight: bold; color: #2c3e50; transition: all 0.3s;}
+        .editable-price:focus { box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
     </style>
 </head>
 <body>
@@ -171,8 +173,8 @@
                 <label for="withdrawLocation">مكان المشتري:</label>
                 <input type="text" id="withdrawLocation" placeholder="أدخل مكان المشتري">
                 
-                <label for="withdrawUnitPrice">سعر الحبه (تلقائي):</label>
-                <input type="text" id="withdrawUnitPrice" class="readonly-input" placeholder="0.00" readonly>
+                <label for="withdrawUnitPrice">سعر الحبه (قابل للتعديل):</label>
+                <input type="number" id="withdrawUnitPrice" class="editable-price" placeholder="0.00" step="0.01" required>
                 
                 <label for="withdrawTotalPrice">مجموع الشراء والسحب (تلقائي):</label>
                 <input type="text" id="withdrawTotalPrice" class="readonly-input total-price-input" placeholder="0.00 ج.س" readonly>
@@ -240,7 +242,7 @@
             if (currentRate && currentRate > 0) {
                 localStorage.setItem('petro_part_usd_rate', currentRate);
                 showToast(`تم حفظ السعر الجديد (${currentRate} ج.س) بنجاح!`);
-                renderTable(currentInventoryData); // تحديث الأسعار في الجدول فوراً
+                renderTable(currentInventoryData);
             }
         });
 
@@ -292,7 +294,6 @@
                 const priceUsd = parseFloat(item['PriceUSD'] || 0);
                 const remark = item['Remark'] || '';
                 
-                // حساب السعر بالجنيه مع خانتين عشريتين وفواصل الألوف
                 const priceSdgValue = priceUsd * rate;
                 const formattedPriceSdg = priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -330,7 +331,6 @@
         document.getElementById('warehouseSelector').addEventListener('change', fetchData);
         document.getElementById('searchInput').addEventListener('input', () => renderTable(currentInventoryData));
 
-        // --- إضافة ---
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitAddBtn');
@@ -391,7 +391,7 @@
             }
         });
 
-        // --- منطق نموذج السحب الجديد ---
+        // --- منطق نموذج السحب الجديد (قابل للتعديل) ---
         const withdrawPartNameInput = document.getElementById('withdrawPartName');
         const availableQtyDisplay = document.getElementById('availableQtyDisplay');
         const qtyAvailableSpan = document.getElementById('qtyAvailableSpan');
@@ -408,33 +408,30 @@
                 const rate = getCurrentRate();
                 const unitPriceSdg = priceUsd * rate;
                 
-                // إظهار الكمية الموجودة
                 qtyAvailableSpan.textContent = currentQty;
                 availableQtyDisplay.style.display = 'block';
                 
-                // عرض سعر الحبة بخانات عشرية
-                withdrawUnitPriceInput.value = unitPriceSdg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.س';
-                withdrawUnitPriceInput.dataset.rawPrice = unitPriceSdg; // تخزين القيمة الخام لسهولة الحساب
+                // عرض السعر كقيمة رقمية صافية لتسهيل التعديل
+                withdrawUnitPriceInput.value = unitPriceSdg.toFixed(2);
 
                 calculateWithdrawTotal();
             } else {
                 availableQtyDisplay.style.display = 'none';
                 withdrawUnitPriceInput.value = '';
-                withdrawUnitPriceInput.dataset.rawPrice = 0;
                 withdrawTotalPriceInput.value = '';
             }
         });
 
-        // حساب المجموع تلقائياً عند تغيير الكمية المسحوبة
+        // إعادة حساب المجموع عند تغيير الكمية المسحوبة أو تعديل سعر الحبة يدوياً
         withdrawQtyInput.addEventListener('input', calculateWithdrawTotal);
+        withdrawUnitPriceInput.addEventListener('input', calculateWithdrawTotal);
 
         function calculateWithdrawTotal() {
             const qty = parseInt(withdrawQtyInput.value) || 0;
-            const unitPrice = parseFloat(withdrawUnitPriceInput.dataset.rawPrice) || 0;
+            const unitPrice = parseFloat(withdrawUnitPriceInput.value) || 0;
             
             if (qty > 0 && unitPrice > 0) {
                 const total = qty * unitPrice;
-                // عرض المجموع بخانات عشرية
                 withdrawTotalPriceInput.value = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.س';
             } else {
                 withdrawTotalPriceInput.value = '';
@@ -454,6 +451,9 @@
             const buyer = document.getElementById('withdrawBuyer').value;
             const location = document.getElementById('withdrawLocation').value;
             const rate = getCurrentRate();
+            
+            // قراءة السعر الجديد (في حال تم تعديله يدوياً)
+            const finalUnitPriceSdg = parseFloat(withdrawUnitPriceInput.value).toFixed(2);
 
             const part = currentInventoryData.find(p => p['PartName'] === partNameInput);
 
@@ -474,7 +474,6 @@
 
             const newQty = currentQty - withdrawQty;
             const priceUsd = parseFloat(part['PriceUSD']);
-            const unitPriceSdg = (priceUsd * rate).toFixed(2);
             const timestamp = new Date().toLocaleString('en-GB');
 
             try {
@@ -482,10 +481,11 @@
                 await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: { 'Quantity': newQty, 'PriceSDG': unitPriceSdg } })
+                    body: JSON.stringify({ data: { 'Quantity': newQty } }) 
+                    // لم يتم تحديث PriceSDG في جدول المخزون الأساسي ليبقى ثابتاً كما هو، التحديث للسعر يتم في المبيعات
                 });
 
-                // 2. تسجيل العملية في الحركات
+                // 2. تسجيل العملية في الحركات باستخدام السعر المُعدل يدوياً
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -498,7 +498,7 @@
                             'Quantity': withdrawQty,
                             'Buyer': buyer,
                             'PriceUSD': priceUsd,
-                            'PriceSDG': unitPriceSdg, // تخزين سعر الحبة في قاعدة البيانات
+                            'PriceSDG': finalUnitPriceSdg, // تخزين سعر الحبة المُعدل
                             'DollarRate': rate,
                             'Warehouse': warehouse,
                             'BuyerLocation': location
