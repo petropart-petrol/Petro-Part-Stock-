@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة مخزون قطع الغيار - بتروبارت</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary-color: #0f2027; 
@@ -27,7 +28,6 @@
         .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; flex: 1; width: 100%;}
         h1#mainTableTitle { color: var(--primary-color); font-size: 1.6rem; border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
         
-        /* لوحة التحكم والبحث */
         .dashboard-top-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; gap: 8px; }
         .input-group label { font-weight: bold; color: var(--secondary-color); font-size: 0.95rem; }
@@ -38,7 +38,6 @@
         .btn-save-rate { background-color: var(--secondary-color); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background var(--transition-speed); white-space: nowrap;}
         .btn-save-rate:hover { background-color: var(--primary-color); }
         
-        /* أزرار التحكم */
         .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn { padding: 12px 20px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all var(--transition-speed); display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex: 1; min-width: 200px;}
         .btn-add { background-color: var(--success-color); color: white; }
@@ -47,10 +46,11 @@
         .btn-withdraw:hover { background-color: #d49400; transform: translateY(-2px); }
         .btn-report { background-color: var(--info-color); color: white; }
         .btn-report:hover { background-color: #2980b9; transform: translateY(-2px); }
+        .btn-excel { background-color: #27ae60; color: white; margin-bottom: 15px; width: 100%; font-size: 1.1rem; }
+        .btn-excel:hover { background-color: #219653; }
         .btn-edit-cell { background-color: #7f8c8d; color: white; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; border: none; cursor: pointer; }
         .btn-edit-cell:hover { background-color: #2c3e50; }
         
-        /* الجدول المتجاوب مع الهاتف */
         #loading { text-align: center; padding: 20px; font-weight: bold; color: var(--info-color); }
         .table-responsive { overflow-x: auto; background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; min-width: 700px; }
@@ -59,9 +59,9 @@
         tr:last-child td { border-bottom: none; }
         tr:hover { background-color: #f1f2f6; }
         
-        /* النوافذ المنبثقة (Modals) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
         .modal-content { background-color: #fff; margin: 5vh auto; padding: 25px; border-radius: 12px; width: 92%; max-width: 500px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; animation: slideDown 0.3s ease-out; max-height: 90vh; overflow-y: auto;}
+        .modal-content.large { max-width: 1100px; }
         @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .close { position: absolute; top: 15px; left: 20px; color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: color var(--transition-speed); }
         .close:hover { color: var(--danger-color); }
@@ -71,14 +71,12 @@
         .toast-notify { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: white; padding: 12px 25px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: none; z-index: 2000; font-weight: bold; width: 90%; max-width: 400px; text-align: center;}
         .processing { opacity: 0.6; pointer-events: none; }
         
-        /* مظهر حقول السحب المخصصة */
         .qty-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; background: #e8f4f8; color: #0056b3; font-weight: bold; font-size: 0.9rem; border: 1px solid #b8daff; margin-bottom: 5px; text-align: center;}
         .readonly-input { background-color: #f1f2f6; color: #2c3e50; font-weight: bold; cursor: not-allowed; border: 1px solid #ccc;}
         .total-price-input { background-color: #eafaf1; color: #27ae60; font-weight: bold; font-size: 1.15rem; border: 2px solid #2ecc71; text-align: center;}
         .editable-price { background-color: #fff; border: 1px solid #3498db; font-weight: bold; color: #2c3e50; transition: all 0.3s;}
         .editable-price:focus { box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
 
-        /* تصميم إشعار السحب (الإيصال) */
         .receipt-container { padding: 20px; border: 2px dashed #95a5a6; background: #fdfbf7; border-radius: 8px; color: #2c3e50; }
         .receipt-header { text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px; }
         .receipt-header h3 { margin: 0; color: #0f2027; }
@@ -86,16 +84,14 @@
         .receipt-row strong { color: #34495e; }
         .receipt-total { border-top: 2px solid #2c3e50; padding-top: 10px; margin-top: 10px; font-size: 1.2rem; font-weight: bold; text-align: center; color: #27ae60; }
 
-        /* الفوتر (حقوق النشر) */
-        .site-footer {
-            background-color: var(--primary-color);
-            color: #ecf0f1;
-            text-align: center;
-            padding: 15px 20px;
-            font-size: 0.9rem;
-            margin-top: auto;
-            border-top: 3px solid var(--accent-color);
-        }
+        /* بطاقات الإحصائيات لتقرير المبيعات */
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .summary-card { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .summary-card h4 { margin: 0 0 10px 0; color: var(--secondary-color); font-size: 0.95rem; }
+        .summary-card p { margin: 0; font-size: 1.25rem; font-weight: bold; color: var(--accent-color); }
+        .summary-card .small-text { font-size: 0.85rem; color: #7f8c8d; display: block; margin-top: 5px; }
+
+        .site-footer { background-color: var(--primary-color); color: #ecf0f1; text-align: center; padding: 15px 20px; font-size: 0.9rem; margin-top: auto; border-top: 3px solid var(--accent-color); }
         .site-footer p { margin: 0; }
     </style>
 </head>
@@ -243,46 +239,88 @@
     <div id="receiptModal" class="modal">
         <div class="modal-content" style="background-color: #f1f2f6;">
             <span class="close" id="closeReceiptModal">×</span>
-            
             <div id="receiptContent" class="receipt-container">
                 <div class="receipt-header">
                     <h3>بتروبارت لمعدات البترول</h3>
                     <p style="margin: 5px 0; color: #7f8c8d; font-size: 0.9em;">إشعار سحب / مبيعات</p>
                 </div>
-                
-                <div class="receipt-row">
-                    <strong>تاريخ العملية:</strong>
-                    <span id="recDate"></span>
-                </div>
-                <div class="receipt-row">
-                    <strong>المخزن:</strong>
-                    <span id="recWarehouse"></span>
-                </div>
-                <div class="receipt-row">
-                    <strong>المشتري:</strong>
-                    <span id="recBuyer"></span>
-                </div>
-                <div class="receipt-row">
-                    <strong>القطعة:</strong>
-                    <span id="recPartName"></span>
-                </div>
-                <div class="receipt-row">
-                    <strong>الكمية المسحوبة:</strong>
-                    <span id="recQty"></span>
-                </div>
-                <div class="receipt-row">
-                    <strong>سعر الحبة:</strong>
-                    <span><span id="recUnitPrice"></span> ج.س</span>
-                </div>
-                
-                <div class="receipt-total">
-                    المجموع: <span id="recTotal"></span> ج.س
-                </div>
+                <div class="receipt-row"><strong>تاريخ العملية:</strong><span id="recDate"></span></div>
+                <div class="receipt-row"><strong>المخزن:</strong><span id="recWarehouse"></span></div>
+                <div class="receipt-row"><strong>المشتري:</strong><span id="recBuyer"></span></div>
+                <div class="receipt-row"><strong>القطعة:</strong><span id="recPartName"></span></div>
+                <div class="receipt-row"><strong>الكمية المسحوبة:</strong><span id="recQty"></span></div>
+                <div class="receipt-row"><strong>سعر الحبة:</strong><span><span id="recUnitPrice"></span> ج.س</span></div>
+                <div class="receipt-total">المجموع: <span id="recTotal"></span> ج.س</div>
             </div>
-
             <button id="shareReceiptBtn" class="btn btn-report" style="width: 100%; margin-top: 15px; font-size: 1.1rem;">
                 📥 تحميل / مشاركة الإشعار (صورة)
             </button>
+        </div>
+    </div>
+
+    <div id="reportModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" id="closeReportModal">×</span>
+            <h2>تقرير المبيعات والحركات</h2>
+            
+            <button id="exportExcelBtn" class="btn btn-excel">📥 استخراج التقرير كملف Excel</button>
+
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h4>إجمالي المبيعات (دولار)</h4>
+                    <p id="totalSalesUSD">$0.00</p>
+                </div>
+                <div class="summary-card">
+                    <h4>إجمالي المبيعات (جنيه)</h4>
+                    <p id="totalSalesSDG">0.00 ج.س</p>
+                </div>
+                <div class="summary-card">
+                    <h4>المشتري الأكثر مبيعاً</h4>
+                    <p id="topBuyer">-</p>
+                    <span class="small-text" id="topBuyerVal"></span>
+                </div>
+                <div class="summary-card">
+                    <h4>القطعة الأكثر مبيعاً</h4>
+                    <p id="topPart">-</p>
+                    <span class="small-text" id="topPartVal"></span>
+                </div>
+            </div>
+
+            <div id="reportLoading" style="text-align: center; font-weight: bold; padding: 20px;">جاري تحميل التقرير...</div>
+            <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                <table id="reportTableExport">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>العملية</th>
+                            <th>المخزن</th>
+                            <th>الاسم</th>
+                            <th>الكمية</th>
+                            <th>المشتري</th>
+                            <th>المكان</th>
+                            <th>السعر (جنيه)</th>
+                            <th class="no-export">تعديل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="editTxModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditTxModal">×</span>
+            <h2>تعديل حركة مسجلة (للمشرفين)</h2>
+            <form id="editTxForm">
+                <label>معرف الحركة (التاريخ)</label>
+                <input type="text" id="txTimestamp" readonly style="background: #eee;">
+                <label>الكمية</label>
+                <input type="number" id="txQty" required>
+                <label>سعر الحبة (جنيه)</label>
+                <input type="number" id="txPrice" step="0.01" required>
+                <button type="submit" class="btn btn-add" id="submitEditTxBtn">حفظ التعديل</button>
+            </form>
         </div>
     </div>
 
@@ -405,7 +443,7 @@
         document.getElementById('warehouseSelector').addEventListener('change', fetchData);
         document.getElementById('searchInput').addEventListener('input', () => renderTable(currentInventoryData));
 
-        // --- إضافة ---
+        // --- إضافة مخزون ---
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitAddBtn');
@@ -446,7 +484,7 @@
             finally { btn.classList.remove('processing'); btn.textContent = 'تأكيد الإضافة للمخزن'; }
         });
 
-        // --- منطق السحب والمبيعات ---
+        // --- السحب والمبيعات ---
         const withdrawPartNameInput = document.getElementById('withdrawPartName');
         const availableQtyDisplay = document.getElementById('availableQtyDisplay');
         const qtyAvailableSpan = document.getElementById('qtyAvailableSpan');
@@ -526,28 +564,30 @@
             const timestamp = new Date().toLocaleString('en-GB');
 
             try {
+                // خصم الكمية من الجدول الأساسي
                 await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: { 'Quantity': newQty } }) 
                 });
 
+                // تسجيل العملية في الحركات بأسماء الحقول المحدثة
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         data: {
                             'Timestamp': timestamp,
-                            'TypePart': 'Withdraw (Sale)',
-                            'NumberPart': part['PartNumber'],
-                            'Name': part['PartName'],
+                            'Type': 'Withdraw',
+                            'PartNumber': part['PartNumber'],
+                            'PartName': part['PartName'],
                             'Quantity': withdrawQty,
                             'Buyer': buyer,
                             'PriceUSD': priceUsd,
                             'PriceSDG': finalUnitPriceSdg, 
                             'DollarRate': rate,
                             'Warehouse': warehouse,
-                            'BuyerLocation': location
+                            'Location': location
                         }
                     })
                 });
@@ -563,10 +603,9 @@
                 document.getElementById('withdrawForm').reset();
                 availableQtyDisplay.style.display = 'none';
                 document.getElementById('withdrawModal').style.display = "none";
-                
                 document.getElementById('receiptModal').style.display = "block";
-                showToast(`✅ تمت العملية بنجاح!`);
                 
+                showToast(`✅ تمت العملية بنجاح!`);
                 if(document.getElementById('warehouseSelector').value === warehouse) fetchData();
 
             } catch (error) {
@@ -577,6 +616,7 @@
             }
         });
 
+        // --- مشاركة الإيصال كصورة ---
         document.getElementById('shareReceiptBtn').addEventListener('click', () => {
             const receiptElement = document.getElementById('receiptContent');
             const btn = document.getElementById('shareReceiptBtn');
@@ -588,23 +628,14 @@
                 if (navigator.share && navigator.canShare) {
                     canvas.toBlob(blob => {
                         const file = new File([blob], "receipt.png", { type: "image/png" });
-                        navigator.share({
-                            title: 'إشعار سحب بتروبارت',
-                            text: 'تفاصيل عملية السحب/البيع المرفقة.',
-                            files: [file]
-                        }).then(() => {
-                            btn.innerHTML = originalText;
-                            btn.classList.remove('processing');
-                        }).catch(err => {
-                            console.log('Share failed or canceled', err);
-                            downloadCanvasFallback(canvas, btn, originalText);
-                        });
+                        navigator.share({ title: 'إشعار سحب بتروبارت', text: 'تفاصيل عملية السحب/البيع.', files: [file] })
+                        .then(() => { btn.innerHTML = originalText; btn.classList.remove('processing'); })
+                        .catch(err => { downloadCanvasFallback(canvas, btn, originalText); });
                     });
                 } else {
                     downloadCanvasFallback(canvas, btn, originalText);
                 }
             }).catch(err => {
-                console.error("Error generating image", err);
                 btn.innerHTML = '❌ فشل التحويل لصورة';
                 setTimeout(() => { btn.innerHTML = originalText; btn.classList.remove('processing'); }, 2000);
             });
@@ -620,7 +651,121 @@
             btn.classList.remove('processing');
         }
 
-        // --- تعديل يدوي ---
+        // --- تقرير المبيعات المتقدم والأسماء المحدثة ---
+        document.getElementById('showReport').addEventListener('click', async () => {
+            document.getElementById('reportModal').style.display = "block";
+            const reportLoading = document.getElementById('reportLoading');
+            const tableBody = document.getElementById('reportTableBody');
+            
+            reportLoading.style.display = 'block';
+            tableBody.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`);
+                if (!response.ok) throw new Error('فشل تحميل التقرير');
+                const transactions = await response.json();
+                
+                let totalUSD = 0;
+                let totalSDG = 0;
+                let buyersMap = {};
+                let partsMap = {};
+
+                transactions.forEach(tx => {
+                    const type = tx['Type'] || '';
+                    const qty = parseInt(tx['Quantity']) || 0;
+                    const priceUsd = parseFloat(tx['PriceUSD']) || 0;
+                    const priceSdg = parseFloat(tx['PriceSDG']) || 0; 
+                    const buyer = tx['Buyer'] || 'غير محدد';
+                    const part = tx['PartName'] || 'غير محدد';
+                    const warehouseStr = tx['Warehouse'] === 'Inventory_Khartoum' ? 'الخرطوم' : (tx['Warehouse'] === 'Inventory_Halfa' ? 'حلفا' : (tx['Warehouse'] || ''));
+
+                    if (type.toLowerCase().includes('withdraw')) {
+                        const lineTotalUSD = qty * priceUsd;
+                        const lineTotalSDG = qty * priceSdg;
+                        
+                        totalUSD += lineTotalUSD;
+                        totalSDG += lineTotalSDG;
+
+                        buyersMap[buyer] = (buyersMap[buyer] || 0) + lineTotalUSD;
+                        partsMap[part] = (partsMap[part] || 0) + qty;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${tx['Timestamp'] || '-'}</td>
+                        <td>${type.includes('Withdraw') ? 'سحب/مبيعات' : type}</td>
+                        <td>${warehouseStr}</td>
+                        <td><strong>${part}</strong></td>
+                        <td>${qty}</td>
+                        <td>${buyer}</td>
+                        <td>${tx['Location'] || '-'}</td>
+                        <td style="color:#b7791f; font-weight:bold; direction:ltr;">${priceSdg.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                        <td class="no-export">
+                            <button class="btn-edit-cell" onclick="openEditTx('${tx['Timestamp']}', '${qty}', '${priceSdg}')">تعديل</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                const topBuyer = Object.keys(buyersMap).reduce((a, b) => buyersMap[a] > buyersMap[b] ? a : b, null);
+                const topPart = Object.keys(partsMap).reduce((a, b) => partsMap[a] > partsMap[b] ? a : b, null);
+
+                document.getElementById('totalSalesUSD').textContent = `$${totalUSD.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+                document.getElementById('totalSalesSDG').textContent = `${totalSDG.toLocaleString('en-US', {minimumFractionDigits:2})} ج.س`;
+                
+                document.getElementById('topBuyer').textContent = topBuyer || '-';
+                document.getElementById('topBuyerVal').textContent = topBuyer ? `(بقيمة $${buyersMap[topBuyer].toLocaleString('en-US', {minimumFractionDigits:2})})` : '';
+                
+                document.getElementById('topPart').textContent = topPart || '-';
+                document.getElementById('topPartVal').textContent = topPart ? `(تم سحب ${partsMap[topPart]} قطعة)` : '';
+
+                reportLoading.style.display = 'none';
+
+            } catch (error) {
+                reportLoading.innerHTML = '<span style="color:red;">❌ حدث خطأ أثناء تحميل التقرير. تأكد من تطابق اسم الشيت مع Transactions.</span>';
+            }
+        });
+
+        // استخراج إلى Excel
+        document.getElementById('exportExcelBtn').addEventListener('click', () => {
+            const table = document.getElementById('reportTableExport');
+            const tableClone = table.cloneNode(true);
+            const noExportCells = tableClone.querySelectorAll('.no-export');
+            noExportCells.forEach(cell => cell.remove());
+            
+            const wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sales_Report" });
+            XLSX.writeFile(wb, `PetroPart_Report_${new Date().toLocaleDateString('en-GB')}.xlsx`);
+        });
+
+        // تعديل حركة (مبسط)
+        function openEditTx(timestamp, qty, price) {
+            document.getElementById('txTimestamp').value = timestamp;
+            document.getElementById('txQty').value = qty;
+            document.getElementById('txPrice').value = price;
+            document.getElementById('editTxModal').style.display = "block";
+        }
+        
+        document.getElementById('editTxForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const timestamp = document.getElementById('txTimestamp').value;
+            const newQty = document.getElementById('txQty').value;
+            const newPrice = document.getElementById('txPrice').value;
+            
+            try {
+                await fetch(`${API_URL}/Timestamp/${encodeURIComponent(timestamp)}?sheet=${TRANSACTIONS_SHEET}`, {
+                    method: 'PATCH',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: { 'Quantity': newQty, 'PriceSDG': newPrice } })
+                });
+                showToast('✅ تم تعديل الحركة بنجاح!');
+                document.getElementById('editTxModal').style.display = "none";
+                document.getElementById('showReport').click(); 
+            } catch (error) {
+                showToast('❌ حدث خطأ أثناء التعديل', true);
+            }
+        });
+
+        // --- تعديل يدوي في الجدول الرئيسي ---
         function openEditModal(id, name, qty, price, remark) {
             document.getElementById('editPartNumber').value = id;
             document.getElementById('editPartName').value = name;
@@ -662,7 +807,7 @@
                     modal.style.display = "none";
                     if(modalId === 'withdrawModal') {
                         document.getElementById('withdrawForm').reset();
-                        availableQtyDisplay.style.display = 'none';
+                        document.getElementById('availableQtyDisplay').style.display = 'none';
                     }
                 });
             }
@@ -671,10 +816,8 @@
         setupModal('showAddForm', 'addModal', 'closeAddModal');
         setupModal('showWithdrawForm', 'withdrawModal', 'closeWithdrawModal');
         setupModal('', 'receiptModal', 'closeReceiptModal');
-        
-        document.getElementById('showReport').addEventListener('click', () => {
-            alert('تم إعداد الكود لتسجيل الحركات في شيت Transactions بنجاح. يمكنك الإطلاع عليها مباشرة من ملف الـ Google Sheet.');
-        });
+        setupModal('', 'reportModal', 'closeReportModal');
+        setupModal('', 'editTxModal', 'closeEditTxModal');
 
         const closeEditModalBtn = document.getElementById('closeEditModal');
         if(closeEditModalBtn) closeEditModalBtn.onclick = () => document.getElementById('editModal').style.display = "none";
