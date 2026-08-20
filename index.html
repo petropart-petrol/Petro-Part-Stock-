@@ -854,7 +854,10 @@
             <h2>شركة بتروبارت لمعدات البترول المحدودة</h2>
             <h3>Petro-Part Petroleum Equipment LTD</h3>
         </div>
-        <button id="logoutBtn" class="logout-btn" type="button">🚪 تسجيل الخروج</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-right:auto;">
+            <button id="changePasswordBtn" class="logout-btn" type="button">🔑 تغيير كلمة السر</button>
+            <button id="logoutBtn" class="logout-btn" type="button">🚪 تسجيل الخروج</button>
+        </div>
     </header>
 
     <main class="main-container">
@@ -1137,6 +1140,23 @@
         </div>
     </div>
 
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content" style="max-width:460px;">
+            <span class="close" id="closeChangePasswordModal">×</span>
+            <h2>🔑 تغيير كلمة السر</h2>
+            <p style="color:var(--text-gray);margin-bottom:18px;">أدخل كلمة السر الحالية ثم الجديدة.</p>
+            <form id="changePasswordForm">
+                <label for="currentPassword">كلمة السر الحالية:</label>
+                <input id="currentPassword" type="password" required autocomplete="current-password">
+                <label for="newPassword">كلمة السر الجديدة:</label>
+                <input id="newPassword" type="password" required minlength="6" autocomplete="new-password">
+                <label for="confirmPassword">تأكيد كلمة السر الجديدة:</label>
+                <input id="confirmPassword" type="password" required minlength="6" autocomplete="new-password">
+                <div id="passwordChangeError" style="display:none;background:#fff0ef;color:#c0392b;border:1px solid #f5c6c2;border-radius:9px;padding:10px;margin:12px 0;font-weight:700;"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:10px;">💾 حفظ كلمة السر</button>
+            </form>
+        </div>
+    </div>
     <div id="editTxModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeEditTxModal">×</span>
@@ -1213,9 +1233,14 @@
         // -----------------------------------------
         // 0. الحماية وتسجيل الدخول
         // -----------------------------------------
-        const LOGIN_USERNAME = 'petropart2026';
-        const LOGIN_PASSWORD = 'root2026';
+        const LOGIN_USERNAME = '000000';
+        const DEFAULT_LOGIN_PASSWORD = '000000';
+        const LOGIN_PASSWORD_KEY = 'petropart_login_password';
         const AUTH_KEY = 'petropart_authenticated';
+
+        function getLoginPassword() {
+            return localStorage.getItem(LOGIN_PASSWORD_KEY) || DEFAULT_LOGIN_PASSWORD;
+        }
 
         function isAuthenticated() {
             return sessionStorage.getItem(AUTH_KEY) === '1';
@@ -1247,7 +1272,7 @@
             const password = document.getElementById('loginPassword').value;
             const errorBox = document.getElementById('loginError');
 
-            if (username === LOGIN_USERNAME && password === LOGIN_PASSWORD) {
+            if (username === LOGIN_USERNAME && password === getLoginPassword()) {
                 setAuthenticated(true);
                 updateAuthUI();
                 fetchInventoryData();
@@ -1303,9 +1328,10 @@
         }
 
         function sortTransactionsNewestFirst(transactions) {
-            return [...transactions].sort((a, b) => {
-                return parseTransactionDate(b.Timestamp) - parseTransactionDate(a.Timestamp);
-            });
+            return transactions
+                .map((tx, index) => ({ tx, index, time: parseTransactionDate(tx.Timestamp) }))
+                .sort((a, b) => (b.time - a.time) || (b.index - a.index))
+                .map(item => item.tx);
         }
 
         // -----------------------------------------
@@ -1722,8 +1748,11 @@
                 const response = await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`);
                 if (!response.ok) throw new Error('فشل تحميل التقرير');
                 
-                const transactions = await response.json();
-                currentTransactionsData = transactions; // حفظ البيانات عالمياً للتعديل
+                const transactionsRaw = await response.json();
+
+                // ترتيب عمليات المبيعات: الأحدث تاريخاً ووقتاً في الأعلى دائماً
+                const transactions = sortTransactionsNewestFirst(transactionsRaw);
+                currentTransactionsData = transactions; // حفظ البيانات مرتبة من الأحدث إلى الأقدم
                 
                 let totalUSD = 0;
                 let totalSDG = 0;
