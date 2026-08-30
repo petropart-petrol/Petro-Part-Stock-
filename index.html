@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1223,7 +1221,6 @@
 
     <script>
 
-
         /*
          * ملاحظة أمنية:
          * بيانات الدخول هنا مناسبة لقفل واجهة الموقع في المتصفح فقط.
@@ -1448,6 +1445,11 @@
                 
                 const priceSdgValue = priceUsd * rate;
 
+                // التعديل هنا: معالجة النصوص وحمايتها من علامات التنصيص التي تكسر الكود
+                const safeId = String(id).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const safeName = String(name).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const safeRemark = String(remark).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${id}</td>
@@ -1456,7 +1458,7 @@
                     <td class="currency-usd">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td class="currency-sdg">${priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td style="text-align: center;">
-                        <button class="btn-edit-cell" onclick="openEditModal('${id}', '${name}', '${qty}', '${priceUsd}', '${remark}')">تعديل ✏️</button>
+                        <button class="btn-edit-cell" onclick="openEditModal('${safeId}', '${safeName}', '${qty}', '${priceUsd}', '${safeRemark}')">تعديل ✏️</button>
                     </td>
                 `;
                 tableBody.appendChild(tr);
@@ -1522,7 +1524,8 @@
             try {
                 if (existingPart && document.getElementById('warehouseSelector').value === warehouse) {
                     const updatedQty = parseNum(existingPart['Quantity']) + qty;
-                    await fetch(`${API_URL}/PartNumber/${partNum}?sheet=${warehouse}`, {
+                    // التعديل: تشفير رقم القطعة هنا
+                    await fetch(`${API_URL}/PartNumber/${encodeURIComponent(partNum)}?sheet=${warehouse}`, {
                         method: 'PATCH',
                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                         body: JSON.stringify({ data: { 'Quantity': updatedQty, 'PriceUSD': priceUsd, 'PriceSDG': priceSdg, 'Remark': remark || existingPart['Remark'] } })
@@ -1633,8 +1636,9 @@
             const timestamp = new Date().toLocaleString('en-GB'); 
 
             try {
+                // التعديل: تشفير رقم القطعة هنا
                 // خصم الكمية من الجدول الأساسي
-                await fetch(`${API_URL}/PartNumber/${part['PartNumber']}?sheet=${warehouse}`, {
+                await fetch(`${API_URL}/PartNumber/${encodeURIComponent(part['PartNumber'])}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: { 'Quantity': newQty } }) 
@@ -2029,7 +2033,8 @@
             };
 
             try {
-                await fetch(`${API_URL}/PartNumber/${partNum}?sheet=${warehouse}`, { 
+                // التعديل: تشفير رقم القطعة هنا
+                await fetch(`${API_URL}/PartNumber/${encodeURIComponent(partNum)}?sheet=${warehouse}`, { 
                     method: 'PATCH', 
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ data: updatedData }) 
@@ -2098,6 +2103,7 @@
             };
             
             try {
+                // الكود القديم كان يعالج الـ Timestamp بشكل صحيح لذلك تم الاحتفاظ به
                 await fetch(`${API_URL}/Timestamp/${encodeURIComponent(timestamp)}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
