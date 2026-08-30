@@ -129,7 +129,7 @@
             font-size: 0.95rem;
         }
 
-        select, input[type="text"], input[type="number"] {
+        select, input[type="text"], input[type="number"], input[type="password"] {
             width: 100%;
             height: 45px;
             padding: 10px 15px;
@@ -227,6 +227,20 @@
             transition: background 0.2s;
         }
         .btn-edit-cell:hover { background-color: var(--text-dark); }
+
+        /* زر الحذف الجديد */
+        .btn-delete-cell {
+            background-color: var(--danger-color);
+            color: var(--white);
+            height: 32px;
+            padding: 0 15px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-delete-cell:hover { background-color: #c0392b; }
 
         /* =========================================
            7. الجداول (Tables)
@@ -944,6 +958,7 @@
         <p>Copyright © 2026 - Syber Technology - ENG. ISLAM Mohamed AL-Fatih</p>
     </footer>
 
+    <!-- النافذة المنبثقة للإضافة -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeAddModal">×</span>
@@ -975,6 +990,7 @@
         </div>
     </div>
 
+    <!-- النافذة المنبثقة للسحب -->
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeWithdrawModal">×</span>
@@ -1013,6 +1029,7 @@
         </div>
     </div>
 
+    <!-- النافذة المنبثقة للتعديل -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeEditModal">×</span>
@@ -1038,6 +1055,29 @@
         </div>
     </div>
 
+    <!-- النافذة المنبثقة للحذف الجديد -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" id="closeDeleteModal">×</span>
+            <h2 style="color: var(--danger-color); border-right: none; margin-bottom: 10px;">⚠️ تأكيد الحذف</h2>
+            <p style="margin-bottom: 20px; font-size: 1.1rem;">هل أنت متأكد من حذف القطعة:<br><strong id="deletePartNameDisplay" style="color: var(--primary-color);"></strong>؟</p>
+            
+            <form id="deleteForm">
+                <input type="hidden" id="deletePartNumber">
+                
+                <label for="deletePasswordAuth" style="text-align: right; display: block; margin-bottom: 5px;">أدخل كلمة المرور لتأكيد الحذف:</label>
+                <input type="password" id="deletePasswordAuth" placeholder="كلمة المرور..." required style="margin-bottom: 10px; text-align: center; letter-spacing: 2px;">
+                
+                <div id="deleteError" style="display:none; color: var(--danger-color); font-weight: bold; margin-bottom: 15px; background: #fff0ef; padding: 10px; border-radius: 5px; border: 1px solid #f5c6c2;">
+                    كلمة المرور غير صحيحة!
+                </div>
+                
+                <button type="submit" class="btn" id="submitDeleteBtn" style="background-color: var(--danger-color); color: white; width: 100%;">تأكيد الحذف النهائي</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- النافذة المنبثقة للإيصال -->
     <div id="receiptModal" class="modal">
         <div class="modal-content" style="background-color: #f4f7f6;">
             <span class="close" id="closeReceiptModal">×</span>
@@ -1066,6 +1106,7 @@
         </div>
     </div>
 
+    <!-- النافذة المنبثقة للتقرير -->
     <div id="reportModal" class="modal">
         <div class="modal-content large">
             <span class="close" id="closeReportModal">×</span>
@@ -1139,6 +1180,7 @@
         </div>
     </div>
 
+    <!-- النافذة المنبثقة لتغيير كلمة السر -->
     <div id="changePasswordModal" class="modal">
         <div class="modal-content" style="max-width:460px;">
             <span class="close" id="closeChangePasswordModal">×</span>
@@ -1156,6 +1198,8 @@
             </form>
         </div>
     </div>
+    
+    <!-- النافذة المنبثقة لتعديل الحركة -->
     <div id="editTxModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeEditTxModal">×</span>
@@ -1221,13 +1265,6 @@
 
     <script>
 
-        /*
-         * ملاحظة أمنية:
-         * بيانات الدخول هنا مناسبة لقفل واجهة الموقع في المتصفح فقط.
-         * لا تعتبر حماية خادمية حقيقية لأن بيانات الاعتماد موجودة داخل JavaScript.
-         * للحماية الفعلية يجب نقل المصادقة إلى Backend / API مع جلسة أو JWT.
-         */
-
         // -----------------------------------------
         // 0. الحماية وتسجيل الدخول
         // -----------------------------------------
@@ -1290,14 +1327,12 @@
         });
 
         // -----------------------------------------
-        // ترتيب التواريخ: الأحدث أولاً
-        // يدعم DD/MM/YYYY HH:mm:ss و YYYY-MM-DD HH:mm:ss
+        // ترتيب التواريخ
         // -----------------------------------------
         function parseTransactionDate(value) {
             if (!value) return 0;
             const raw = String(value).trim();
 
-            // ISO / YYYY-MM-DD
             const iso = raw.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
             if (iso) {
                 const y = Number(iso[1]);
@@ -1309,7 +1344,6 @@
                 return new Date(y, m, d, hh, mm, ss).getTime();
             }
 
-            // DD/MM/YYYY [HH:mm:ss] — تنسيق toLocaleString('en-GB')
             const dmy = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
             if (dmy) {
                 const d = Number(dmy[1]);
@@ -1338,7 +1372,7 @@
         const API_URL = 'https://sheetdb.io/api/v1/toxu6mq5ih3gc';
         const TRANSACTIONS_SHEET = 'Transactions'; 
         let currentInventoryData = [];
-        let currentTransactionsData = []; // تخزين الحركات لسهولة التعديل
+        let currentTransactionsData = []; 
 
         const dollarRateInput = document.getElementById('dollarRate');
         
@@ -1359,7 +1393,6 @@
             return parseFloat(dollarRateInput.value) || 3400; 
         }
 
-        // دالة هامة لضمان صحة الأرقام حتى لو احتوت على فواصل (,) من السيرفر
         function parseNum(value) {
             if (!value) return 0;
             if (typeof value === 'number') return value;
@@ -1382,7 +1415,6 @@
             }
         });
 
-        // حفظ سعر الدولار
         document.getElementById('saveDollarBtn').addEventListener('click', () => {
             const currentRate = dollarRateInput.value;
             if (currentRate && currentRate > 0) {
@@ -1425,7 +1457,6 @@
 
             tableBody.innerHTML = '';
 
-            // تصفية حسب البحث
             const filteredData = data.filter(item => {
                 const partName = item['PartName'] ? item['PartName'].toLowerCase() : '';
                 return partName.includes(searchQuery);
@@ -1445,7 +1476,6 @@
                 
                 const priceSdgValue = priceUsd * rate;
 
-                // التعديل هنا: معالجة النصوص وحمايتها من علامات التنصيص التي تكسر الكود
                 const safeId = String(id).replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 const safeName = String(name).replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 const safeRemark = String(remark).replace(/'/g, "\\'").replace(/"/g, "&quot;");
@@ -1458,7 +1488,10 @@
                     <td class="currency-usd">$${priceUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td class="currency-sdg">${priceSdgValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td style="text-align: center;">
-                        <button class="btn-edit-cell" onclick="openEditModal('${safeId}', '${safeName}', '${qty}', '${priceUsd}', '${safeRemark}')">تعديل ✏️</button>
+                        <div style="display: flex; gap: 5px; justify-content: center;">
+                            <button class="btn-edit-cell" onclick="openEditModal('${safeId}', '${safeName}', '${qty}', '${priceUsd}', '${safeRemark}')">تعديل ✏️</button>
+                            <button class="btn-delete-cell" onclick="openDeleteModal('${safeId}', '${safeName}')">حذف 🗑️</button>
+                        </div>
                     </td>
                 `;
                 tableBody.appendChild(tr);
@@ -1497,7 +1530,6 @@
             }
         }
 
-        // مستمعات التغيير والبحث
         document.getElementById('warehouseSelector').addEventListener('change', fetchInventoryData);
         document.getElementById('searchInput').addEventListener('input', () => renderInventoryTable(currentInventoryData));
 
@@ -1524,7 +1556,6 @@
             try {
                 if (existingPart && document.getElementById('warehouseSelector').value === warehouse) {
                     const updatedQty = parseNum(existingPart['Quantity']) + qty;
-                    // التعديل: تشفير رقم القطعة هنا
                     await fetch(`${API_URL}/PartNumber/${encodeURIComponent(partNum)}?sheet=${warehouse}`, {
                         method: 'PATCH',
                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -1636,15 +1667,12 @@
             const timestamp = new Date().toLocaleString('en-GB'); 
 
             try {
-                // التعديل: تشفير رقم القطعة هنا
-                // خصم الكمية من الجدول الأساسي
                 await fetch(`${API_URL}/PartNumber/${encodeURIComponent(part['PartNumber'])}?sheet=${warehouse}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: { 'Quantity': newQty } }) 
                 });
 
-                // تسجيل العملية
                 await fetch(`${API_URL}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -1665,7 +1693,6 @@
                     })
                 });
 
-                // تعبئة الإيصال
                 document.getElementById('recDate').textContent = timestamp;
                 document.getElementById('recWarehouse').textContent = warehouseLabel;
                 document.getElementById('recBuyer').textContent = buyer;
@@ -1754,17 +1781,12 @@
                 if (!response.ok) throw new Error('فشل تحميل التقرير');
                 
                 const transactionsRaw = await response.json();
-
-                // ترتيب عمليات المبيعات: الأحدث تاريخاً ووقتاً في الأعلى دائماً
                 const transactions = sortTransactionsNewestFirst(transactionsRaw);
-                currentTransactionsData = transactions; // حفظ البيانات مرتبة من الأحدث إلى الأقدم
+                currentTransactionsData = transactions; 
                 
                 let totalUSD = 0;
                 let totalSDG = 0;
 
-                // التجميع الدقيق:
-                // - المشتري الأكثر شراءً = أعلى إجمالي قيمة مبيعات بالجنيه.
-                // - القطعة الأكثر شراءً = أعلى إجمالي كمية مباعة.
                 const buyersMap = {};
                 const partsMap = {};
                 const buyerNames = {};
@@ -1802,7 +1824,6 @@
                         totalUSD += lineTotalUSD;
                         totalSDG += lineTotalSDG;
 
-                        // توحيد اختلافات المسافات/حالة الأحرف حتى لا يتكرر نفس المشتري أو القطعة.
                         if (buyerKey && buyerKey !== 'غير محدد' && buyerKey !== '-') {
                             buyersMap[buyerKey] = (buyersMap[buyerKey] || 0) + lineTotalSDG;
                             buyerNames[buyerKey] = buyerNames[buyerKey] || buyerRaw;
@@ -1879,11 +1900,8 @@
                     });
                 }
 
-                const buyerRanking = Object.entries(buyersMap)
-                    .sort((a,b) => b[1] - a[1]);
-
-                const partRanking = Object.entries(partsMap)
-                    .sort((a,b) => b[1] - a[1]);
+                const buyerRanking = Object.entries(buyersMap).sort((a,b) => b[1] - a[1]);
+                const partRanking = Object.entries(partsMap).sort((a,b) => b[1] - a[1]);
 
                 const topBuyerEntry = buyerRanking[0] || null;
                 const topPartEntry = partRanking[0] || null;
@@ -1899,15 +1917,11 @@
                 document.getElementById('totalSalesSDG').textContent =
                     `${totalSDG.toLocaleString('en-US', {minimumFractionDigits:2})} ج.س`;
 
-                document.getElementById('topBuyer').textContent =
-                    topBuyer || 'لا توجد بيانات';
-                document.getElementById('topBuyerVal').textContent =
-                    topBuyer ? `إجمالي مشترياته: ${topBuyerValue.toLocaleString('en-US', {minimumFractionDigits:2})} ج.س` : '';
+                document.getElementById('topBuyer').textContent = topBuyer || 'لا توجد بيانات';
+                document.getElementById('topBuyerVal').textContent = topBuyer ? `إجمالي مشترياته: ${topBuyerValue.toLocaleString('en-US', {minimumFractionDigits:2})} ج.س` : '';
 
-                document.getElementById('topPart').textContent =
-                    topPart || 'لا توجد بيانات';
-                document.getElementById('topPartVal').textContent =
-                    topPart ? `إجمالي الكمية المباعة: ${topPartQty.toLocaleString('en-US')}` : '';
+                document.getElementById('topPart').textContent = topPart || 'لا توجد بيانات';
+                document.getElementById('topPartVal').textContent = topPart ? `إجمالي الكمية المباعة: ${topPartQty.toLocaleString('en-US')}` : '';
 
                 renderLeaderboard(
                     'buyerLeaderboard',
@@ -1932,7 +1946,6 @@
                 document.getElementById('reportCount').textContent =
                     `${saleTransactionsCount.toLocaleString('en-US')} عملية بيع`;
 
-                // بحث لحظي داخل التقرير
                 const reportSearch = document.getElementById('reportSearchInput');
                 reportSearch.value = '';
                 reportSearch.oninput = () => {
@@ -1947,7 +1960,6 @@
                         `${visible.toLocaleString('en-US')} عملية مطابقة`;
                 };
 
-                // إضافة صفوف الملخص الشهري في أسفل الجدول
                 if (Object.keys(monthlyTotals).length > 0) {
                     const sepRow = document.createElement('tr');
                     sepRow.innerHTML = `<td colspan="12" style="background-color: var(--secondary-color); color: white; font-weight: bold; text-align: center; font-size: 1.1em; padding: 15px;">📊 ملخص المبيعات الشهرية</td>`;
@@ -2033,7 +2045,6 @@
             };
 
             try {
-                // التعديل: تشفير رقم القطعة هنا
                 await fetch(`${API_URL}/PartNumber/${encodeURIComponent(partNum)}?sheet=${warehouse}`, { 
                     method: 'PATCH', 
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, 
@@ -2048,6 +2059,60 @@
             } finally { 
                 btn.classList.remove('processing'); 
                 btn.textContent = 'حفظ التعديلات'; 
+            }
+        });
+
+        // -----------------------------------------
+        // وظيفة الحذف الجديدة (Delete Part)
+        // -----------------------------------------
+        function openDeleteModal(partNum, partName) {
+            document.getElementById('deletePartNumber').value = partNum;
+            document.getElementById('deletePartNameDisplay').textContent = partName;
+            document.getElementById('deletePasswordAuth').value = '';
+            document.getElementById('deleteError').style.display = 'none';
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const passwordInput = document.getElementById('deletePasswordAuth').value;
+            const errorDiv = document.getElementById('deleteError');
+            
+            // 1. التحقق من كلمة المرور
+            if (passwordInput !== getLoginPassword()) {
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            errorDiv.style.display = 'none';
+            
+            const btn = document.getElementById('submitDeleteBtn');
+            btn.classList.add('processing');
+            btn.textContent = 'جاري الحذف...';
+            
+            const partNum = document.getElementById('deletePartNumber').value;
+            const warehouse = document.getElementById('warehouseSelector').value;
+
+            try {
+                // 2. إرسال أمر الحذف لقاعدة البيانات
+                await fetch(`${API_URL}/PartNumber/${encodeURIComponent(partNum)}?sheet=${warehouse}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                showToast('✅ تم حذف القطعة نهائياً بنجاح!');
+                document.getElementById('deleteModal').style.display = "none";
+                fetchInventoryData(); // تحديث الجدول بعد الحذف
+                
+            } catch (error) {
+                showToast('❌ حدث خطأ أثناء الاتصال بقاعدة البيانات للحذف', true);
+            } finally {
+                btn.classList.remove('processing');
+                btn.textContent = 'تأكيد الحذف النهائي';
             }
         });
 
@@ -2080,7 +2145,6 @@
             document.getElementById('editTxModal').style.display = "block";
         }
         
-        // إرسال التعديل الشامل للحركة للداتا بيس
         document.getElementById('editTxForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitEditTxBtn');
@@ -2103,7 +2167,6 @@
             };
             
             try {
-                // الكود القديم كان يعالج الـ Timestamp بشكل صحيح لذلك تم الاحتفاظ به
                 await fetch(`${API_URL}/Timestamp/${encodeURIComponent(timestamp)}?sheet=${TRANSACTIONS_SHEET}`, {
                     method: 'PATCH',
                     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -2140,6 +2203,10 @@
                             document.getElementById('withdrawForm').reset();
                             document.getElementById('availableQtyDisplay').style.display = 'none';
                         }
+                        if(modalId === 'deleteModal') {
+                            document.getElementById('deletePasswordAuth').value = '';
+                            document.getElementById('deleteError').style.display = 'none';
+                        }
                     });
                 }
             }
@@ -2151,6 +2218,7 @@
         setupModal(null, 'reportModal', 'closeReportModal');
         setupModal(null, 'editTxModal', 'closeEditTxModal');
         setupModal(null, 'editModal', 'closeEditModal'); 
+        setupModal(null, 'deleteModal', 'closeDeleteModal'); // إضافة النافذة الجديدة
 
         window.addEventListener('click', (event) => {
             if (event.target.classList.contains('modal')) {
@@ -2158,6 +2226,10 @@
                 if (event.target.id === 'withdrawModal') {
                     document.getElementById('withdrawForm').reset();
                     document.getElementById('availableQtyDisplay').style.display = 'none';
+                }
+                if (event.target.id === 'deleteModal') {
+                    document.getElementById('deletePasswordAuth').value = '';
+                    document.getElementById('deleteError').style.display = 'none';
                 }
             }
         });
